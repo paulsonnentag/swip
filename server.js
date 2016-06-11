@@ -11,6 +11,7 @@ app.use(express.static(__dirname + '/public'));
 console.log('started server on http://localhost:3000');
 
 var ALLOWED_DELAY = 50;
+var BALL_SIZE = 10;
 
 var devices = {};
 var swipes = [];
@@ -115,36 +116,113 @@ function joinToDevice (origin, other, originSwipe, otherSwipe) {
 }
 
 function startPong (leftDevice, rightDevice) {
-  var leftLower = leftDevice.transform.y + leftDevice.size.height;
-  var rightLower = rightDevice.transform.y + rightDevice.size.height;
-  var leftUpper = leftDevice.transform.y;
-  var rightUpper = rightDevice.transform.y;
+  var leftDeviceLower = leftDevice.transform.y + leftDevice.size.height;
+  var rightDeviceLower = rightDevice.transform.y + rightDevice.size.height;
+  var leftDeviceUpper = leftDevice.transform.y;
+  var rightDeviceUpper = rightDevice.transform.y;
+  var leftDeviceLeft = leftDevice.transform.x;
+  var leftDeviceRight = leftDevice.transform.x + leftDevice.size.width;
+  var rightDeviceLeft = rightDevice.transform.x;
+  var rightDeviceRight = rightDevice.transform.x + rightDevice.size.width;
 
-  leftDevice.opening = {
-    side: 'RIGHT',
-    top: leftUpper < rightUpper ? rightUpper : leftUpper,
-    bottom: leftLower < rightLower ? leftLower: rightLower
-  };
 
-  rightDevice.opening = {
-    side: 'LEFT',
-    top: leftUpper < rightUpper ? rightUpper : leftUpper,
-    bottom: leftLower < rightLower ? leftLower: rightLower
-  };
+  var topOpening = leftDeviceUpper < rightDeviceUpper ? rightDeviceUpper : leftDeviceUpper;
+  var bottomOpening = leftDeviceLower < rightDeviceLower ? leftDeviceLower: rightDeviceLower;
 
   var ball = {
     x: leftDevice.transform.x + (leftDevice.size.width / 2),
-    y: leftDevice.transform.y + (leftDevice.size.height / 2)
+    y: leftDevice.transform.y + (leftDevice.size.height / 2),
+    speedX: 5,
+    speedY: 5
   };
-
 
   var interval = setInterval(function () {
 
-    ball.x += 5;
+    // inside left side
+    if ((ball.x - BALL_SIZE) < leftDeviceRight &&
+      (ball.x + BALL_SIZE) > leftDeviceLeft &&
+      (ball.y + BALL_SIZE) > leftDeviceUpper &&
+      (ball.y - BALL_SIZE) < leftDeviceLower) {
+
+      ball.x += ball.speedX;
+      ball.y += ball.speedY;
+
+      // y
+      if ((ball.y + BALL_SIZE) <= leftDeviceUpper) {
+        ball.speedY *= -1;
+        ball.y = leftDeviceUpper + BALL_SIZE;
+
+      } else if ((ball.y - BALL_SIZE) >= leftDeviceLower) {
+        ball.speedY *= -1;
+        ball.y = leftDeviceLower - BALL_SIZE;
+      }
+
+      // x
+      if ((ball.x + BALL_SIZE) <= leftDeviceLeft) {
+
+        // reset ball
+        ball.x = rightDeviceLeft + (rightDevice.size.width / 2);
+        ball.y = rightDeviceUpper + (rightDevice.size.height / 2);
+        ball.speedX = -5;
+        ball.speedY = 5;
+
+
+      } else if ((ball.x - BALL_SIZE) >= leftDeviceRight) {
+
+
+        if ((ball.y + BALL_SIZE) > topOpening && (ball.y - BALL_SIZE) < bottomOpening) {
+          //do nothing
+
+
+        } else {
+          ball.speedX *= -1;
+          ball.x = leftDeviceRight - BALL_SIZE;
+        }
+      }
+
+
+    // inside right side
+    } else {
+      ball.x += ball.speedX;
+      ball.y += ball.speedY;
+
+      // y
+      if ((ball.y + BALL_SIZE) <= rightDeviceUpper) {
+        ball.speedY *= -1;
+        ball.y = rightDeviceUpper + BALL_SIZE;
+
+      } else if ((ball.y - BALL_SIZE) >= rightDeviceLower) {
+        ball.speedY *= -1;
+        ball.y = rightDeviceLower - BALL_SIZE;
+      }
+
+      // x
+      if ((ball.x - BALL_SIZE) >= rightDeviceRight) {
+
+        // reset ball
+        ball.x = leftDeviceLeft + (leftDevice.size.width / 2);
+        ball.y = leftDeviceUpper + (leftDevice.size.height / 2);
+        ball.speedX = 5;
+        ball.speedY = 5;
+
+
+      } else if ((ball.x + BALL_SIZE) <= rightDeviceLeft) {
+
+
+        if ((ball.y + BALL_SIZE) > topOpening && (ball.y - BALL_SIZE) < bottomOpening) {
+          //do nothing
+
+        } else {
+          ball.speedX *= -1;
+          ball.x = rightDeviceLeft + BALL_SIZE;
+        }
+      }
+    }
+
 
     io.emit('ball', ball);
 
-  }, 100);
+  }, 50);
 
   return function () {
     clearInterval(interval);
