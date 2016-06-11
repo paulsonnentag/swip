@@ -108,10 +108,10 @@ function joinToDevice (origin, other, originSwipe, otherSwipe) {
   }
 
   other.joined = true;
-  other.socket.emit('joined', {transform: other.transform});
+  other.socket.emit('joined', {transform: other.transform, side: originSwipe.direction});
 
   if (!origin.joined) {
-    origin.socket.emit('joined', {transform: origin.transform});
+    origin.socket.emit('joined', {transform: origin.transform, side: otherSwipe.direction});
   }
 }
 
