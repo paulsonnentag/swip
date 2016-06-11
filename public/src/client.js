@@ -5,8 +5,9 @@
 
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
-  var timeOffset = 0;
+
   var transform = {x: 0, y: 0, rotate: 0};
+  var joined = false;
 
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -30,19 +31,16 @@
 
   socket.on('joined', function (data) {
     transform = data.transform;
+    joined = true;
   });
 
-  socket.on('time', function (data) {
-    timeOffset =  data.timestamp - Date.now();
-  });
+  var prevUpdateTimestamp = Date.now();
 
   socket.on('connect', function () {
     console.log('connected');
   });
 
-
   function loop (timestamp) {
-    var t = timestamp + timeOffset;
 
     ctx.save();
     ctx.fillStyle = 'red';
@@ -52,11 +50,23 @@
 
     var image = document.getElementById('image');
 
-    ctx.drawImage(image, 100 * Math.sin(t/1000), 0);
+    if (joined) {
+      ctx.drawImage(image, -200, 0);
+    }
+
     ctx.restore();
 
     requestAnimationFrame(loop);
   }
+
+  swip.gestures.onMove(function (callback) {
+
+    if (joined) {
+      socket.emit('unjoin');
+      joined = false;
+    }
+
+  });
 
   requestAnimationFrame(loop);
 

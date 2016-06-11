@@ -8,18 +8,12 @@ server.listen(3000);
 
 app.use(express.static(__dirname + '/public'));
 
-console.log('started server on http://localhost:8080');
-
+console.log('started server on http://localhost:3000');
 
 var ALLOWED_DELAY = 50;
 
 var devices = {};
 var swipes = [];
-
-
-setInterval(function () {
-  io.emit('time', {timestamp: Date.now()})
-}, 75);
 
 io.on('connection', function (socket) {
   var id = uid();
@@ -31,8 +25,6 @@ io.on('connection', function (socket) {
     socket: socket
   };
 
-  socket.emit('time', {timestamp: Date.now()});
-
   socket.on('resize', function (size) {
     console.log('device', size);
 
@@ -40,6 +32,10 @@ io.on('connection', function (socket) {
       width: size.width,
       height: size.height
     };
+  });
+
+  socket.on('unjoin', function () {
+    device.joined = false;
   });
 
   socket.on('swipe', function (swipe) {

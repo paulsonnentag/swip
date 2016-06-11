@@ -66,4 +66,19 @@
 
   };
 
+  gestures.onMove = function (callback) {
+    window.addEventListener('devicemotion', function (evt) {
+
+      var x = evt.acceleration.x;
+      var y = evt.acceleration.y;
+      var z = evt.acceleration.z;
+
+      var max = Math.max(z, Math.max(x, y));
+
+      if (max > 1.5) {
+        callback();
+      }
+    });
+  };
+
 }(window.swip || (window.swip = {})));
