@@ -2,10 +2,7 @@
 
   var gestures = exports.gestures = {};
 
-  var THRESHOLD = 100;
   var MIN_DISTANCE = 100;
-
-  console.log();
 
   gestures.onSwipe = function (el, callback) {
     var startPoints = {};

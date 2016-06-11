@@ -8,7 +8,7 @@ server.listen(3000);
 
 app.use(express.static(__dirname + '/public'));
 
-console.log('started server on http://localhost:3000');
+console.log('started server on http://localhost:8080');
 
 
 var ALLOWED_DELAY = 50;
@@ -48,13 +48,14 @@ io.on('connection', function (socket) {
       prevSwipe = swipes[0];
       otherDevice = devices[prevSwipe.deviceId];
 
-      console.log(swipe.direction, prevSwipe.direction);
+      if (otherDevice.id !== device.id) {
 
-      if(device.joined) {
-        joinToDevice(device, otherDevice, swipe, prevSwipe);
+        //if (device.joined) {
+          joinToDevice(device, otherDevice, swipe, prevSwipe);
 
-      } else {
-        joinToDevice(otherDevice, device, prevSwipe, swipe);
+        //} else {
+//          joinToDevice(otherDevice, device, prevSwipe, swipe);
+  //      }
       }
 
     } else {
@@ -69,8 +70,6 @@ io.on('connection', function (socket) {
 });
 
 function joinToDevice (origin, other, originSwipe, otherSwipe) {
-
-  console.log(originSwipe.direction);
 
   switch (originSwipe.direction) {
     case 'TOP':
@@ -96,7 +95,6 @@ function joinToDevice (origin, other, originSwipe, otherSwipe) {
 
   other.joined = true;
   other.socket.emit('joined', {transform: other.transform});
-
 
   if (!origin.joined) {
     origin.socket.emit('joined', {transform: origin.transform});
