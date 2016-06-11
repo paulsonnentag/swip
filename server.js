@@ -17,6 +17,10 @@ var devices = {};
 var swipes = [];
 
 
+setInterval(function () {
+  io.emit('time', {timestamp: Date.now()})
+}, 75);
+
 io.on('connection', function (socket) {
   var id = uid();
   var device = devices[id] = {
@@ -26,6 +30,8 @@ io.on('connection', function (socket) {
     transform : {x: 0, y: 0, rotate: 0},
     socket: socket
   };
+
+  socket.emit('time', {timestamp: Date.now()});
 
   socket.on('resize', function (size) {
     console.log('device', size);
@@ -50,12 +56,12 @@ io.on('connection', function (socket) {
 
       if (otherDevice.id !== device.id) {
 
-        //if (device.joined) {
+        if (device.joined) {
           joinToDevice(device, otherDevice, swipe, prevSwipe);
 
-        //} else {
-//          joinToDevice(otherDevice, device, prevSwipe, swipe);
-  //      }
+        } else {
+          joinToDevice(otherDevice, device, prevSwipe, swipe);
+        }
       }
 
     } else {

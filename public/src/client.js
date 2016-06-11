@@ -5,7 +5,7 @@
 
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
-
+  var timeOffset = 0;
   var transform = {x: 0, y: 0, rotate: 0};
 
   canvas.width = window.innerWidth;
@@ -18,8 +18,6 @@
   socket.emit('resize', {width: width, height: height});
 
   swip.gestures.onSwipe(canvas, function (direction, position) {
-
-    console.log(direction, position);
 
     socket.emit('swipe', {
       direction: direction,
@@ -34,12 +32,17 @@
     transform = data.transform;
   });
 
+  socket.on('time', function (data) {
+    timeOffset =  data.timestamp - Date.now();
+  });
+
   socket.on('connect', function () {
     console.log('connected');
   });
 
 
   function loop (timestamp) {
+    var t = timestamp + timeOffset;
 
     ctx.save();
     ctx.fillStyle = 'red';
@@ -47,15 +50,10 @@
     ctx.scale(2/ratio, 2/ratio);
     ctx.translate(-transform.x, -transform.y);
 
-
     var image = document.getElementById('image');
 
-    ctx.drawImage(image, -200, 0);
-
-
-
+    ctx.drawImage(image, 100 * Math.sin(t/1000), 0);
     ctx.restore();
-
 
     requestAnimationFrame(loop);
   }
