@@ -16,6 +16,8 @@
   var width = canvas.width * (ratio/2);
   var height = canvas.height * (ratio/2);
 
+  var ball = null;
+
   socket.emit('resize', {width: width, height: height});
 
   swip.gestures.onSwipe(canvas, function (direction, position) {
@@ -36,6 +38,10 @@
 
   var prevUpdateTimestamp = Date.now();
 
+  socket.on('ball', function (data) {
+    ball = data;
+  });
+
   socket.on('connect', function () {
     console.log('connected');
   });
@@ -48,10 +54,10 @@
     ctx.scale(2/ratio, 2/ratio);
     ctx.translate(-transform.x, -transform.y);
 
-    var image = document.getElementById('image');
+    //var image = document.getElementById('image');
 
-    if (joined) {
-      ctx.drawImage(image, -200, 0);
+    if (ball && joined) {
+      ctx.fillRect(ball.x - 10, ball.y - 10, 20, 20);
     }
 
     ctx.restore();

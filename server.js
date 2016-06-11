@@ -15,6 +15,8 @@ var ALLOWED_DELAY = 50;
 var devices = {};
 var swipes = [];
 
+var pongDestructor = function () {};
+
 io.on('connection', function (socket) {
   var id = uid();
   var device = devices[id] = {
@@ -45,7 +47,6 @@ io.on('connection', function (socket) {
       return (Date.now() - swipe.timestamp) < 50;
     });
 
-
     if (swipes.length === 1) {
       prevSwipe = swipes[0];
       otherDevice = devices[prevSwipe.deviceId];
@@ -58,6 +59,16 @@ io.on('connection', function (socket) {
         } else {
           joinToDevice(otherDevice, device, prevSwipe, swipe);
         }
+
+        pongDestructor();
+
+        if (swipe.direction === 'LEFT') {
+          pongDestructor = startPong(otherDevice, device);
+
+        } else if (swipe.direction === 'RIGHT') {
+          pongDestructor = startPong(device, otherDevice);
+        }
+
       }
 
     } else {
@@ -101,4 +112,41 @@ function joinToDevice (origin, other, originSwipe, otherSwipe) {
   if (!origin.joined) {
     origin.socket.emit('joined', {transform: origin.transform});
   }
+}
+
+function startPong (leftDevice, rightDevice) {
+  var leftLower = leftDevice.transform.y + leftDevice.size.height;
+  var rightLower = rightDevice.transform.y + rightDevice.size.height;
+  var leftUpper = leftDevice.transform.y;
+  var rightUpper = rightDevice.transform.y;
+
+  leftDevice.opening = {
+    side: 'RIGHT',
+    top: leftUpper < rightUpper ? rightUpper : leftUpper,
+    bottom: leftLower < rightLower ? leftLower: rightLower
+  };
+
+  rightDevice.opening = {
+    side: 'LEFT',
+    top: leftUpper < rightUpper ? rightUpper : leftUpper,
+    bottom: leftLower < rightLower ? leftLower: rightLower
+  };
+
+  var ball = {
+    x: leftDevice.transform.x + (leftDevice.size.width / 2),
+    y: leftDevice.transform.y + (leftDevice.size.height / 2)
+  };
+
+
+  var interval = setInterval(function () {
+
+    ball.x += 5;
+
+    io.emit('ball', ball);
+
+  }, 100);
+
+  return function () {
+    clearInterval(interval);
+  };
 }
