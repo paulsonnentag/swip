@@ -2,7 +2,7 @@
 
   var gestures = exports.gestures = {};
 
-  var THRESHOLD = 10;
+  var THRESHOLD = 100;
   var MIN_DISTANCE = 100;
 
   console.log();
@@ -25,6 +25,7 @@
     el.addEventListener('touchend', function (evt) {
       var size = el.getBoundingClientRect();
       var i, touch, start, end, diffX, diffY;
+
       for (i = 0; i < evt.changedTouches.length; i++) {
         touch = evt.changedTouches[i];
 
@@ -37,20 +38,19 @@
 
         if (diffX > diffY && diffX > MIN_DISTANCE) {
 
-          if (end.x < THRESHOLD) {
+          if (end.x < start.x) {
             callback('LEFT', end);
 
-          } else if ((end.x + THRESHOLD) > size.width){
+          } else {
             callback('RIGHT', end);
           }
 
-
         } else if (diffY > diffX && diffY > MIN_DISTANCE) {
 
-          if (end.y < THRESHOLD) {
+          if (end.y < start.y) {
             callback('TOP', end);
 
-          } else if ((end.y + THRESHOLD) > size.height){
+          } else {
             callback('BOTTOM', end);
           }
         }

@@ -19,6 +19,7 @@
   "homepage": "https://github.com/paulsonnentag/swup#readme",
   "dependencies": {
     "express": "4.13.4",
-    "socket.io": "1.4.6"
+    "socket.io": "1.4.6",
+    "uid": "0.0.2"
   }
 }
