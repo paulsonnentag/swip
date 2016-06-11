@@ -1,0 +1,79 @@
+<html>
+    <head>
+        <title>PongTest</title>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+        
+        <style>
+            .handle {
+                background-color: black;
+                height: 200px;
+                width: 50px;
+                position: absolute;
+            }
+        
+        </style>
+    </head>
+    
+    <body>
+        
+        
+        <canvas id="myCanvas"></canvas>
+    
+        <script type="text/javascript">
+            
+            document.addEventListener("touchmove", updatePos);
+        
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+            
+            var canvasHeight = $(document).height();
+            var canvasWidth = $(document).width();
+            
+            $("#myCanvas").attr("height", canvasHeight);
+            $("#myCanvas").attr("width", canvasWidth);
+            
+            
+            function Handle(width, height) {
+                this.width = width;
+                this.height = height;
+            };
+            
+            var player1 = new Handle(50, 200);
+            
+            ctx.beginPath();
+            ctx.rect(10, 0, player1.width, player1.height);
+            ctx.fillStyle = "black";
+            ctx.fill();
+            
+            
+            
+            function updatePos(evt) {
+                
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                
+                var y = evt.changedTouches[0].clientY;
+                
+                ctx.beginPath();
+                
+                if(y < player1.height / 2) {
+                    ctx.rect(10, 0, player1.width, player1.height);
+                
+                } else if(y > canvasHeight - player1.height / 2) {
+                    ctx.rect(10, canvasHeight - player1.height, player1.width, player1.height);
+                    
+                } else {
+                    ctx.rect(10, y - (player1.height / 2), player1.width, player1.height);
+                    
+                }
+                
+                ctx.fillStyle = "black";
+                ctx.fill();
+                
+            }
+            
+        
+        </script>
+    
+    </body>
+</html>
