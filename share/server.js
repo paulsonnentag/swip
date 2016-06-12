@@ -33,6 +33,8 @@ io.on('connection', function (socket) {
       width: size.width,
       height: size.height
     };
+
+    device.ratio = size.ratio;
   });
 
   socket.on('unjoin', function () {
@@ -112,25 +114,26 @@ function joinToDevice (origin, other, originSwipe, otherSwipe) {
 
   images = [];
 
-  addImages(origin, 0);
-  addImages(other, 4);
+  addImages(origin);
+  addImages(other);
 
 }
 
 
-function addImages(device, n) {
+function addImages(device) {
 
 
-
-  for (var i = 0; i < 4; i++) {
-    images.push({
-      x: device.transform.x + 100,//Math.random() * (device.size.width - 100) + 100,
-      y: device.transform.y + 100,//Math.random() * (device.size.height - 100) + 100,
-      id: i + n,
-      prev: [null, null],
-      speedX : 0,
-      speedY : 0
-    });
+  for (var x = 0; x < 2; x++) {
+    for (var y = 0; y < 2; y++) {
+      images.push({
+        x: device.transform.x + (90 + (x * 130)) * (device.ratio / 2),
+        y: device.transform.y + (90 + (y * 130)) * (device.ratio / 2),
+        id:  images.length,
+        prev: [null, null],
+        speedX: 0,
+        speedY: 0
+      });
+    }
   }
 
   console.log('images');
