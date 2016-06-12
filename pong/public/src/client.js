@@ -31,7 +31,9 @@
   var paddleY = height / 2;
 
   var ball = null;
-  var PADDLE_HEIGHT = 50;
+  var PADDLE_HEIGHT = 75;
+  var PADDLE_WIDTH = 20;
+  var BALL_WIDTH = 20;
 
   socket.emit('resize', {width: width, height: height});
 
@@ -57,6 +59,7 @@
   socket.on("unjoined", function (data) {
     mergeAnimation = true;
     mergeAnimationOut = false;
+    joined = false;
     backgroundColor = (ratio === 2) ? COLOR1 : COLOR2;
   });
 
@@ -113,18 +116,16 @@
       ctx.fillStyle = COLOR_PADDLE;
 
       if (side === 'LEFT') {
-        ctx.fillRect(20, paddleY - (PADDLE_HEIGHT / 2), 20, PADDLE_HEIGHT);
+        ctx.fillRect(PADDLE_WIDTH, paddleY - (PADDLE_HEIGHT / 2), PADDLE_WIDTH, PADDLE_HEIGHT);
 
       } else {
-        ctx.fillRect(width - 40, paddleY - (PADDLE_HEIGHT / 2), 20, PADDLE_HEIGHT);
+        ctx.fillRect(width - (PADDLE_WIDTH * 2), paddleY - (PADDLE_HEIGHT / 2), PADDLE_WIDTH, PADDLE_HEIGHT);
       }
 
       ctx.translate(-transform.x, -transform.y);
 
       // ball
-      ctx.fillRect(ball.x - 10, ball.y - 10, 20, 20);
-
-      // paddle
+      ctx.fillRect(ball.x - (BALL_WIDTH/2), ball.y - (BALL_WIDTH/2), BALL_WIDTH, BALL_WIDTH);
     }
 
     ctx.restore();
@@ -143,7 +144,13 @@
   }
 
   document.addEventListener('touchmove', function (evt) {
-    paddleY = clamp(PADDLE_HEIGHT/2, height - (PADDLE_HEIGHT/2),  evt.changedTouches[0].clientY);
+    paddleY = clamp(PADDLE_HEIGHT/2, height - (PADDLE_HEIGHT/2),  evt.changedTouches[0].clientY * (ratio/2));
+
+    console.log(joined);
+
+    if (joined) {
+      socket.emit('movePaddle', paddleY);
+    }
   });
 
   swip.gestures.onMove(function (callback) {
