@@ -1,23 +1,23 @@
 # swip
 
-<h2>Inspiration</h2>
+<h3>Inspiration</h3>
 <p></p>
 <br />
 
-<h2>What it does</h2>
+<h3>What it does</h3>
 <p></p>
 <br />
 
-<h2>How we built it</h2>
+<h3>How we built it</h3>
 <p></p>
 <br />
 
-<h2>Challenges we ran into</h2>
+<h3>Challenges we ran into</h3>
 <p></p>
 <br />
 
-<h2>Built With</h2>
+<h3>Built With</h3>
 <p></p>
 <br />
 
-<h2>Screenshots</h2>
+<h3>Screenshots</h3>
