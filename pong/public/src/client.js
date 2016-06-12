@@ -20,10 +20,11 @@
 
   var side = null;
   var ratio = location.hash.slice(1) || devicePixelRatio;
-  var COLOR1 = "yellow";
-  var COLOR2 = "green";
-  var COLOR_JOINED = "blue";
-  var COLOR_PADDLE = "red";
+  var COLOR1 = "#ffb428";
+  var COLOR2 = "#38a6f4";
+  var COLOR_JOINED = "#666666";
+  //var COLOR_PADDLE = "#4fe916";
+  var COLOR_BALL = "#fb2534";
   var backgroundColor = (ratio === 2) ? COLOR1 : COLOR2;
   var width = canvas.width * (ratio/2);
   var height = canvas.height * (ratio/2);
@@ -75,10 +76,12 @@
   function loop (timestamp) {
     ctx.save();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "white";
     ctx.scale(2/ratio, 2/ratio);
 
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, width, height);
+    ctx.stroke();
 
     if(mergeAnimation) {
 
@@ -89,6 +92,7 @@
         ctx.beginPath();
         ctx.arc(circleOriginX, height / 2, circleRadius, 0, 2 * Math.PI);
         ctx.fill();
+        ctx.stroke();
 
         circleRadius += mergeAnimationSpeed;
 
@@ -96,6 +100,7 @@
         ctx.beginPath();
         ctx.arc(circleOriginX, height / 2, circleRadius, 0, 2 * Math.PI);
         ctx.fill();
+        ctx.stroke();
 
         circleRadius -= mergeAnimationSpeed;
 
@@ -112,19 +117,30 @@
 
     if (ball && joined) {
 
-      ctx.fillStyle = COLOR_PADDLE;
+      ctx.fillStyle = (ratio === 2) ? COLOR1 : COLOR2;;
 
       if (side === 'LEFT') {
-        ctx.fillRect(PADDLE_WIDTH, paddleY - (PADDLE_HEIGHT / 2), PADDLE_WIDTH, PADDLE_HEIGHT);
+        ctx.beginPath()
+        ctx.rect(PADDLE_WIDTH, paddleY - (PADDLE_HEIGHT / 2), PADDLE_WIDTH, PADDLE_HEIGHT);
+        ctx.fill();
+        ctx.stroke();
 
       } else {
-        ctx.fillRect(width - (PADDLE_WIDTH * 2), paddleY - (PADDLE_HEIGHT / 2), PADDLE_WIDTH, PADDLE_HEIGHT);
+        ctx.beginPath();
+        ctx.rect(width - (PADDLE_WIDTH * 2), paddleY - (PADDLE_HEIGHT / 2), PADDLE_WIDTH, PADDLE_HEIGHT);
+        ctx.stroke();
+        ctx.fill();
       }
 
       ctx.translate(-transform.x, -transform.y);
 
+      ctx.fillStyle = COLOR_BALL;
+
       // ball
-      ctx.fillRect(ball.x - (BALL_WIDTH/2), ball.y - (BALL_WIDTH/2), BALL_WIDTH, BALL_WIDTH);
+      ctx.beginPath();
+      ctx.rect(ball.x - (BALL_WIDTH/2), ball.y - (BALL_WIDTH/2), BALL_WIDTH, BALL_WIDTH);
+      ctx.stroke();
+      ctx.fill();
     }
 
     ctx.restore();
