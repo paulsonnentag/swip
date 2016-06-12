@@ -9,8 +9,10 @@
   var transform = {x: 0, y: 0, rotate: 0};
   var joined = false;
 
-  var mergeAnimation = true;
-  var mergeAnimationOut = true;
+  var mergeAnimation = false;
+  var mergeAnimationOut = false;
+  var mergeAnimationSpeed = 25;
+  var circleOriginX = 0;
   var circleRadius = 1;
 
   canvas.width = window.innerWidth;
@@ -70,31 +72,33 @@
 
     if(mergeAnimation) {
 
-      ctx.fillStyle = (ratio === 2) ? "blue" : "green";
+      ctx.fillStyle = "blue";
+      circleOriginX = (side === "RIGHT") ? 0 : width;
 
       if(circleRadius <= 1.5 * width && mergeAnimationOut) {
         ctx.beginPath();
-        ctx.arc(width, height / 2, circleRadius, 0, 2 * Math.PI);
+        ctx.arc(circleOriginX, height / 2, circleRadius, 0, 2 * Math.PI);
         ctx.fill();
 
-        circleRadius += 100;
+        circleRadius += mergeAnimationSpeed;
 
       } else if(circleRadius >= 0 && !mergeAnimationOut) {
         ctx.beginPath();
         ctx.arc(0, 0, circleRadius, 0, 2 * Math.PI);
         ctx.fill();
 
-        circleRadius -= 100;
+        circleRadius -= mergeAnimationSpeed;
 
       } else if(circleRadius >= (1.5 * width)) {
-        ctx.fillStyle = "blue";
-        ctx.fillRect(0, 0, width, height);
         mergeAnimation = false;
 
       } else if(circleRadius < 0) {
-        ctx.fillRect(0, 0, width, height);
         mergeAnimation = false;
       }
+
+    } else {
+      ctx.fillStyle = (side === "RIGHT") ? "blue" : "green";
+      ctx.fillRect(0, 0, width, height);
     }
 
 
