@@ -1,7 +1,7 @@
 # swip
 
 <h3>Inspiration</h3>
-<p>The idea behind this tool was to use 2 or more different devices (e. g. Smartphones) to create a bigger screen, quickly exchange Data and create new game pattern mechanics (like pong with shifted screens). So we decided to try it out in the 24 hours Inno-{Hacks} hackathon at the DHBW Karlsruhe</p>
+<p>The idea behind this tool was to use 2 or more different devices (e. g. Smartphones) to create a bigger screen, quickly exchange Data and create new game pattern mechanics (like pong with shifted screens). So we decided to try it out in the 24 hours Inno-{Hacks} hackathon at the DHBW Karlsruhe.</p>
 <br />
 
 <h3>What we build</h3>
@@ -15,7 +15,7 @@ The second example is </p>
 <br />
 
 <h3>Challenges we ran into</h3>
-<p>The Time synchronization between the devices was a real big problem, because we wanted a smooth transition from one screen to the next. The different pixel-density was another quite big problem, since the different manufacturers (Apple, Samsung, HTC) have different resolutions and density.</p>
+<p>The Time synchronization between the devices was a real big problem, because we wanted a smooth transition from one screen to the next. The different pixel-density was another quite big problem, since the different manufacturers (Apple, Samsung, HTC) have different resolutions and density, we had to find a way to scale the content according to the devices density.</p>
 <br />
 
 <h3>Built With</h3>
