@@ -31,3 +31,6 @@ The second example is </p>
 ![alt tag] (https://github.com/paulsonnentag/swip/blob/master/pong/public/assets/img/example_ticatacToe.jpg)
 - Example of the Pong clone
 
+<br />
+<p>P.S. it's a prototype</p>
+
