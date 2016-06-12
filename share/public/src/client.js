@@ -23,9 +23,9 @@
 
   var side = null;
   var ratio = location.hash.slice(1) || devicePixelRatio;
-  var COLOR1 = "yellow";
-  var COLOR2 = "green";
-  var COLOR_JOINED = "blue";
+  var COLOR1 = "#ffb428";
+  var COLOR2 = "#38a6f4";
+  var COLOR_JOINED = "#666666";
   var backgroundColor = (ratio === 2) ? COLOR1 : COLOR2;
   var width = canvas.width * (ratio / 2);
   var height = canvas.height * (ratio / 2);
@@ -79,7 +79,7 @@
       image = images[i];
 
       document.getElementById('images').innerHTML +=
-        '<div class="image" style="transform: ' + getTranslate(image) + '" data-id="' + i + '">'
+        '<div class=("image" + i % 2) style="transform: ' + getTranslate(image) + '" data-id="' + i + '">'
     }
   });
 
