@@ -36,10 +36,10 @@ io.on('connection', function (socket) {
       height: size.height
     };
   });
-  
+
   socket.on('unjoin', function () {
     device.joined = false;
-    socket.emit("unjoined", {});
+    io.emit("unjoined", {});
   });
 
   socket.on('swipe', function (swipe) {
