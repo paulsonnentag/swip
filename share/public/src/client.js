@@ -6,7 +6,7 @@
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
 
-  var transform = {x: 0, y: 0, rotate: 0};
+  var transform = {x: 0, y: 0, speedX: 0, speedY: 0, rotate: 0};
   var joined = false;
 
   var mergeAnimation = false;
@@ -14,7 +14,9 @@
   var mergeAnimationSpeed = 25;
   var circleOriginX = 0;
   var circleRadius = 1;
-  var images;
+  var images = [];
+
+  var DAMPING = 0.9;
 
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -63,15 +65,12 @@
     console.log('connected');
   });
 
-  //socket.on('imagesAdded',
-  (function (data) {
+  socket.on('imagesAdded', function (data) {
 
-    images = [{x: 0, y: 0}] //data.images;
+    images = data.images;
     var image;
 
     document.getElementById('images').innerHTML = '';
-
-    console.log(images.length);
 
     for (var i = 0; i < images.length; i++) {
       image = images[i];
@@ -79,8 +78,7 @@
       document.getElementById('images').innerHTML +=
         '<div class="image" style="transform: ' + getTranslate(image) + '" data-id="' + i + '">'
     }
-
-  }());
+  });
 
   function getTranslate (image) {
     return 'translate(' + (transform.x + image.x) * (2 / ratio) + 'px,  ' + (transform.y + image.y) * (2 / ratio) + 'px)';
@@ -93,12 +91,15 @@
       var x = evt.changedTouches[0].clientX * (ratio / 2);
       var y = evt.changedTouches[0].clientY * (ratio / 2);
 
-      console.log(x, y);
+      image.speedX = 0;
+      image.speedY = 0;
 
-      image.prev = {
+      image.prev.push({
         x: x,
         y: y
-      };
+      });
+
+      image.prev = image.prev.slice(1);
 
       image.x = x;
       image.y = y;
@@ -108,9 +109,44 @@
         'transform': getTranslate(image)
       });
 
+      evt.preventDefault();
+    })
+    .on('touchend', '.image', function (evt) {
+      var $el = $(this);
+      var image = images[$(this).data('id')];
+
+      var diffX = image.prev[1].x -image.prev[0].x;
+      var diffY = image.prev[1].y -image.prev[0].y;
+
+      image.speedX = diffX;
+      image.speedY = diffY;
+
+      socket.emit('moveImage', {
+        ratio: ratio,
+        id: $el.data('id'),
+        speedX: image.speedX,
+        speedY: image.speedY,
+        x: image.x,
+        y: image.y
+      });
+
+      $el.css({
+        'transform': getTranslate(image)
+      });
 
       evt.preventDefault();
     });
+
+
+  socket.on('imageMoved', function (data) {
+
+    if (data.ratio !== ratio) {
+      images[data.id].speedX = data.speedX;
+      images[data.id].speedY = data.speedY;
+      images[data.id].x = data.x;
+      images[data.id].y = data.y;
+    }
+  });
 
 
   function loop (timestamp) {
@@ -152,9 +188,24 @@
 
 
     if (joined) {
+      var image;
+
+      for (var i = 0; i < images.length; i++) {
+        image = images[i];
+
+        image.x += image.speedX;
+        image.y += image.speedY;
+
+        image.speedX *= DAMPING;
+        image.speedY *= DAMPING;
+
+        document.getElementById('images').childNodes[i].style.transform = getTranslate(image);
 
 
-      // do here fancy shit
+
+      }
+
+
 
     }
 

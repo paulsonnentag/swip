@@ -40,6 +40,13 @@ io.on('connection', function (socket) {
     io.emit("unjoined", {});
   });
 
+  socket.on('moveImage', function (data) {
+    console.log('movedImage', data.id);
+    io.emit('imageMoved', data);
+  });
+
+
+
   socket.on('swipe', function (swipe) {
     var prevSwipe;
 
@@ -119,8 +126,11 @@ function addImages(device, n) {
     images.push({
       x: device.transform.x + 100,//Math.random() * (device.size.width - 100) + 100,
       y: device.transform.y + 100,//Math.random() * (device.size.height - 100) + 100,
-      id: i + n
-    })
+      id: i + n,
+      prev: [null, null],
+      speedX : 0,
+      speedY : 0
+    });
   }
 
   console.log('images');
