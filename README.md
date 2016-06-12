@@ -11,11 +11,11 @@ The second example is </p>
 <br />
 
 <h3>How we built it</h3>
-<p>To provide a wide coverage of all the different devices out there, our choice was javascript. For the connection websockets were the best choice, so we used Socket.io.  </p>
+<p>To provide a wide coverage of all the different devices out there, our choice was javascript. For the connection websockets were the best choice, so we used Socket.io.  For the pong game, the canvas Element was the perfect choice.</p>
 <br />
 
 <h3>Challenges we ran into</h3>
-<p></p>
+<p>The Time synchronization between the devices was a real big problem, because we wanted a smooth transition from one screen to the next. The different pixel-density was another quite big problem, since the different manufacturers (Apple, Samsung, HTC) have different resolutions and density.</p>
 <br />
 
 <h3>Built With</h3>
