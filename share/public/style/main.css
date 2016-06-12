@@ -10,8 +10,10 @@ body, html {
 
 .image {
     position: absolute;
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     border: 1px solid #000;
     background: red;
+    margin-top: -60px;
+    margin-left: -60px;
 }

@@ -31,7 +31,7 @@
   var height = canvas.height * (ratio / 2);
 
 
-  socket.emit('resize', {width: width, height: height});
+  socket.emit('resize', {width: width, height: height, ratio: ratio});
 
   swip.gestures.onSwipe(canvas, function (direction, position) {
 
@@ -84,7 +84,7 @@
   });
 
   function getTranslate (image) {
-    return 'translate(' + (-transform.x + image.x) * (2 / ratio) + 'px,  ' + (-transform.y + image.y) * (2 / ratio) + 'px)';
+    return 'translate(' +  (-transform.x + image.x) * (2 / ratio) + 'px,  ' + (-transform.y + image.y) * (2 / ratio) + 'px)';
   }
 
   $('.images')
