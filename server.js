@@ -48,6 +48,7 @@ io.on('connection', function (socket) {
 
   socket.on('unjoin', function () {
     device.joined = false;
+    io.emit("unjoined", {});
   });
 
   socket.on('swipe', function (swipe) {
