@@ -64,12 +64,12 @@ io.on('connection', function (socket) {
 
       if (otherDevice.id !== device.id) {
 
-        if (device.joined) {
+        //if (device.joined) {
           joinToDevice(device, otherDevice, swipe, prevSwipe);
 
-        } else {
+        //} else {
           joinToDevice(otherDevice, device, prevSwipe, swipe);
-        }
+        //}
 
         pongDestructor();
 
@@ -147,8 +147,6 @@ function startPong (leftDevice, rightDevice) {
 
   var interval = setInterval(function () {
     var ballDiff;
-
-
 
 
 

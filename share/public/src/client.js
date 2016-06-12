@@ -16,7 +16,7 @@
   var circleRadius = 1;
   var images = [];
 
-  var DAMPING = 0.9;
+  var DAMPING = 0.8;
 
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -79,7 +79,7 @@
       image = images[i];
 
       document.getElementById('images').innerHTML +=
-        '<div class=("image" + i % 2) style="transform: ' + getTranslate(image) + '" data-id="' + i + '">'
+        '<div class="image" style="transform: ' + getTranslate(image) + ';background:url(assets/' + i + '_small.jpg)" data-id="' + i + '">'
     }
   });
 
