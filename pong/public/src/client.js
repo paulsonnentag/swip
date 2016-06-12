@@ -58,6 +58,7 @@
   socket.on("unjoined", function (data) {
     mergeAnimation = true;
     mergeAnimationOut = false;
+    joined = false;
     backgroundColor = (ratio === 2) ? COLOR1 : COLOR2;
   });
 
