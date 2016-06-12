@@ -14,6 +14,7 @@ var ALLOWED_DELAY = 50;
 
 var devices = {};
 var swipes = [];
+var images = [];
 
 io.on('connection', function (socket) {
   var id = uid();
@@ -38,6 +39,13 @@ io.on('connection', function (socket) {
     device.joined = false;
     io.emit("unjoined", {});
   });
+
+  socket.on('moveImage', function (data) {
+    console.log('movedImage', data.id);
+    io.emit('imageMoved', data);
+  });
+
+
 
   socket.on('swipe', function (swipe) {
     var prevSwipe;
@@ -101,4 +109,31 @@ function joinToDevice (origin, other, originSwipe, otherSwipe) {
   if (!origin.joined) {
     origin.socket.emit('joined', {transform: origin.transform, side: otherSwipe.direction});
   }
+
+  images = [];
+
+  addImages(origin, 0);
+  addImages(other, 4);
+
+}
+
+
+function addImages(device, n) {
+
+
+
+  for (var i = 0; i < 4; i++) {
+    images.push({
+      x: device.transform.x + 100,//Math.random() * (device.size.width - 100) + 100,
+      y: device.transform.y + 100,//Math.random() * (device.size.height - 100) + 100,
+      id: i + n,
+      prev: [null, null],
+      speedX : 0,
+      speedY : 0
+    });
+  }
+
+  console.log('images');
+
+  io.emit('imagesAdded', {images: images});
 }
