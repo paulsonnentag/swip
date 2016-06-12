@@ -20,10 +20,11 @@
 
   var side = null;
   var ratio = location.hash.slice(1) || devicePixelRatio;
-  var COLOR1 = "yellow";
-  var COLOR2 = "green";
-  var COLOR_JOINED = "blue";
-  var COLOR_PADDLE = "red";
+  var COLOR1 = "#BB9A6C";
+  var COLOR2 = "#AEAF67";
+  var COLOR_JOINED = "#787878";
+  var COLOR_PADDLE = "#AF6767";
+  var COLOR_BALL = "#615A5A";
   var backgroundColor = (ratio === 2) ? COLOR1 : COLOR2;
   var width = canvas.width * (ratio/2);
   var height = canvas.height * (ratio/2);
