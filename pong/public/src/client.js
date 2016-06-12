@@ -124,8 +124,11 @@
 
       ctx.translate(-transform.x, -transform.y);
 
+      ctx.fillStyle = COLOR_BALL;
+
       // ball
-      ctx.fillRect(ball.x - (BALL_WIDTH/2), ball.y - (BALL_WIDTH/2), BALL_WIDTH, BALL_WIDTH);
+      ctx.arc(ball.x - (BALL_WIDTH/2), ball.y - (BALL_WIDTH/2), BALL_WIDTH, 0, Math.PI);
+      ctx.fill();
     }
 
     ctx.restore();
