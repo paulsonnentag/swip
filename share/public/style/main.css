@@ -1,0 +1,17 @@
+body, html {
+    margin: 0;
+    height: 100%;
+}
+
+.images {
+    width: 0;
+    height: 0;
+}
+
+.image {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 1px solid #000;
+    background: red;
+}
