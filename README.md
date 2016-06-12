@@ -1,6 +1,7 @@
 # swip
 
 ![alt tag] (https://github.com/paulsonnentag/swip/blob/master/pong/public/assets/img/example_swip.jpg)
+- Swip concept  -> just pinch to the edges and you're ready to go
 
 <h3>Inspiration</h3>
 <p>The idea behind this tool was to use 2 or more different devices (e. g. Smartphones) to create a bigger screen, quickly exchange Data and create new game pattern mechanics (like pong with shifted screens). So we decided to try it out in the 24 hours Inno-{Hacks} hackathon at the DHBW Karlsruhe.</p>
@@ -26,5 +27,7 @@ The second example is </p>
 
 <h3>Screenshots</h3>
 ![alt tag] (https://github.com/paulsonnentag/swip/blob/master/pong/public/assets/img/example_screenExtend.jpg)
+- Example of the extended screen feature
 ![alt tag] (https://github.com/paulsonnentag/swip/blob/master/pong/public/assets/img/example_ticatacToe.jpg)
+- Example of the Pong clone
 
