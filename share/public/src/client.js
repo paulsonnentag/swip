@@ -81,7 +81,7 @@
   });
 
   function getTranslate (image) {
-    return 'translate(' + (transform.x + image.x) * (2 / ratio) + 'px,  ' + (transform.y + image.y) * (2 / ratio) + 'px)';
+    return 'translate(' + (-transform.x + image.x) * (2 / ratio) + 'px,  ' + (-transform.y + image.y) * (2 / ratio) + 'px)';
   }
 
   $('.images')
