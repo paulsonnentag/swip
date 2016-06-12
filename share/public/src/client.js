@@ -56,6 +56,9 @@
     mergeAnimation = true;
     mergeAnimationOut = false;
     joined = false;
+    images = [];
+    document.getElementById('images').innerHTML = "";
+
     backgroundColor = (ratio === 2) ? COLOR1 : COLOR2;
   });
 
@@ -101,8 +104,8 @@
 
       image.prev = image.prev.slice(1);
 
-      image.x = x;
-      image.y = y;
+      image.x = x + transform.x;
+      image.y = y + transform.y;
 
 
       $el.css({
@@ -200,13 +203,7 @@
         image.speedY *= DAMPING;
 
         document.getElementById('images').childNodes[i].style.transform = getTranslate(image);
-
-
-
       }
-
-
-
     }
 
     ctx.restore();
