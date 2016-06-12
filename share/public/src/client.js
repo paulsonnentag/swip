@@ -57,7 +57,7 @@
     mergeAnimationOut = false;
     joined = false;
     images = [];
-    document.getElementById('images').innerHTML = "";
+    document.getElementBy Id('images').innerHTML = "";
 
     backgroundColor = (ratio === 2) ? COLOR1 : COLOR2;
   });
