@@ -9,11 +9,15 @@
   var transform = {x: 0, y: 0, rotate: 0};
   var joined = false;
 
+  var mergeAnimation = true;
+  var mergeAnimationOut = true;
+  var circleRadius = 1;
+
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
   var side = null;
-  var ratio = +location.hash.slice(1) || devicePixelRatio;
+  var ratio = location.hash.slice(1) || devicePixelRatio;
   var width = canvas.width * (ratio/2);
   var height = canvas.height * (ratio/2);
   var paddleY = height / 2;
@@ -38,6 +42,13 @@
     side = data.side;
     transform = data.transform;
     joined = true;
+    mergeAnimation = true;
+    mergeAnimationOut = true;
+  });
+
+  socket.on("unjoined", function (data) {
+    mergeAnimation = true;
+    mergeAnimationOut = false;
   });
 
   var prevUpdateTimestamp = Date.now();
@@ -55,6 +66,37 @@
     ctx.fillStyle = 'red';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.scale(2/ratio, 2/ratio);
+
+
+    if(mergeAnimation) {
+
+      ctx.fillStyle = (ratio === 2) ? "blue" : "green";
+
+      if(circleRadius <= 1.5 * width && mergeAnimationOut) {
+        ctx.beginPath();
+        ctx.arc(width, height / 2, circleRadius, 0, 2 * Math.PI);
+        ctx.fill();
+
+        circleRadius += 100;
+
+      } else if(circleRadius >= 0 && !mergeAnimationOut) {
+        ctx.beginPath();
+        ctx.arc(0, 0, circleRadius, 0, 2 * Math.PI);
+        ctx.fill();
+
+        circleRadius -= 100;
+
+      } else if(circleRadius >= (1.5 * width)) {
+        ctx.fillStyle = "blue";
+        ctx.fillRect(0, 0, width, height);
+        mergeAnimation = false;
+
+      } else if(circleRadius < 0) {
+        ctx.fillRect(0, 0, width, height);
+        mergeAnimation = false;
+      }
+    }
+
 
     if (ball && joined) {
 
