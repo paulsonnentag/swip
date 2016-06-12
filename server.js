@@ -12,6 +12,8 @@ console.log('started server on http://localhost:3000');
 
 var ALLOWED_DELAY = 50;
 var BALL_SIZE = 10;
+var PADDLE_HEIGHT = 75;
+var PADDLE_WIDTH = 20;
 
 var devices = {};
 var swipes = [];
@@ -35,6 +37,13 @@ io.on('connection', function (socket) {
       width: size.width,
       height: size.height
     };
+
+    device.paddleY = size.height / 2;
+  });
+
+  socket.on('movePaddle', function (paddleY) {
+
+    device.paddleY = paddleY;
   });
 
   socket.on('unjoin', function () {
@@ -45,7 +54,7 @@ io.on('connection', function (socket) {
     var prevSwipe;
 
     swipes = swipes.filter(function (swipe) {
-      return (Date.now() - swipe.timestamp) < 50;
+      return (Date.now() - swipe.timestamp) < ALLOWED_DELAY;
     });
 
     if (swipes.length === 1) {
@@ -69,7 +78,6 @@ io.on('connection', function (socket) {
         } else if (swipe.direction === 'RIGHT') {
           pongDestructor = startPong(device, otherDevice);
         }
-
       }
 
     } else {
@@ -132,11 +140,16 @@ function startPong (leftDevice, rightDevice) {
   var ball = {
     x: leftDevice.transform.x + (leftDevice.size.width / 2),
     y: leftDevice.transform.y + (leftDevice.size.height / 2),
-    speedX: 5,
+    speedX: -5,
     speedY: 5
   };
 
   var interval = setInterval(function () {
+    var ballDiff;
+
+
+
+
 
     // inside left side
     if ((ball.x - BALL_SIZE) < leftDeviceRight &&
@@ -158,14 +171,20 @@ function startPong (leftDevice, rightDevice) {
       }
 
       // x
-      if ((ball.x + BALL_SIZE) <= leftDeviceLeft) {
+      ballDiff =  (leftDeviceLeft + 60) - ball.x - BALL_SIZE;
 
-        // reset ball
-        ball.x = rightDeviceLeft + (rightDevice.size.width / 2);
-        ball.y = rightDeviceUpper + (rightDevice.size.height / 2);
-        ball.speedX = -5;
-        ball.speedY = 5;
+      if (ball.y < (leftDevice.paddleY + leftDeviceUpper + (PADDLE_HEIGHT / 2)) && ball.y > (leftDevice.paddleY + leftDeviceUpper - (PADDLE_HEIGHT / 2))
+        && ballDiff > 0 && ballDiff <= -ball.speedX) {
 
+        ball.x = (leftDeviceLeft + 60) - BALL_SIZE;
+        ball.speedX *= -1;
+
+      } else if ((ball.x + BALL_SIZE) <= leftDeviceLeft) {
+          // reset ball
+          ball.x = rightDeviceLeft + (rightDevice.size.width / 2);
+          ball.y = rightDeviceUpper + (rightDevice.size.height / 2);
+          ball.speedX = -5;
+          ball.speedY = 5;
 
       } else if ((ball.x - BALL_SIZE) >= leftDeviceRight) {
 
@@ -180,11 +199,13 @@ function startPong (leftDevice, rightDevice) {
         }
       }
 
-
     // inside right side
     } else {
       ball.x += ball.speedX;
       ball.y += ball.speedY;
+
+      ballDiff = ball.x + BALL_SIZE - (rightDeviceRight - 40);
+
 
       // y
       if ((ball.y + BALL_SIZE) <= rightDeviceUpper) {
@@ -197,7 +218,14 @@ function startPong (leftDevice, rightDevice) {
       }
 
       // x
-      if ((ball.x - BALL_SIZE) >= rightDeviceRight) {
+
+      if (ball.y < (rightDevice.paddleY + (PADDLE_HEIGHT / 2) + rightDeviceUpper) && ball.y > (rightDevice.paddleY + rightDeviceUpper - (PADDLE_HEIGHT / 2))
+          && ballDiff > 0 && ballDiff <= ball.speedX) {
+
+          ball.x = (rightDeviceRight - 40) - BALL_SIZE;
+          ball.speedX *= -1;
+
+      } else if ((ball.x - BALL_SIZE) >= rightDeviceRight) {
 
         // reset ball
         ball.x = leftDeviceLeft + (leftDevice.size.width / 2);
@@ -218,7 +246,6 @@ function startPong (leftDevice, rightDevice) {
         }
       }
     }
-
 
     io.emit('ball', ball);
 
