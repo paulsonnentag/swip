@@ -6,6 +6,9 @@
 ![alt tag] (https://j.gifs.com/0R7753.gif)
 - Swip Photo Share
 
+![alt tag] (https://j.gifs.com/9rNEQB.gif)
+- Swip Pong Clone
+
 <h3>Inspiration</h3>
 <p>The idea behind this tool was to use 2 or more different devices (e. g. Smartphones) to create a bigger screen, quickly exchange Data and create new game pattern mechanics (like pong with shifted screens). So we decided to try it out in the 24 hours Inno-{Hacks} hackathon at the DHBW Karlsruhe.</p>
 <br />
