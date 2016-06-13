@@ -27,8 +27,8 @@ The second example is </p>
 
 <h3>Screenshots</h3>
 ![alt tag] (https://github.com/paulsonnentag/swip/blob/master/pong/public/assets/img/example_screenExtend.jpg)
-- Example of the extended screen feature
-![alt tag] (https://github.com/paulsonnentag/swip/blob/master/pong/public/assets/img/example_ticatacToe.jpg)
+- Example of the extended screen concept
+![alt tag] (https://github.com/paulsonnentag/swip/blob/master/pong/public/assets/img/pong_clone_example.jpg)
 - Example of the Pong clone
 
 <br />
