@@ -1,25 +1,25 @@
 {
   "name": "swip",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/paulsonnentag/swup.git"
+    "url": "git+https://github.com/paulsonnentag/swip.git"
   },
   "author": "Tim Großmann, Paul Sonnentag",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/paulsonnentag/swup/issues"
+    "url": "https://github.com/paulsonnentag/swip/issues"
   },
-  "homepage": "https://github.com/paulsonnentag/swup#readme",
+  "homepage": "https://github.com/paulsonnentag/swip#readme",
   "dependencies": {
-    "express": "4.13.4",
-    "socket.io": "1.4.6",
     "uid": "0.0.2"
+  },
+  "peerDependencies": {
+    "socket.io": "1.4.x"
   }
 }
