@@ -1,10 +1,10 @@
-var express = require('express');
-var app = express();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
-var swip = require('../../../index.js');
+const express = require('express');
+const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
+const swip = require('../../../src/index.js');
 
-swip(io, {});
+swip(io);
 
 server.listen(3000);
 

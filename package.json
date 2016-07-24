@@ -2,7 +2,7 @@
   "name": "swip",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
   },
@@ -17,9 +17,17 @@
   },
   "homepage": "https://github.com/paulsonnentag/swip#readme",
   "dependencies": {
+    "immutability-helper": "^2.0.0",
+    "lodash": "^4.13.1",
+    "redux": "^3.5.2",
     "uid": "0.0.2"
   },
   "peerDependencies": {
     "socket.io": "1.4.x"
+  },
+  "devDependencies": {
+    "eslint": "^3.1.1",
+    "eslint-config-airbnb-base": "^4.0.2",
+    "eslint-plugin-import": "^1.11.1"
   }
 }
