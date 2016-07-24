@@ -1,12 +1,12 @@
 const _ = require('lodash');
 const uid = require('uid');
-const update = require('react-addons-update');
+const update = require('immutability-helper');
 const actions = require('./actions');
 
 const SWIPE_TOLERANCE = 50;
 
 const initialState = {
-  cluster: {},
+  clusters: {},
   clients: {},
   swipes: [],
 };
@@ -43,9 +43,7 @@ function doSwipe (state, swipe) {
     return addSwipe(state, swipes, swipe);
   }
 
-  const clientA = state.clients[swipe.id];
-  const clientB = state.clients[swipes[0].id];
-  const { clients, clusters } = clusterClients(state, clientA, clientB);
+  const { clients, clusters } = clusterClients(state, swipe, swipes[0]);
 
   return update(state, {
     swipes: { $set: [] },
@@ -62,7 +60,7 @@ function addSwipe (state, swipes, swipe) {
   const swipeWithTimestamp = update(swipe, { timestamp: { $set: Date.now() } });
 
   return update(state, {
-    swipes: swipes.concat([swipeWithTimestamp]),
+    swipes: { $set: swipes.concat([swipeWithTimestamp]) },
   });
 }
 
@@ -86,7 +84,7 @@ function joinCluster (state, clientA, swipeA, clientB, swipeB) {
     clients: {
       [clientB.id]: {
         clusterId: { $set: clientA.clusterId },
-        transform: getTransform(clientA, swipeA, clientB, swipeB),
+        transform: { $set: getTransform(clientA, swipeA, clientB, swipeB) },
       },
     },
   });

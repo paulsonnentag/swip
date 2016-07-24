@@ -4,7 +4,7 @@ const TYPE = {
   SWIPE: 'SWIPE',
 };
 
-function join (id, size) {
+function join (id, { size }) {
   return {
     type: TYPE.JOIN,
     data: { id, size },

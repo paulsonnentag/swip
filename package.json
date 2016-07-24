@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,7 @@
   "devDependencies": {
     "eslint": "^3.1.1",
     "eslint-config-airbnb-base": "^4.0.2",
-    "eslint-plugin-import": "^1.11.1"
+    "eslint-plugin-import": "^1.11.1",
+    "should": "^10.0.0"
   }
 }
