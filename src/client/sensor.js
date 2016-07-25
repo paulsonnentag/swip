@@ -1,51 +1,56 @@
 /* global window */
 const MIN_SWIPE_DIST = 50;
 const MOTION_TOLERANCE = 1.5;
+const startPoints = {};
 
 function onSwipe (element, callback) {
-  const startPoints = {};
+  element.addEventListener('touchmove', touchMoveHandler);
 
-  element.addEventListener('touchmove', (evt) => {
-    evt.preventDefault();
+  element.addEventListener('touchstart', touchStartHandler);
+
+  element.addEventListener('touchend', (evt) => touchEndHandler(evt, callback));
+}
+
+function touchStartHandler (evt) {
+  evt.changedTouches.forEach((touch) => {
+    startPoints[touch.identifier] = {
+      x: touch.clientX,
+      y: touch.clientY,
+    };
   });
+}
 
-  element.addEventListener('touchstart', (evt) => {
-    evt.changedTouches.forEach((touch) => {
-      startPoints[touch.identifier] = {
-        x: touch.clientX,
-        y: touch.clientY,
-      };
-    });
-  });
+function touchMoveHandler (evt) {
+  evt.preventDefault();
+}
 
-  element.addEventListener('touchend', (evt) => {
-    evt.changedTouches.forEach((touch) => {
-      const start = startPoints[touch.identifier];
-      const end = {
-        x: touch.clientX,
-        y: touch.clientY,
-      };
+function touchEndHandler (evt, callback) {
+  evt.changedTouches.forEach((touch) => {
+    const start = startPoints[touch.identifier];
+    const end = {
+      x: touch.clientX,
+      y: touch.clientY,
+    };
 
-      const diffX = Math.abs(end.x - start.x);
-      const diffY = Math.abs(end.y - start.y);
+    const diffX = Math.abs(end.x - start.x);
+    const diffY = Math.abs(end.y - start.y);
 
-      const vertBorder = window.innerHeight / 10;
-      const horBorder = window.innerWidth / 10;
+    const vertBorder = window.innerHeight / 10;
+    const horBorder = window.innerWidth / 10;
 
-      if (diffX > diffY && diffX > MIN_SWIPE_DIST) {
-        if (end.x < start.x && end.x <= horBorder) {
-          callback('LEFT', end.y);
-        } else if (end.x > start.x && end.x >= window.innerWidth - horBorder) {
-          callback('RIGHT', end.y);
-        }
-      } else if (diffY > diffX && diffY > MIN_SWIPE_DIST) {
-        if (end.y < start.y && end.y <= vertBorder) {
-          callback('UP', end.x);
-        } else if (end.y > start.y && end.y >= window.innerHeight - vertBorder) {
-          callback('DOWN', end.x);
-        }
+    if (diffX > diffY && diffX > MIN_SWIPE_DIST) {
+      if (end.x < start.x && end.x <= horBorder) {
+        callback({ direction: 'LEFT', position: { x: end.x, y: end.y } });
+      } else if (end.x > start.x && end.x >= window.innerWidth - horBorder) {
+        callback({ direction: 'RIGHT', position: { x: end.x, y: end.y } });
       }
-    });
+    } else if (diffY > diffX && diffY > MIN_SWIPE_DIST) {
+      if (end.y < start.y && end.y <= vertBorder) {
+        callback({ direction: 'UP', position: { x: end.x, y: end.y } });
+      } else if (end.y > start.y && end.y >= window.innerHeight - vertBorder) {
+        callback({ direction: 'DOWN', position: { x: end.x, y: end.y } });
+      }
+    }
   });
 }
 
