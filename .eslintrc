@@ -1,8 +1,7 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    "no-extraneous-dependecies": "off",
-    "no-use-before-define": "off",
+    "no-use-before-define": 0,
     "space-before-function-paren": ["error", "always"]
   }
 }
