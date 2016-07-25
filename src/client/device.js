@@ -1,5 +1,5 @@
 /* global document localStorage */
-import Converter from './converter';
+const Converter = require('./converter');
 
 function requestSize (callback) {
   if (!localStorage.getItem('deviceSize')) {
@@ -11,22 +11,21 @@ function requestSize (callback) {
             <br />
             <button id="swip-confirm-size">Confirm</button>
             `;
-    document.getElementsByTagName('body')[0].insertBefore(input, document.body.firstChild);
+    document.body.insertBefore(input, document.body.firstChild);
 
     document.getElementById('swip-confirm-size').addEventListener('click', () => {
       const deviceSize = document.getElementById('swip-device-size').value;
-      document.getElementsByTagName('body')[0].removeChild(input);
+      document.body.removeChild(input);
       localStorage.setItem('deviceSize', deviceSize);
 
       callback(new Converter(deviceSize));
     });
+
   } else {
     callback(new Converter(localStorage.getItem('deviceSize')));
   }
 }
 
-const device = {
+module.exports = {
   requestSize,
 };
-
-export default device;

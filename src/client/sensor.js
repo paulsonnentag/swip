@@ -2,7 +2,7 @@
 const MIN_SWIPE_DIST = 50;
 const MOTION_TOLERANCE = 1.5;
 
-export function onSwipe (element, callback) {
+function onSwipe (element, callback) {
   const startPoints = {};
 
   element.addEventListener('touchmove', (evt) => {
@@ -49,7 +49,7 @@ export function onSwipe (element, callback) {
   });
 }
 
-export function onMotion (callback) {
+function onMotion (callback) {
   window.addEventListener('devicemotion', (evt) => {
     const x = evt.acceleration.x;
     const y = evt.acceleration.y;
@@ -63,9 +63,7 @@ export function onMotion (callback) {
   });
 }
 
-const sensor = {
+module.exports = {
   onSwipe,
   onMotion,
 };
-
-export default sensor;

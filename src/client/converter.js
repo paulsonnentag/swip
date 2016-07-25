@@ -1,7 +1,7 @@
 /* global localStorage document screen window */
 const SIZE_REFERENCE = 60;
 
-export default class Converter {
+class Converter {
   constructor (screenSize) {
     this.screenSize = screenSize;
     this.scalingFactor = getScalingFactor(screenSize);
@@ -29,3 +29,5 @@ function getScalingFactor (screenSize) {
 
   return SIZE_REFERENCE / pixelPerCentimeter;
 }
+
+module.exports = Converter;
