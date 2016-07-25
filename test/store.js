@@ -98,4 +98,25 @@ describe('store', () => {
         });
     });
   });
+
+  describe('disconnect client', () => {
+    beforeEach(() => {
+      store.dispatch(actions.connect('a', DEVICE_A));
+      store.dispatch(actions.connect('b', DEVICE_B));
+      store.dispatch(actions.connect('c', DEVICE_C));
+
+      store.dispatch(actions.swipe('a', { position: { y: 150 }, direction: 'LEFT' }));
+      store.dispatch(actions.swipe('b', { position: { y: 100 }, direction: 'RIGHT' }));
+      store.dispatch(actions.swipe('a', { position: { x: 100 }, direction: 'UP' }));
+      store.dispatch(actions.swipe('c', { position: { x: 100 }, direction: 'DOWN' }));
+    });
+
+    it('should remove client from cluster', () => {
+      store.dispatch(actions.disconnect('b'));
+
+      const state = store.getState();
+
+      state.clients.should.not.have.property('b');
+    });
+  });
 });

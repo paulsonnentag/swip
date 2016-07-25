@@ -22,6 +22,9 @@ function reducer (state = initialState, { type, data }) {
     case actions.TYPE.LEAVE_CLUSTER:
       return leaveCluster(state, data);
 
+    case actions.TYPE.DISCONNECT:
+      return disconnect(state, data);
+
     default:
       return state;
   }
@@ -136,27 +139,37 @@ function getTransform (clientA, swipeA, clientB, swipeB) {
 }
 
 function leaveCluster (state, { id }) {
-  let clusters;
-  const { clients } = state;
+  const { clients, clusters } = state;
   const client = state.clients[id];
   const clusterId = client.clusterId;
 
+  return update(state, {
+    clusters: { $set: removeEmptyCluster(clusters, clients, clusterId) },
+    clients: { [id]: { clusterId: { $set: null } } },
+  });
+}
 
-  if (getClientsInCluster(clusterId, clients).length === 1) {
-    clusters = _.omit(state.clusters, [clusterId]);
-  } else {
-    clusters = state.clusters;
+function removeEmptyCluster (clusters, clients, clusterId) {
+  if (getClientsInCluster(clusterId, clients).length > 1) {
+    return clusters;
   }
 
-
-  return update(state, {
-    clients: { [id]: { clusterId: { $set: null } } },
-    clusters: { $set: clusters },
-  });
+  return _.omit(clusters, [clusterId]);
 }
 
 function getClientsInCluster (clusterId, clients) {
   return _.filter(clients, (client) => client.clusterId === clusterId);
+}
+
+function disconnect (state, { id }) {
+  const { clients, clusters } = state;
+  const client = state.clients[id];
+  const clusterId = client.clusterId;
+
+  return update(state, {
+    clusters: { $set: removeEmptyCluster(clusters, clients, clusterId) },
+    clients: { $set: _.omit(state.clients, [id]) },
+  });
 }
 
 module.exports = reducer;
