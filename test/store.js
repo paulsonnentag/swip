@@ -83,6 +83,16 @@ describe('store', () => {
       store.dispatch(actions.swipe('c', { position: { x: 100 }, direction: 'DOWN' }));
     });
 
+    it('should remove cluster if cluster has no clients', () => {
+      store.dispatch(actions.leaveCluster('a'));
+      store.dispatch(actions.leaveCluster('b'));
+      store.dispatch(actions.leaveCluster('c'));
+
+      const state = store.getState();
+
+      state.clusters.should.eql({});
+    });
+
     it('should remove client from cluster', () => {
       store.dispatch(actions.leaveCluster('b'));
 
@@ -109,6 +119,16 @@ describe('store', () => {
       store.dispatch(actions.swipe('b', { position: { y: 100 }, direction: 'RIGHT' }));
       store.dispatch(actions.swipe('a', { position: { x: 100 }, direction: 'UP' }));
       store.dispatch(actions.swipe('c', { position: { x: 100 }, direction: 'DOWN' }));
+    });
+
+    it('should remove cluster if cluster has no clients', () => {
+      store.dispatch(actions.leaveCluster('a'));
+      store.dispatch(actions.leaveCluster('b'));
+      store.dispatch(actions.leaveCluster('c'));
+
+      const state = store.getState();
+
+      state.clusters.should.eql({});
     });
 
     it('should remove client from cluster', () => {
