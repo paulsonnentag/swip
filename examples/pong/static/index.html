@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Swip</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+  </head>
+
+  <body>
+    <div id="testDiv" style="background-color: red"></div>
+
+    <script>
+      /*eslint-disable*/
+      var socket = io.connect();
+      var sizeReference = 60;
+
+      var screenHeight = screen.height;
+      var screenWidth = screen.width;
+      var diagonalPixel = Math.sqrt(Math.pow(screenHeight, 2) + Math.pow(screenWidth, 2));
+
+      var screenDiagonal;
+      var pixelPerCentimeter;
+      var scalingFactor;
+
+      if (!localStorage.getItem('deviceSize')) {
+        document.body.innerHTML = `
+					<label for="deviceSize">Your devices size:</label>
+					<input type="text" id="deviceSize" placeholder="Input device Size...">
+					<br />
+					<button id="confirmSize">Confirm</button>
+				`;
+
+        document.getElementById('confirmSize').addEventListener('click', function () {
+          var deviceSize = document.getElementById('deviceSize').value;
+
+          localStorage.setItem('deviceSize', deviceSize);
+          hideInputs();
+
+          displayBox();
+        });
+
+      } else {
+        displayBox();
+      }
+
+      function hideInputs() {
+        document.body.innerHTML = `<div id="testDiv" style="background-color: red"></div>`;
+      }
+
+      function displayBox() {
+        var div = document.getElementById('testDiv');
+
+        setSizeValues();
+
+        div.style.width = pixelPerCentimeter + 'px';
+        div.style.height = pixelPerCentimeter + 'px';
+      }
+
+      function setSizeValues() {
+        screenDiagonal = localStorage.getItem('deviceSize') * 2.54;
+        pixelPerCentimeter = diagonalPixel / screenDiagonal;
+        scalingFactor = sizeReference / pixelPerCentimeter;
+      }
+
+      function toDevicePixel() {
+        return {
+          'screenHeight': screenHeight / scalingFactor,
+          'screenWidth': screenWidth / scalingFactor,
+        };
+      }
+
+      function toAbsPixel() {
+        return {
+          'screenHeight': screenHeight * scalingFactor,
+          'screenWidth': screenWidth * scalingFactor,
+        };
+      }
+
+      /*eslint-enable*/
+    </script>
+  </body>
+</html>
+
+
+
+
+
