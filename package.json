@@ -2,9 +2,12 @@
   "name": "swip",
   "version": "0.1.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "src/server/index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "dev": "webpack --watch",
+    "build": "webpack",
+    "pong": "nodemon examples/pong/server/index.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +29,9 @@
     "socket.io": "1.4.x"
   },
   "devDependencies": {
+    "babel-core": "^6.11.4",
+    "babel-loader": "^6.2.4",
+    "babel-preset-stage-0": "^6.5.0",
     "eslint": "^3.1.1",
     "eslint-config-airbnb-base": "^4.0.2",
     "eslint-plugin-import": "^1.11.1",

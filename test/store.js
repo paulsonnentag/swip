@@ -3,8 +3,8 @@
 const should = require('should');
 /*eslint-enable*/
 const redux = require('redux');
-const actions = require('../src/actions');
-const reducer = require('../src/reducer');
+const actions = require('../src/server/actions');
+const reducer = require('../src/server/reducer');
 
 describe('store', () => {
   const DEVICE_A = {
