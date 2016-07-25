@@ -11,27 +11,26 @@ const initialState = {
   swipes: [],
 };
 
-function reducer (state, { type, data }) {
-  if (typeof state === 'undefined') {
-    return initialState;
-  }
-
+function reducer (state = initialState, { type, data }) {
   switch (type) {
-    case actions.TYPE.JOIN:
-      return join(state, data);
+    case actions.TYPE.CONNECT:
+      return connect(state, data);
 
     case actions.TYPE.SWIPE:
       return doSwipe(state, data);
+
+    case actions.TYPE.LEAVE_CLUSTER:
+      return leaveCluster(state, data);
 
     default:
       return state;
   }
 }
 
-function join (state, { id, size }) {
+function connect (state, { id, size }) {
   return update(state, {
     clients: {
-      [id]: { $set: { id, size, transform: { x: 0, y: 0 } } }, // TODO: custom client initialization
+      [id]: { $set: { id, size, transform: { x: 0, y: 0 } } }, // TODO: custom client init
     },
   });
 }
@@ -134,6 +133,30 @@ function getTransform (clientA, swipeA, clientB, swipeB) {
     default:
       throw new Error(`Invalid direction: ${swipeA.direction}`);
   }
+}
+
+function leaveCluster (state, { id }) {
+  let clusters;
+  const { clients } = state;
+  const client = state.clients[id];
+  const clusterId = client.clusterId;
+
+
+  if (getClientsInCluster(clusterId, clients).length === 1) {
+    clusters = _.omit(state.clusters, [clusterId]);
+  } else {
+    clusters = state.clusters;
+  }
+
+
+  return update(state, {
+    clients: { [id]: { clusterId: { $set: null } } },
+    clusters: { $set: clusters },
+  });
+}
+
+function getClientsInCluster (clusterId, clients) {
+  return _.filter(clients, (client) => client.clusterId === clusterId);
 }
 
 module.exports = reducer;

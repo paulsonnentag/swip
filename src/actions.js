@@ -1,12 +1,13 @@
 const TYPE = {
-  JOIN: 'JOIN',
-  LEAVE: 'LEAVE',
+  CONNECT: 'CONNECT_CLIENT',
+  DISCONNECT: 'DISCONNECT_CLIENT',
+  LEAVE_CLUSTER: 'LEAVE_CLUSTER',
   SWIPE: 'SWIPE',
 };
 
-function join (id, { size }) {
+function connect (id, { size }) {
   return {
-    type: TYPE.JOIN,
+    type: TYPE.CONNECT,
     data: { id, size },
   };
 }
@@ -18,8 +19,16 @@ function swipe (id, { position, direction }) {
   };
 }
 
+function leaveCluster (id) {
+  return {
+    type: TYPE.LEAVE_CLUSTER,
+    data: { id },
+  };
+}
+
 module.exports = {
   TYPE,
-  join,
+  connect,
   swipe,
+  leaveCluster,
 };

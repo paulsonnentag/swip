@@ -1,5 +1,7 @@
 /* global describe it beforeEach */
+/*eslint-disable*/
 const should = require('should');
+/*eslint-enable*/
 const redux = require('redux');
 const actions = require('../src/actions');
 const reducer = require('../src/reducer');
@@ -20,9 +22,9 @@ describe('store', () => {
     store = redux.createStore(reducer);
   });
 
-  describe('join', () => {
-    it('should add device', () => {
-      store.dispatch(actions.join('a', DEVICE_A));
+  describe('connect', () => {
+    it('should add client', () => {
+      store.dispatch(actions.connect('a', DEVICE_A));
 
       store.getState().clients.should.eql({
         a: {
@@ -36,9 +38,9 @@ describe('store', () => {
 
   describe('swipe', () => {
     beforeEach(() => {
-      store.dispatch(actions.join('a', DEVICE_A));
-      store.dispatch(actions.join('b', DEVICE_B));
-      store.dispatch(actions.join('c', DEVICE_C));
+      store.dispatch(actions.connect('a', DEVICE_A));
+      store.dispatch(actions.connect('b', DEVICE_B));
+      store.dispatch(actions.connect('c', DEVICE_C));
     });
 
 
@@ -57,7 +59,7 @@ describe('store', () => {
       state.clients.b.transform.should.eql({ x: 0, y: 0 });
     });
 
-    it('should cluster client to existing cluster', () => {
+    it('should add client to existing cluster', () => {
       store.dispatch(actions.swipe('a', { position: { y: 150 }, direction: 'LEFT' }));
       store.dispatch(actions.swipe('b', { position: { y: 100 }, direction: 'RIGHT' }));
       store.dispatch(actions.swipe('a', { position: { x: 100 }, direction: 'UP' }));
@@ -65,7 +67,35 @@ describe('store', () => {
 
       const state = store.getState();
 
-      state.clients.c.transform.should.eql({ x: 300, y: -250});
+      state.clients.c.transform.should.eql({ x: 300, y: -250 });
+    });
+  });
+
+  describe('leave cluster', () => {
+    beforeEach(() => {
+      store.dispatch(actions.connect('a', DEVICE_A));
+      store.dispatch(actions.connect('b', DEVICE_B));
+      store.dispatch(actions.connect('c', DEVICE_C));
+
+      store.dispatch(actions.swipe('a', { position: { y: 150 }, direction: 'LEFT' }));
+      store.dispatch(actions.swipe('b', { position: { y: 100 }, direction: 'RIGHT' }));
+      store.dispatch(actions.swipe('a', { position: { x: 100 }, direction: 'UP' }));
+      store.dispatch(actions.swipe('c', { position: { x: 100 }, direction: 'DOWN' }));
+    });
+
+    it('should remove client from cluster', () => {
+      store.dispatch(actions.leaveCluster('b'));
+
+      const state = store.getState();
+
+      state.clients
+        .should.have.property('b')
+        .which.is.eql({
+          transform: { x: 0, y: 0 },
+          size: DEVICE_B.size,
+          id: 'b',
+          clusterId: null,
+        });
     });
   });
 });
