@@ -3,14 +3,31 @@
   <head>
     <meta charset="UTF-8">
     <title>Swip</title>
-    <script src="/socket.io/socket.io.js"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
   </head>
 
   <body>
 
+    <div id="testDiv" style="background-color: red"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/swip/swip.js"></script>
     <script>
 
+      const socket = io.connect();
+
+      swip.device.requestSize(function (converter) {
+        displayBox(converter.toDevicePixel({x: 60, y: 60}));
+      });
+
+      swip.sensor.onSwipe(window, function (direction, position) {
+        console.log(direction + ' ' + position);
+      });
+
+      function displayBox(obj) {
+        document.getElementById('testDiv').style.width = obj.x + "px";
+        document.getElementById('testDiv').style.width = obj.y + "px";
+      };
 
     </script>
   </body>

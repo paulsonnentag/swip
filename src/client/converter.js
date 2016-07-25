@@ -22,7 +22,7 @@ export default class Converter {
   }
 }
 
-function getScalingFactor(screenSize) {
+function getScalingFactor (screenSize) {
   const diagonalPixel = Math.sqrt(Math.pow(screen.height, 2) + Math.pow(screen.width, 2));
   const diagonalScreenCM = screenSize * 2.54;
   const pixelPerCentimeter = diagonalPixel / diagonalScreenCM;
