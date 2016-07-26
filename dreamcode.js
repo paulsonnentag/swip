@@ -89,6 +89,6 @@ const client = swip.client(socket, container);
 
 client.emit('movePaddle', { paddlePosition: 10 });
 
-client.onChange(({ app, client }) => {
+client.onChange(({ cluster, client }) => {
 
 });

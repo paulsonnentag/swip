@@ -1,10 +1,14 @@
+const _ = require('lodash');
 const uid = require('uid');
 const read = require('fs').readFileSync;
+const redux = require('redux');
 const clientSource = read(require.resolve('../../dist/bundle.js'), 'utf-8');
-const store = require('./store');
 const actions = require('./actions');
+const reducer = require('./reducer');
 
-function swip (io) {
+function swip (io, config) {
+  const store = redux.createStore(reducer(config));
+
   io.on('connection', (socket) => {
     const id = uid();
 
@@ -12,6 +16,22 @@ function swip (io) {
     socket.on(actions.TYPE.SWIPE, (data) => store.dispatch(actions.swipe(id, data)));
     socket.on(actions.TYPE.LEAVE_CLUSTER, () => store.dispatch(actions.leaveCluster(id)));
     socket.on(actions.TYPE.DISCONNECT, () => store.dispatch(actions.disconnect(id)));
+
+    store.subscribe(() => {
+      const { clients, clusters } = store.getState();
+      const client = clients[id];
+      const cluster = clusters[client.clusterId];
+      const clusterClients = _.filter(clients, (c) => c.clusterId === client.clusterId);
+      const data = {
+        client,
+        cluster: {
+          clients: clusterClients,
+          data: cluster,
+        },
+      };
+
+      socket.emit(actions.TYPE.CHANGED, data);
+    });
   });
 
   attachServe(io.httpServer);
@@ -25,8 +45,6 @@ function attachServe (srv) {
 
   srv.removeAllListeners('request');
   srv.on('request', (req, res) => {
-    console.log('req', req.url);
-
     if (req.url.indexOf(url) === 0) {
       serve(req, res);
     } else {
