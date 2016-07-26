@@ -77,6 +77,7 @@ describe('store', () => {
 
       state.clients.b.transform.should.eql({ x: 0, y: 0 });
       state.clients.b.data.should.eql({ id: 'b', n: 2 });
+      state.clients.b.data.should.eql({ id: 'b', n: 2 });
     });
 
     it('should add connectionIDs to clientObj connections', () => {
