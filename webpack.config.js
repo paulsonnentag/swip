@@ -10,10 +10,12 @@ module.exports = {
     publicPath: '/',
   },
   module: {
-    loaders: [{
-      test: /\.js/,
-      loaders: ['babel'],
-      include: path.join(__dirname, 'src'),
-    }],
+    loaders: [
+      {
+        test: /\.js$/,
+        exclude: /(node_modules|bower_components)/,
+        loader: 'babel', // 'babel-loader' is also a legal name to reference
+      },
+    ],
   },
 };

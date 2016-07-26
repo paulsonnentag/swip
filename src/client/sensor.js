@@ -12,7 +12,7 @@ function onSwipe (element, callback) {
 }
 
 function touchStartHandler (evt) {
-  evt.changedTouches.forEach((touch) => {
+  Array.prototype.slice.apply(evt.changedTouches).forEach((touch) => {
     startPoints[touch.identifier] = {
       x: touch.clientX,
       y: touch.clientY,
@@ -25,7 +25,7 @@ function touchMoveHandler (evt) {
 }
 
 function touchEndHandler (evt, callback) {
-  evt.changedTouches.forEach((touch) => {
+  Array.prototype.slice.apply(evt.changedTouches).forEach((touch) => {
     const start = startPoints[touch.identifier];
     const end = {
       x: touch.clientX,

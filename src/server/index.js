@@ -9,6 +9,10 @@ const reducer = require('./reducer');
 function swip (io, config) {
   const store = redux.createStore(reducer(config));
 
+  store.subscribe(() => {
+    console.log(store.getState());
+  });
+
   io.on('connection', (socket) => {
     const id = uid();
 
@@ -17,9 +21,14 @@ function swip (io, config) {
     socket.on(actions.TYPE.LEAVE_CLUSTER, () => store.dispatch(actions.leaveCluster(id)));
     socket.on(actions.TYPE.DISCONNECT, () => store.dispatch(actions.disconnect(id)));
 
-    store.subscribe(() => {
+    const unsubscribe = store.subscribe(() => {
       const { clients, clusters } = store.getState();
       const client = clients[id];
+
+      if (client === undefined) {
+        return;
+      }
+
       const cluster = clusters[client.clusterId];
       const clusterClients = _.filter(clients, (c) => c.clusterId === client.clusterId);
       const data = {
@@ -32,6 +41,8 @@ function swip (io, config) {
 
       socket.emit(actions.TYPE.CHANGED, data);
     });
+
+    socket.on('disconnect', () => unsubscribe());
   });
 
   attachServe(io.httpServer);
