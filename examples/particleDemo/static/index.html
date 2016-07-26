@@ -4,20 +4,63 @@
     <meta charset="UTF-8">
     <title>Swip</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
   </head>
 
   <body>
 
-    <h1 id="output"></h1>
+    <canvas id="canvas"></canvas>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/swip/swip.js"></script>
     <script>
-      const socket = io.connect();
+      var socket = io.connect();
 
+      var particles = [];
+
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+
+      canvas.setAttribute('width', window.innerWidth);
+      canvas.setAttribute('height', window.innerHeight);
+
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0,0, canvas.width, canvas.height);
+
+      function addParticle (clientX, clientY) {
+        var newParticle = {
+          x: clientX,
+          y: clientY,
+          speedX: Math.random() * 20 -10,
+          speedY: Math.random() * 20 -10,
+          color: getRandomColor(),
+        };
+
+        particles.push(newParticle);
+
+        ctx.fillStyle = newParticle.color;
+        ctx.fillRect(clientX, clientY, 10, 10);
+      }
+      
+      function getRandomColor () {
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
+
+      canvas.addEventListener('touchmove', function (evt) {
+        addParticle(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
+      });
 
       swip.device.requestSize(function (converter) {
-
 
         socket.emit('CONNECT_CLIENT', {
           size: {
@@ -35,7 +78,7 @@
         });
 
         socket.on('CHANGED', function (data) {
-          document.getElementById('output').innerHTML =  data.client.clusterId
+          //document.getElementById('output').innerHTML =  data.client.clusterId
         });
       });
 
