@@ -33,7 +33,8 @@ function reducer (state = initialState, { type, data }) {
 function connect (state, { id, size }) {
   return update(state, {
     clients: {
-      [id]: { $set: { id, size, transform: { x: 0, y: 0 } } }, // TODO: custom client init
+      [id]: { $set: { id, size, transform: { x: 0, y: 0 }, connections: [] } },
+      //TODO: customClient init
     },
   });
 }
@@ -45,7 +46,10 @@ function doSwipe (state, swipe) {
     return addSwipe(state, swipes, swipe);
   }
 
-  const { clients, clusters } = clusterClients(state, swipe, swipes[0]);
+  const swipeA = swipe;
+  const swipeB = swipes[0];
+
+  const { clients, clusters } = clusterClients(state, swipeA, swipeB);
 
   return update(state, {
     swipes: { $set: [] },
@@ -75,7 +79,7 @@ function clusterClients (state, swipeA, swipeB) {
   }
 
   if (clientB.clusterId) {
-    return joinCluster(state, clientB, swipeB, clientA, swipeB);
+    return joinCluster(state, clientB, swipeB, clientA, swipeA);
   }
 
   return createCluster(state, clientA, swipeA, clientB, swipeB);
@@ -87,6 +91,10 @@ function joinCluster (state, clientA, swipeA, clientB, swipeB) {
       [clientB.id]: {
         clusterId: { $set: clientA.clusterId },
         transform: { $set: getTransform(clientA, swipeA, clientB, swipeB) },
+        connections: { $push: [swipeA.id] },
+      },
+      [clientA.id]: {
+        connections: { $push: [swipeB.id] },
       },
     },
   });
@@ -98,10 +106,14 @@ function createCluster (state, clientA, swipeA, clientB, swipeB) {
   return update(state, {
     clusters: { [clusterId]: { $set: {} } }, // TODO: custom cluster initialization
     clients: {
-      [clientA.id]: { clusterId: { $set: clusterId } },
+      [clientA.id]: {
+        clusterId: { $set: clusterId },
+        connections: { $push: [swipeB.id] },
+      },
       [clientB.id]: {
         clusterId: { $set: clusterId },
         transform: { $set: getTransform(clientA, swipeA, clientB, swipeB) },
+        connections: { $push: [swipeA.id] },
       },
     },
   });
@@ -149,6 +161,44 @@ function leaveCluster (state, { id }) {
   });
 }
 
+
+function reCluster (state, { id }) {
+  const clusters = [];
+  let currCluster = [];
+  const rest = getClientsInCluster(state.clients[id].clusterId, state.clients);
+  rest.splice(rest.indexOf(state.clients[id]), 1);
+
+  while (rest.length > 0) {
+    const check = [rest.shift()];
+
+    while (check.length > 0) {
+      const currClient = check.shift();
+
+      const clientConnections = currClient.connections;
+
+      _.filter(clientConnections, (clientId) => rest.indexOf(state.clients[clientId]) !== -1)
+        .forEach((clientId) => {
+          check.push(state.clients[clientId]);
+          rest.splice(rest.indexOf(state.clients[clientId]), 1);
+        });
+
+      currCluster.push(currClient);
+    }
+
+    clusters.push(currCluster);
+    currCluster = [];
+  }
+
+  const out = {};
+  for (let i = 0; i < clusters.length; i++) {
+    out[i] = state.clusters[state.clients[id].clusterId];
+  }
+
+  return update(state, {
+    clusters: { $set: out },
+  });
+}
+
 function removeEmptyCluster (clusters, clients, clusterId) {
   if (getClientsInCluster(clusterId, clients).length > 1) {
     return clusters;
@@ -171,5 +221,7 @@ function disconnect (state, { id }) {
     clients: { $set: _.omit(state.clients, [id]) },
   });
 }
+
+reducer.reCluster = reCluster;
 
 module.exports = reducer;
