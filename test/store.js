@@ -4,7 +4,7 @@ const should = require('should');
 /*eslint-enable*/
 const redux = require('redux');
 const actions = require('../src/server/actions');
-const reducer = require('../src/server/reducer');
+const getAppReducer = require('../src/server/reducer');
 
 describe('store', () => {
   const DEVICE_A = {
@@ -19,6 +19,21 @@ describe('store', () => {
   let store;
 
   beforeEach(() => {
+    const reducer = getAppReducer({
+      cluster: {
+        init: (clients) => ({
+          master: clients[0].id,
+        }),
+      },
+
+      client: {
+        init: (game, client) => ({
+          n: game.clients.length,
+          id: client.id,
+        }),
+      },
+    });
+
     store = redux.createStore(reducer);
   });
 
@@ -29,6 +44,7 @@ describe('store', () => {
       store.getState().clients.should.eql({
         a: {
           id: 'a',
+          data: {},
           transform: { x: 0, y: 0 },
           size: DEVICE_A.size,
           connections: [],
@@ -53,11 +69,14 @@ describe('store', () => {
       const clusterId = state.clients.a.clusterId;
 
       state.clusters.should.eql({
-        [clusterId]: {},
+        [clusterId]: { master: 'b' },
       });
 
       state.clients.a.transform.should.eql({ x: 300, y: -50 });
+      state.clients.a.data.should.eql({ id: 'a', n: 2 });
+
       state.clients.b.transform.should.eql({ x: 0, y: 0 });
+      state.clients.b.data.should.eql({ id: 'b', n: 2 });
     });
 
     it('should add connectionIDs to clientObj connections', () => {
@@ -83,6 +102,7 @@ describe('store', () => {
       const state = store.getState();
 
       state.clients.c.transform.should.eql({ x: 300, y: -250 });
+      state.clients.c.data.should.eql({ id: 'c', n: 3 });
     });
 
   });
@@ -117,6 +137,7 @@ describe('store', () => {
       state.clients
         .should.have.property('b')
         .which.is.eql({
+          data: { id: 'b', n: 2},
           transform: { x: 0, y: 0 },
           size: DEVICE_B.size,
           id: 'b',

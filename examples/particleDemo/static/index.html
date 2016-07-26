@@ -8,26 +8,36 @@
 
   <body>
 
-    <div id="testDiv" style="background-color: red"></div>
+    <h1 id="output"></h1>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/swip/swip.js"></script>
     <script>
-
       const socket = io.connect();
 
+
       swip.device.requestSize(function (converter) {
-        displayBox(converter.toDevicePixel({x: 60, y: 60}));
-      });
 
-      swip.sensor.onSwipe(window, function (direction, position) {
-        console.log(direction + ' ' + position);
-      });
 
-      function displayBox(obj) {
-        document.getElementById('testDiv').style.width = obj.x + "px";
-        document.getElementById('testDiv').style.height = obj.y + "px";
-      };
+        socket.emit('CONNECT_CLIENT', {
+          size: {
+            width: converter.toAbsPixel(window.innerHeight),
+            height: converter.toAbsPixel(window.innerWidth),
+          }
+        });
+
+        swip.sensor.onSwipe(window, function (evt) {
+          socket.emit('SWIPE', evt);
+        });
+
+        swip.sensor.onMotion(function () {
+          socket.emit('LEAVE_CLUSTER');
+        });
+
+        socket.on('CHANGED', function (data) {
+          document.getElementById('output').innerHTML =  data.client.clusterId
+        });
+      });
 
     </script>
   </body>

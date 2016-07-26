@@ -108,7 +108,7 @@ const state3 = {
 };
 
 
-describe('reCluster', () => {
+describe.skip('reCluster', () => {
   it('should reCluster the cluster into 2 pieces', () => {
     const out = reCluster(state, state.clients[2]);
 

@@ -3,6 +3,7 @@ const TYPE = {
   DISCONNECT: 'disconnect', // use name of disconnect event of socket.io
   LEAVE_CLUSTER: 'LEAVE_CLUSTER',
   SWIPE: 'SWIPE',
+  CHANGED: 'CHANGED',
 };
 
 function connect (id, { size }) {

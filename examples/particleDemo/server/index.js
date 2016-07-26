@@ -6,12 +6,15 @@ const swip = require('../../../src/server/index.js');
 
 app.use(express.static(__dirname + './../static'));
 
-swip(io);
+swip(io, {
+  cluster: {
+    init: () => ({}),
+  },
 
-io.on('connection', (socket) => {
-  socket.on('init', (data) => {
-    console.log(data);
-  });
+  client: {
+    init: () => ({}),
+  },
 });
+
 
 server.listen(3000);

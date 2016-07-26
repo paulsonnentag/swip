@@ -7,18 +7,12 @@ class Converter {
     this.scalingFactor = getScalingFactor(screenSize);
   }
 
-  toDevicePixel ({ x, y }) {
-    return {
-      x: x / this.scalingFactor,
-      y: y / this.scalingFactor,
-    };
+  toDevicePixel (x) {
+    return x / this.scalingFactor;
   }
 
-  toAbsPixel ({ x, y }) {
-    return {
-      x: x * this.scalingFactor,
-      y: y * this.scalingFactor,
-    };
+  toAbsPixel (x) {
+    return x * this.scalingFactor;
   }
 }
 
