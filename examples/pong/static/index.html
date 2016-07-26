@@ -3,81 +3,32 @@
   <head>
     <meta charset="UTF-8">
     <title>Swip</title>
-    <script src="/socket.io/socket.io.js"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
   </head>
 
   <body>
+
     <div id="testDiv" style="background-color: red"></div>
 
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/swip/swip.js"></script>
     <script>
-      /*eslint-disable*/
-      var socket = io.connect();
-      var sizeReference = 60;
 
-      var screenHeight = screen.height;
-      var screenWidth = screen.width;
-      var diagonalPixel = Math.sqrt(Math.pow(screenHeight, 2) + Math.pow(screenWidth, 2));
+      const socket = io.connect();
 
-      var screenDiagonal;
-      var pixelPerCentimeter;
-      var scalingFactor;
+      swip.device.requestSize(function (converter) {
+        displayBox(converter.toDevicePixel({x: 60, y: 60}));
+      });
 
-      if (!localStorage.getItem('deviceSize')) {
-        document.body.innerHTML = `
-					<label for="deviceSize">Your devices size:</label>
-					<input type="text" id="deviceSize" placeholder="Input device Size...">
-					<br />
-					<button id="confirmSize">Confirm</button>
-				`;
+      swip.sensor.onSwipe(window, function (direction, position) {
+        console.log(direction + ' ' + position);
+      });
 
-        document.getElementById('confirmSize').addEventListener('click', function () {
-          var deviceSize = document.getElementById('deviceSize').value;
+      function displayBox(obj) {
+        document.getElementById('testDiv').style.width = obj.x + "px";
+        document.getElementById('testDiv').style.height = obj.y + "px";
+      };
 
-          localStorage.setItem('deviceSize', deviceSize);
-          hideInputs();
-
-          displayBox();
-        });
-
-      } else {
-        displayBox();
-      }
-
-      function hideInputs() {
-        document.body.innerHTML = `<div id="testDiv" style="background-color: red"></div>`;
-      }
-
-      function displayBox() {
-        var div = document.getElementById('testDiv');
-
-        setSizeValues();
-
-        div.style.width = pixelPerCentimeter + 'px';
-        div.style.height = pixelPerCentimeter + 'px';
-      }
-
-      function setSizeValues() {
-        screenDiagonal = localStorage.getItem('deviceSize') * 2.54;
-        pixelPerCentimeter = diagonalPixel / screenDiagonal;
-        scalingFactor = sizeReference / pixelPerCentimeter;
-      }
-
-      function toDevicePixel() {
-        return {
-          'screenHeight': screenHeight / scalingFactor,
-          'screenWidth': screenWidth / scalingFactor,
-        };
-      }
-
-      function toAbsPixel() {
-        return {
-          'screenHeight': screenHeight * scalingFactor,
-          'screenWidth': screenWidth * scalingFactor,
-        };
-      }
-
-      /*eslint-enable*/
     </script>
   </body>
 </html>
