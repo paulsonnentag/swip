@@ -1,9 +1,10 @@
 const _ = require('lodash');
+const utils = require('./utils');
 const uid = require('uid');
 const update = require('immutability-helper');
 const actions = require('./actions');
 
-const SWIPE_TOLERANCE = 50;
+const SWIPE_DELAY_TOLERANCE = 50;
 
 const initialState = {
   clusters: {},
@@ -13,9 +14,10 @@ const initialState = {
 
 function reducer (config) {
   return (state = initialState, { type, data }) => {
-    console.log('action', type, data);
-
     switch (type) {
+      case actions.TYPE.CLIENT_ACTION:
+        return clientAction(state, data);
+
       case actions.TYPE.CONNECT:
         return connect(state, data);
 
@@ -32,6 +34,28 @@ function reducer (config) {
         return state;
     }
   };
+
+  function clientAction (state, { id, type, data }) {
+    const handler = config.client.events[type];
+
+    if (!_.isFunction(handler)) {
+      throw new Error(`Unhandled event: ${type}`);
+    }
+
+    const client = state.clients[id];
+    const clientEventState = utils.getClientEventState(state, client.id);
+    const { newCluster, newClient } = handler(clientEventState, data);
+
+    return update(state, {
+      clusters: {
+        [client.clusterId]: { $set: newCluster },
+      },
+
+      clients: {
+        [client.id]: { $set: newClient },
+      },
+    });
+  }
 
   function connect (state, { id, size }) {
     return update(state, {
@@ -61,7 +85,7 @@ function reducer (config) {
   }
 
   function getCoincidentSwipes (swipes) {
-    return _.filter(swipes, ({ timestamp }) => (Date.now() - timestamp) < SWIPE_TOLERANCE);
+    return _.filter(swipes, ({ timestamp }) => (Date.now() - timestamp) < SWIPE_DELAY_TOLERANCE);
   }
 
   function addSwipe (state, swipes, swipe) {
@@ -92,7 +116,7 @@ function reducer (config) {
     const clusterId = clientA.clusterId;
     const cluster = {
       data: clusters[clusterId],
-      clients: getClientsInCluster(clusterId, clients).concat([clientB]),
+      clients: utils.getClientsInCluster(clients, clusterId).concat([clientB]),
     };
     const clientData = config.client.init(cluster, clientB);
 
@@ -123,7 +147,12 @@ function reducer (config) {
     const clientBData = config.client.init(cluster, clientB);
 
     return update(state, {
-      clusters: { [clusterId]: { $set: clusterData } },
+      clusters: {
+        [clusterId]: {
+          data: { $set: clusterData },
+          id: { $set: clusterId },
+        },
+      },
       clients: {
         [clientA.id]: {
           clusterId: { $set: clusterId },
@@ -225,15 +254,11 @@ function reducer (config) {
   }
 
   function removeEmptyCluster (clusters, clients, clusterId) {
-    if (getClientsInCluster(clusterId, clients).length > 1) {
+    if (utils.getClientsInCluster(clients, clusterId).length > 1) {
       return clusters;
     }
 
     return _.omit(clusters, [clusterId]);
-  }
-
-  function getClientsInCluster (clusterId, clients) {
-    return _.filter(clients, (client) => client.clusterId === clusterId);
   }
 
   function disconnect (state, { id }) {

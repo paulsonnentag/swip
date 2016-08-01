@@ -34,8 +34,12 @@
           socket.emit('LEAVE_CLUSTER');
         });
 
-        socket.on('CHANGED', function (data) {
-          document.getElementById('output').innerHTML =  data.client.clusterId
+
+
+        socket.on('CHANGED', function (state) {
+          console.log(state);
+
+          document.getElementById('output').innerHTML =  state.client.clusterId
         });
       });
 

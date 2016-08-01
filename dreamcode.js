@@ -4,36 +4,40 @@
 
 swip(io, {
   client: {
-    init: (game, client) => {
-      const PADDLE_SPACING = 20;
-      const { size } = client;
-      let orientation;
-      let paddleOffset;
+    init: (client) => {
 
-      if (this.hasDeviceOnLeft(client)) {
-        orientation = 'HORIZONTAL';
-        paddleOffset = size.width - PADDLE_SPACING;
-      } else if (this.hasDeviceOnRight(client)) {
-        orientation = 'HORIZONTAL';
-        paddleOffset = PADDLE_SPACING;
-      } else if (this.hasDeviceOnTop(client)) {
-        orientation = 'VERTICAL';
-        paddleOffset = size.height - PADDLE_SPACING;
-      } else if (this.hasDeviceOnTop(client)) {
-        orientation = 'VERTICAL';
-        paddleOffset = size.height - PADDLE_SPACING;
-      }
-
-      return {
-        orientation,
-        paddleOffset,
-        score: 0,
-        paddlePosition: size.height / 2,
-      };
     },
 
     events: {
-      movePaddle: ({ position }, { client }) => {
+      join: ({game, client}) => {
+        const PADDLE_SPACING = 20;
+        const { size } = client;
+        let orientation;
+        let paddleOffset;
+
+        if (this.hasDeviceOnLeft(client)) {
+          orientation = 'HORIZONTAL';
+          paddleOffset = size.width - PADDLE_SPACING;
+        } else if (this.hasDeviceOnRight(client)) {
+          orientation = 'HORIZONTAL';
+          paddleOffset = PADDLE_SPACING;
+        } else if (this.hasDeviceOnTop(client)) {
+          orientation = 'VERTICAL';
+          paddleOffset = size.height - PADDLE_SPACING;
+        } else if (this.hasDeviceOnTop(client)) {
+          orientation = 'VERTICAL';
+          paddleOffset = size.height - PADDLE_SPACING;
+        }
+
+        return {
+          orientation,
+          paddleOffset,
+          score: 0,
+          paddlePosition: size.height / 2,
+        };
+      }
+
+      movePaddle: ({ position }, { game, client }) => {
         return {
           client: {
             data: { paddlePosition: { $update: position } }

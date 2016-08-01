@@ -5,6 +5,7 @@ const redux = require('redux');
 const clientSource = read(require.resolve('../../dist/bundle.js'), 'utf-8');
 const actions = require('./actions');
 const reducer = require('./reducer');
+const utils = require('./utils');
 
 function swip (io, config) {
   const store = redux.createStore(reducer(config));
@@ -22,24 +23,16 @@ function swip (io, config) {
     socket.on(actions.TYPE.DISCONNECT, () => store.dispatch(actions.disconnect(id)));
 
     const unsubscribe = store.subscribe(() => {
-      const { clients, clusters } = store.getState();
-      const client = clients[id];
+      const state = store.getState();
+      const client = state.clients[id];
 
       if (client === undefined) {
         return;
       }
 
-      const cluster = clusters[client.clusterId];
-      const clusterClients = _.filter(clients, (c) => c.clusterId === client.clusterId);
-      const data = {
-        client,
-        cluster: {
-          clients: clusterClients,
-          data: cluster,
-        },
-      };
+      const clientEventState = utils.getClientEventState(state, id);
 
-      socket.emit(actions.TYPE.CHANGED, data);
+      socket.emit(actions.TYPE.CHANGED, clientEventState);
     });
 
     socket.on('disconnect', () => unsubscribe());
