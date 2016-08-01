@@ -1,4 +1,5 @@
 const TYPE = {
+  CLIENT_ACTION: 'CLIENT_ACTION',
   CONNECT: 'CONNECT_CLIENT',
   DISCONNECT: 'disconnect', // use name of disconnect event of socket.io
   LEAVE_CLUSTER: 'LEAVE_CLUSTER',
