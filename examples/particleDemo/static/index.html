@@ -21,8 +21,6 @@
     <script>
       var socket = io.connect();
 
-      var particles = [];
-
       var canvas = document.getElementById("canvas");
       var ctx = canvas.getContext("2d");
 
@@ -32,21 +30,6 @@
       ctx.fillStyle = 'black';
       ctx.fillRect(0,0, canvas.width, canvas.height);
 
-      function addParticle (clientX, clientY) {
-        var newParticle = {
-          x: clientX,
-          y: clientY,
-          speedX: Math.random() * 20 -10,
-          speedY: Math.random() * 20 -10,
-          color: getRandomColor(),
-        };
-
-        particles.push(newParticle);
-
-        ctx.fillStyle = newParticle.color;
-        ctx.fillRect(clientX, clientY, 10, 10);
-      }
-      
       function getRandomColor () {
         var letters = '0123456789ABCDEF'.split('');
         var color = '#';
@@ -55,10 +38,6 @@
         }
         return color;
       }
-
-      canvas.addEventListener('touchmove', function (evt) {
-        addParticle(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
-      });
 
       swip.device.requestSize(function (converter) {
 
@@ -77,9 +56,38 @@
           socket.emit('LEAVE_CLUSTER');
         });
 
-        socket.on('CHANGED', function (data) {
-          //document.getElementById('output').innerHTML =  data.client.clusterId
+        canvas.addEventListener('click', function (evt) {
+          socket.emit("CLIENT_ACTION", {
+            type: "addParticle",
+            data: {
+              x: evt.clientX,
+              y: evt.clientY,
+              speedX: Math.random() * 20 -10,
+              speedY: Math.random() * 20 -10,
+              color: getRandomColor(),
+            }
+          });
         });
+
+        socket.on('CHANGED', function (evt) {
+          if (evt.cluster) {
+            ctx.save();
+            ctx.scale(converter.toAbsPixel(1), converter.toAbsPixel(1));
+            console.log(converter.toAbsPixel(1), converter.toAbsPixel(1));
+            ctx.translate(-evt.client.transform.x, -evt.client.transform.y);
+
+            var particles = evt.cluster.data.particles;
+
+            particles.forEach(function (particle) {
+              console.log("drawing particle", particle.x, particle.y);
+
+              ctx.fillStyle = particle.color;
+              ctx.fillRect(particle.x, particle.y, 500, 500);
+            });
+
+            ctx.restore();
+          }
+        })
       });
 
     </script>

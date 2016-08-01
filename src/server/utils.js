@@ -14,7 +14,7 @@ function getClientEventState ({ clusters, clients }, clientId) {
     client,
     cluster: {
       clients: clusterClients,
-      data: cluster,
+      data: cluster.data,
     },
   };
 }

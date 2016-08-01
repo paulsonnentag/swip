@@ -2,17 +2,15 @@ const _ = require('lodash');
 const uid = require('uid');
 const read = require('fs').readFileSync;
 const redux = require('redux');
+const createNodeLogger = require('redux-node-logger');
 const clientSource = read(require.resolve('../../dist/bundle.js'), 'utf-8');
 const actions = require('./actions');
 const reducer = require('./reducer');
 const utils = require('./utils');
 
-function swip (io, config) {
-  const store = redux.createStore(reducer(config));
 
-  store.subscribe(() => {
-    console.log(store.getState());
-  });
+function swip (io, config) {
+  const store = redux.createStore(reducer(config), redux.applyMiddleware(createNodeLogger()));
 
   io.on('connection', (socket) => {
     const id = uid();
@@ -21,6 +19,7 @@ function swip (io, config) {
     socket.on(actions.TYPE.SWIPE, (data) => store.dispatch(actions.swipe(id, data)));
     socket.on(actions.TYPE.LEAVE_CLUSTER, () => store.dispatch(actions.leaveCluster(id)));
     socket.on(actions.TYPE.DISCONNECT, () => store.dispatch(actions.disconnect(id)));
+    socket.on(actions.TYPE.CLIENT_ACTION, (data) => store.dispatch(actions.clientAction(id, data)));
 
     const unsubscribe = store.subscribe(() => {
       const state = store.getState();

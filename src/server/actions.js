@@ -35,10 +35,18 @@ function disconnect (id) {
   };
 }
 
+function clientAction (id, { type, data }) {
+  return {
+    type: TYPE.CLIENT_ACTION,
+    data: { id, type, data },
+  };
+}
+
 module.exports = {
   TYPE,
   connect,
   swipe,
   leaveCluster,
   disconnect,
+  clientAction,
 };

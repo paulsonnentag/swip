@@ -4,7 +4,7 @@ const uid = require('uid');
 const update = require('immutability-helper');
 const actions = require('./actions');
 
-const SWIPE_DELAY_TOLERANCE = 50;
+const SWIPE_DELAY_TOLERANCE = 500;
 
 const initialState = {
   clusters: {},
@@ -42,20 +42,28 @@ function reducer (config) {
       throw new Error(`Unhandled event: ${type}`);
     }
 
+    console.log('clientAction', id, type, data);
+
     const client = state.clients[id];
+
+    if (!client || !client.clusterId) {
+      return state;
+    }
+    
     const clientEventState = utils.getClientEventState(state, client.id);
-    const newState = handler(clientEventState, data);
+    const stateUpdates = handler(clientEventState, data);
     const assignments = {};
 
-    if (newState.cluster) {
+
+    if (stateUpdates.cluster) {
       assignments.clusters = {
-        [client.clusterId]: { $set: newState.cluster },
+        [client.clusterId]: stateUpdates.cluster,
       };
     }
 
-    if (newState.client) {
+    if (stateUpdates.client) {
       assignments.clients = {
-        [client.id]: { $set: newState.client },
+        [client.id]: stateUpdates.client,
       };
     }
 
@@ -153,10 +161,7 @@ function reducer (config) {
 
     return update(state, {
       clusters: {
-        [clusterId]: {
-          data: { $set: clusterData },
-          id: { $set: clusterId },
-        },
+        [clusterId]: { $set: { data: clusterData, id: clusterId } },
       },
       clients: {
         [clientA.id]: {
@@ -208,6 +213,10 @@ function reducer (config) {
   function leaveCluster (state, { id }) {
     const { clients, clusters } = state;
     const client = state.clients[id];
+
+    if (!client) {
+      return state;
+    }
     const clusterId = client.clusterId;
 
     if (clusterId == null) {
