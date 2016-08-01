@@ -44,17 +44,22 @@ function reducer (config) {
 
     const client = state.clients[id];
     const clientEventState = utils.getClientEventState(state, client.id);
-    const { newCluster, newClient } = handler(clientEventState, data);
+    const newState = handler(clientEventState, data);
+    const assignments = {};
 
-    return update(state, {
-      clusters: {
-        [client.clusterId]: { $set: newCluster },
-      },
+    if (newState.cluster) {
+      assignments.clusters = {
+        [client.clusterId]: { $set: newState.cluster },
+      };
+    }
 
-      clients: {
-        [client.id]: { $set: newClient },
-      },
-    });
+    if (newState.client) {
+      assignments.clients = {
+        [client.id]: { $set: newState.client },
+      };
+    }
+
+    return update(state, assignments);
   }
 
   function connect (state, { id, size }) {
