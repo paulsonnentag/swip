@@ -44,8 +44,10 @@ describe('store', () => {
       store.getState().clients.should.eql({
         a: {
           id: 'a',
+          data: {},
           transform: { x: 0, y: 0 },
           size: DEVICE_A.size,
+          connections: [],
         },
       });
     });
@@ -75,6 +77,21 @@ describe('store', () => {
 
       state.clients.b.transform.should.eql({ x: 0, y: 0 });
       state.clients.b.data.should.eql({ id: 'b', n: 2 });
+      state.clients.b.data.should.eql({ id: 'b', n: 2 });
+    });
+
+    it('should add connectionIDs to clientObj connections', () => {
+      store.dispatch(actions.swipe('a', { position: { y: 150 }, direction: 'LEFT' }));
+      store.dispatch(actions.swipe('b', { position: { y: 100 }, direction: 'RIGHT' }));
+      store.dispatch(actions.swipe('b', { position: { x: 100 }, direction: 'UP' }));
+      store.dispatch(actions.swipe('c', { position: { x: 100 }, direction: 'DOWN' }));
+
+      const state = store.getState();
+
+      state.clients.a.connections.should.containDeep(['b']);
+      state.clients.b.connections.should.containDeep(['a']);
+      state.clients.b.connections.should.containDeep(['c']);
+      state.clients.c.connections.should.containDeep(['b']);
     });
 
     it('should add client to existing cluster', () => {
@@ -88,6 +105,7 @@ describe('store', () => {
       state.clients.c.transform.should.eql({ x: 300, y: -250 });
       state.clients.c.data.should.eql({ id: 'c', n: 3 });
     });
+
   });
 
   describe('leave cluster', () => {
@@ -120,11 +138,12 @@ describe('store', () => {
       state.clients
         .should.have.property('b')
         .which.is.eql({
-          data: {},
+          data: { id: 'b', n: 2},
           transform: { x: 0, y: 0 },
           size: DEVICE_B.size,
           id: 'b',
           clusterId: null,
+          connections: state.clients.b.connections,
         });
     });
   });
