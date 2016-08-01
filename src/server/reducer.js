@@ -49,7 +49,7 @@ function reducer (config) {
     if (!client || !client.clusterId) {
       return state;
     }
-    
+
     const clientEventState = utils.getClientEventState(state, client.id);
     const stateUpdates = handler(clientEventState, data);
     const assignments = {};
@@ -189,7 +189,7 @@ function reducer (config) {
 
       case 'RIGHT':
         return {
-          x: clientA.transform.y + clientA.size.width,
+          x: clientA.transform.x + clientA.size.width,
           y: clientA.transform.y + (swipeA.position.y - swipeB.position.y),
         };
 

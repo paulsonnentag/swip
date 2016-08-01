@@ -21,6 +21,8 @@
     <script>
       var socket = io.connect();
 
+      var client = {};
+
       var canvas = document.getElementById("canvas");
       var ctx = canvas.getContext("2d");
 
@@ -41,27 +43,29 @@
 
       swip.device.requestSize(function (converter) {
 
+        //alert(Math.sqrt((screen.width * screen.width) + (screen.height * screen.height)));
+
         socket.emit('CONNECT_CLIENT', {
           size: {
-            width: converter.toAbsPixel(window.innerHeight),
-            height: converter.toAbsPixel(window.innerWidth),
+            width: converter.toAbsPixel(window.innerWidth),
+            height: converter.toAbsPixel(window.innerHeight),
           }
         });
 
         swip.sensor.onSwipe(window, function (evt) {
-          socket.emit('SWIPE', evt);
+          socket.emit('SWIPE', { direction: evt.direction, position: { x: converter.toAbsPixel(evt.x), y: converter.toAbsPixel(evt.y) }});
         });
 
-        swip.sensor.onMotion(function () {
+        /*swip.sensor.onMotion(function () {
           socket.emit('LEAVE_CLUSTER');
-        });
+        });*/
 
         canvas.addEventListener('click', function (evt) {
           socket.emit("CLIENT_ACTION", {
             type: "addParticle",
             data: {
-              x: evt.clientX,
-              y: evt.clientY,
+              x: converter.toAbsPixel(evt.clientX) + client.transform.x,
+              y: converter.toAbsPixel(evt.clientY) + client.transform.y,
               speedX: Math.random() * 20 -10,
               speedY: Math.random() * 20 -10,
               color: getRandomColor(),
@@ -72,17 +76,20 @@
         socket.on('CHANGED', function (evt) {
           if (evt.cluster) {
             ctx.save();
-            ctx.scale(converter.toAbsPixel(1), converter.toAbsPixel(1));
-            console.log(converter.toAbsPixel(1), converter.toAbsPixel(1));
-            ctx.translate(-evt.client.transform.x, -evt.client.transform.y);
+            ctx.translate(-converter.toDevicePixel(evt.client.transform.x), -converter.toDevicePixel(evt.client.transform.y));
+
+            client = evt.client;
 
             var particles = evt.cluster.data.particles;
 
             particles.forEach(function (particle) {
-              console.log("drawing particle", particle.x, particle.y);
-
               ctx.fillStyle = particle.color;
-              ctx.fillRect(particle.x, particle.y, 500, 500);
+              ctx.fillRect(
+                converter.toDevicePixel(particle.x),
+                converter.toDevicePixel(particle.y),
+                converter.toDevicePixel(300),
+                converter.toDevicePixel(300)
+              );
             });
 
             ctx.restore();
