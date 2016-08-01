@@ -69,7 +69,10 @@ describe('store', () => {
       const clusterId = state.clients.a.clusterId;
 
       state.clusters.should.eql({
-        [clusterId]: { master: 'b' },
+        [clusterId]: {
+          id: clusterId,
+          data: { master: 'b' },
+        },
       });
 
       state.clients.a.transform.should.eql({ x: 300, y: -50 });
@@ -105,7 +108,6 @@ describe('store', () => {
       state.clients.c.transform.should.eql({ x: 300, y: -250 });
       state.clients.c.data.should.eql({ id: 'c', n: 3 });
     });
-
   });
 
   describe('leave cluster', () => {

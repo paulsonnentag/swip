@@ -1,8 +1,8 @@
 const _ = require('lodash');
-const utils = require('./utils');
 const uid = require('uid');
 const update = require('immutability-helper');
 const actions = require('./actions');
+const selectors = require('./selectors');
 
 const SWIPE_DELAY_TOLERANCE = 500;
 
@@ -15,6 +15,9 @@ const initialState = {
 function reducer (config) {
   return (state = initialState, { type, data }) => {
     switch (type) {
+      case actions.TYPE.NEXT_STATE:
+        return nextState(state);
+
       case actions.TYPE.CLIENT_ACTION:
         return clientAction(state, data);
 
@@ -35,6 +38,55 @@ function reducer (config) {
     }
   };
 
+  function nextState (state) {
+    const getNextClusterChanges = config.client.events.update;
+    const getNextClientChanges = config.cluster.events.update;
+    const changes = {};
+
+    if (_.isFunction(getNextClusterChanges)) {
+      changes.clusters = getAllClustersChanges(state, getNextClusterChanges);
+    }
+
+    if (_.isFunction(getNextClientChanges)) {
+      changes.clients = getAllClientsChanges(state, getNextClientChanges);
+    }
+
+    return update(state, changes);
+  }
+
+  function getAllClustersChanges (state, next) {
+    return _.map(state.clusters, _.partial(getClusterChanges, state, next))
+  }
+
+  function getClusterChanges (state, next, cluster) {
+    const clusterState = selectors.getClusterState(state, cluster.id);
+    return next(clusterState);
+  }
+
+  function getAllClientsChanges (state, next) {
+    return _(state.clients)
+      .filter(hasCluster)
+      .map(_.partial(getClientChanges, state, next))
+      .reduce(toIdMap, {})
+      .value();
+  }
+
+  function hasCluster (client) {
+    return !_.isNil(client.clusterId);
+  }
+
+  function getClientChanges (state, next, client) {
+    const clientState = selectors.getClientState(state, client.id);
+    return next(clientState);
+  }
+
+  function toIdMap (map, item) {
+    /*eslint-disable*/
+    map[item.id] = item; // allow reassign for performance reasons
+    /*eslint-enable*/
+    return map;
+  }
+
   function clientAction (state, { id, type, data }) {
     const handler = config.client.events[type];
 
@@ -50,24 +102,24 @@ function reducer (config) {
       return state;
     }
 
-    const clientEventState = utils.getClientEventState(state, client.id);
+    const clientEventState = selectors.getClientState(state, client.id);
     const stateUpdates = handler(clientEventState, data);
-    const assignments = {};
+    const changes = {};
 
 
     if (stateUpdates.cluster) {
-      assignments.clusters = {
+      changes.clusters = {
         [client.clusterId]: stateUpdates.cluster,
       };
     }
 
     if (stateUpdates.client) {
-      assignments.clients = {
+      changes.clients = {
         [client.id]: stateUpdates.client,
       };
     }
 
-    return update(state, assignments);
+    return update(state, changes);
   }
 
   function connect (state, { id, size }) {
@@ -125,11 +177,11 @@ function reducer (config) {
   }
 
   function joinCluster (state, clientA, swipeA, clientB, swipeB) {
-    const { clusters, clients } = state;
+    const { clients, clusters } = state;
     const clusterId = clientA.clusterId;
     const cluster = {
       data: clusters[clusterId],
-      clients: utils.getClientsInCluster(clients, clusterId).concat([clientB]),
+      clients: selectors.getClientsInCluster(clients, clusterId).concat([clientB]),
     };
     const clientData = config.client.init(cluster, clientB);
 
@@ -219,7 +271,7 @@ function reducer (config) {
     }
     const clusterId = client.clusterId;
 
-    if (clusterId == null) {
+    if (_.isNil(clusterId)) {
       return state;
     }
 
@@ -232,7 +284,7 @@ function reducer (config) {
   function reCluster (state, { id }) {
     const clusters = [];
     let currCluster = [];
-    const rest = getClientsInCluster(state.clients[id].clusterId, state.clients);
+    const rest = selectors.getClientsInCluster(state.clients, state.clients[id].clusterId);
     rest.splice(rest.indexOf(state.clients[id]), 1);
 
     while (rest.length > 0) {
@@ -268,7 +320,7 @@ function reducer (config) {
   }
 
   function removeEmptyCluster (clusters, clients, clusterId) {
-    if (utils.getClientsInCluster(clients, clusterId).length > 1) {
+    if (selectors.getClientsInCluster(clients, clusterId).length > 1) {
       return clusters;
     }
 

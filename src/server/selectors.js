@@ -1,26 +1,29 @@
 const _ = require('lodash');
 
-function getClientEventState ({ clusters, clients }, clientId) {
-  const client = clients[clientId];
+function getClientState (state, clientId) {
+  const client = state.clients[clientId];
 
   if (client.clusterId === null || client.clusterId === undefined) {
     return { client };
   }
 
-  const cluster = clusters[client.clusterId];
-  const clusterClients = getClientsInCluster(clients, client.clusterId);
-
   return {
     client,
+    cluster: getClusterState(state),
+  };
+}
+
+function getClusterState ({ clusters, clients }, clusterId) {
+  return {
     cluster: {
-      clients: clusterClients,
-      data: cluster.data,
+      clients: getClientsInCluster(clients, clusterId),
+      cluster: clusters[clusterId],
     },
   };
 }
 
 function getClientsInCluster (clients, clusterId) {
-  if (clusterId === undefined || clusterId === null) {
+  if (_.isNil(clusterId)) {
     return [];
   }
 
@@ -29,5 +32,6 @@ function getClientsInCluster (clients, clusterId) {
 
 module.exports = {
   getClientsInCluster,
-  getClientEventState,
+  getClusterState,
+  getClientState,
 };

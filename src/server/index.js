@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const uid = require('uid');
 const read = require('fs').readFileSync;
 const redux = require('redux');
@@ -6,8 +5,7 @@ const createNodeLogger = require('redux-node-logger');
 const clientSource = read(require.resolve('../../dist/bundle.js'), 'utf-8');
 const actions = require('./actions');
 const reducer = require('./reducer');
-const utils = require('./utils');
-
+const selectors = require('./selectors');
 
 function swip (io, config) {
   const store = redux.createStore(reducer(config), redux.applyMiddleware(createNodeLogger()));
@@ -29,13 +27,15 @@ function swip (io, config) {
         return;
       }
 
-      const clientEventState = utils.getClientEventState(state, id);
+      const clientState = selectors.getClientState(state, id);
 
-      socket.emit(actions.TYPE.CHANGED, clientEventState);
+      socket.emit(actions.TYPE.CHANGED, clientState);
     });
 
     socket.on('disconnect', () => unsubscribe());
   });
+
+  setInterval(() => store.dispatch(actions.nextState()), 100);
 
   attachServe(io.httpServer);
 }
