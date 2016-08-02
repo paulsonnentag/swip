@@ -9,16 +9,16 @@ function getClientState (state, clientId) {
 
   return {
     client,
-    cluster: getClusterState(state),
+    cluster: getClusterState(state, client.clusterId),
   };
 }
 
 function getClusterState ({ clusters, clients }, clusterId) {
+  const cluster = clusters[clusterId];
   return {
-    cluster: {
-      clients: getClientsInCluster(clients, clusterId),
-      cluster: clusters[clusterId],
-    },
+    id: cluster.id,
+    data: cluster.data,
+    clients: getClientsInCluster(clients, clusterId),
   };
 }
 

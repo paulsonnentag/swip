@@ -39,8 +39,8 @@ function reducer (config) {
   };
 
   function nextState (state) {
-    const getNextClusterChanges = config.client.events.update;
-    const getNextClientChanges = config.cluster.events.update;
+    const getNextClientChanges = config.client.events.update;
+    const getNextClusterChanges = config.cluster.events.update;
     const changes = {};
 
     if (_.isFunction(getNextClusterChanges)) {
@@ -55,20 +55,24 @@ function reducer (config) {
   }
 
   function getAllClustersChanges (state, next) {
-    return _.map(state.clusters, _.partial(getClusterChanges, state, next))
+    const changes = _.map(state.clusters, _.partial(getClusterChanges, state, next));
+    const ids = _.keys(state.clusters);
+
+    return _.zipObject(ids, changes);
   }
 
   function getClusterChanges (state, next, cluster) {
     const clusterState = selectors.getClusterState(state, cluster.id);
-    return next(clusterState);
+    return { data: next(clusterState) };
   }
 
   function getAllClientsChanges (state, next) {
-    return _(state.clients)
+    const result = _(state.clients)
       .filter(hasCluster)
       .map(_.partial(getClientChanges, state, next))
-      .reduce(toIdMap, {})
-      .value();
+      .reduce(toIdMap, {});
+
+    return result;
   }
 
   function hasCluster (client) {
