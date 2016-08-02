@@ -57,7 +57,6 @@ function reducer (config) {
   function getAllClustersChanges (state, next) {
     const changes = _.map(state.clusters, _.partial(getClusterChanges, state, next));
     const ids = _.keys(state.clusters);
-
     return _.zipObject(ids, changes);
   }
 
@@ -67,12 +66,10 @@ function reducer (config) {
   }
 
   function getAllClientsChanges (state, next) {
-    const result = _(state.clients)
-      .filter(hasCluster)
-      .map(_.partial(getClientChanges, state, next))
-      .reduce(toIdMap, {});
-
-    return result;
+    const clusteredClients = _.pickBy(state.clients, hasCluster);
+    const changes = _.map(clusteredClients, _.partial(getClientChanges, state, next));
+    const ids = _.keys(clusteredClients);
+    return _.zipObject(ids, changes);
   }
 
   function hasCluster (client) {
@@ -81,14 +78,7 @@ function reducer (config) {
 
   function getClientChanges (state, next, client) {
     const clientState = selectors.getClientState(state, client.id);
-    return next(clientState);
-  }
-
-  function toIdMap (map, item) {
-    /*eslint-disable*/
-    map[item.id] = item; // allow reassign for performance reasons
-    /*eslint-enable*/
-    return map;
+    return { data: next(clientState) };
   }
 
   function clientAction (state, { id, type, data }) {

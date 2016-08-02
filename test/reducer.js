@@ -96,6 +96,36 @@ describe('reducer', () => {
 
       nextState.clusters.A.should.have.property('data').which.eql({ counter: 11 });
     });
+
+    it('should update client state', () => {
+      const reducer = createUpdateReducer({
+        updateClient: ({ client }) => ({
+          counter: { $set: client.data.counter + 2 },
+        }),
+      });
+
+      const nextState = reducer(initalState, actions.nextState());
+
+      nextState.clients.a.should.have.property('data').which.eql({ counter: 2 });
+      nextState.clients.b.should.have.property('data').which.eql({ counter: 4 });
+    });
+
+    it('should update client state and cluster state combined', () => {
+      const reducer = createUpdateReducer({
+        updateCluster: (cluster) => ({
+          counter: { $set: cluster.data.counter + 1 },
+        }),
+        updateClient: ({ client }) => ({
+          counter: { $set: client.data.counter + 2 },
+        }),
+      });
+
+      const nextState = reducer(initalState, actions.nextState());
+
+      nextState.clients.a.should.have.property('data').which.eql({ counter: 2 });
+      nextState.clients.b.should.have.property('data').which.eql({ counter: 4 });
+      nextState.clusters.A.should.have.property('data').which.eql({ counter: 11 });
+    });
   });
 });
 
