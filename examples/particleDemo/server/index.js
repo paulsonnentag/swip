@@ -8,17 +8,33 @@ app.use(express.static(__dirname + './../static'));
 
 swip(io, {
   cluster: {
+    events: {
+      update: (cluster) => {
+        const particles = cluster.data.particles;
+
+        const updatedParticles = particles.filter((particle) => particle.ttl > 0).map((particle) => {
+          particle.x += particle.speedX;
+          particle.y += particle.speedY;
+          particle.ttl--;
+
+          return particle;
+        });
+
+        return {
+          particles: { $set: updatedParticles },
+        };
+      },
+    },
     init: () => ({ particles: [] }),
   },
 
   client: {
     init: () => ({}),
     events: {
-      addParticle: ({ cluster, client }, particle) => {
-        console.log('called addParticle');
+      addParticle: ({ cluster, client }, particles) => {
         return {
           cluster: {
-            data: { particles: { $push: [particle] } },
+            data: { particles: { $push: particles } },
           },
         };
       },

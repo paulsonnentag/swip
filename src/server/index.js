@@ -9,7 +9,7 @@ const reducer = require('./reducer');
 const selectors = require('./selectors');
 
 function swip (io, config) {
-  const store = redux.createStore(reducer(config), redux.applyMiddleware(createNodeLogger()));
+  const store = redux.createStore(reducer(config));
 
   io.on('connection', (socket) => {
     const id = uid();
@@ -36,7 +36,7 @@ function swip (io, config) {
     socket.on('disconnect', () => unsubscribe());
   });
 
-  setInterval(() => store.dispatch(actions.nextState()), 100);
+  setInterval(() => store.dispatch(actions.nextState()), 33);
 
   attachServe(io.httpServer);
 }
