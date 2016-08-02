@@ -88,8 +88,6 @@ function reducer (config) {
       throw new Error(`Unhandled event: ${type}`);
     }
 
-    console.log('clientAction', id, type, data);
-
     const client = state.clients[id];
 
     if (!client || !client.clusterId) {

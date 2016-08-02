@@ -3,7 +3,7 @@ const _ = require('lodash');
 function getClientState (state, clientId) {
   const client = state.clients[clientId];
 
-  if (client.clusterId === null || client.clusterId === undefined) {
+  if (_.isNil(client.clusterId)) {
     return { client };
   }
 

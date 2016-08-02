@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const uid = require('uid');
 const read = require('fs').readFileSync;
 const redux = require('redux');
@@ -23,7 +24,7 @@ function swip (io, config) {
       const state = store.getState();
       const client = state.clients[id];
 
-      if (client === undefined) {
+      if (_.isNil(client)) {
         return;
       }
 
