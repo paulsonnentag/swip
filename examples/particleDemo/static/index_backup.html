@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Swip</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
       html, body {
         margin: 0;
@@ -42,8 +41,8 @@
       drawWalls(ctx);
 
       function drawWalls (ctx) {
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 50;
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 5;
 
         walls.left.forEach(function (wall) {
           ctx.beginPath();
@@ -75,13 +74,13 @@
       }
 
       function getAlignment (device1, device2) {
-          if (device2.transform.x >= (device1.transform.x + device1.size.width)) {
+          if (Math.abs(device1.transform.x - device2.transform.x) === device1.size.width) {
             return "LEFT";
-          } else if (device1.transform.x >= (device2.transform.x + device2.size.width)) {
+          } else if (Math.abs(device1.transform.x - device2.transform.x) === device2.size.width) {
             return "RIGHT";
-          } else if (device2.transform.y >= (device1.transform.y + device1.size.height)) {
+          } else if (Math.abs(device1.transform.y - device2.transform.y) === device1.size.height) {
             return "TOP";
-          } else if (device1.transform.y >= (device2.transform.y + device2.size.height)) {
+          } else if (Math.abs(device1.transform.y - device2.transform.y) === device2.size.height) {
             return "BOTTOM";
           }
       }
@@ -121,22 +120,16 @@
         });*/
 
         canvas.addEventListener('click', function (evt) {
-
-          var particles = [];
-          for(var i = 0; i < 200; i++) {
-            particles.push({
+          socket.emit("CLIENT_ACTION", {
+            type: 'addParticle',
+            data: {
               x: converter.toAbsPixel(evt.clientX) + (client.transform ? client.transform.x : 0),
               y: converter.toAbsPixel(evt.clientY) + (client.transform ? client.transform.y : 0),
               speedX: Math.random() * 20 -10,
               speedY: Math.random() * 20 -10,
               color: getRandomColor(),
-              ttl: 250,
-            });
-          }
-            socket.emit("CLIENT_ACTION", {
-              type: 'addParticle',
-              data: particles
-            });
+            }
+          });
         });
 
         socket.on('CHANGED', function (evt) {
@@ -144,6 +137,8 @@
           if (evt.cluster) {
 
             ctx.fillRect(0,0, canvas.width, canvas.height);
+
+            console.log(evt.client);
 
             var connectedDevices = getDevices(evt.client.connections, evt.cluster.clients);
 
@@ -157,94 +152,84 @@
             connectedDevices.forEach(function (device) {
               var alignment = getAlignment(evt.client, device);
 
+              console.log(alignment);
+
               switch (alignment) {
                 case 'LEFT':
-                  console.log("Left");
-                  if (evt.client.transform.y < device.transform.y && evt.client.size.height > device.size.height + (Math.abs(device.transform.y - evt.client.transform.y))) {
+                  if(evt.client.transform.y > device.transform.y) {
                     walls.right.push( {
-                      start: converter.toDevicePixel(Math.abs(evt.client.transform.y - device.transform.y)),
-                      end: converter.toDevicePixel(Math.abs(evt.client.transform.y - device.transform.y) + device.size.height),
-                    });
-
-                  } else if(evt.client.transform.y > device.transform.y) {
-                    walls.right.push( {
-                      start: 0,
-                      end: converter.toDevicePixel(device.size.height - (Math.abs(evt.client.transform.y - device.transform.y))),
+                      start: converter.toDevicePixel(device.size.height -  evt.client.transform.y),
+                      end: converter.toDevicePixel(evt.client.size.height),
                     });
                   } else {
                     walls.right.push( {
-                      start: converter.toDevicePixel(Math.abs(evt.client.transform.y - device.transform.y)),
-                      end: converter.toDevicePixel(evt.client.size.height),
+                      start: 0,
+                      end: converter.toDevicePixel(Math.abs((Math.abs(device.transform.y) || Math.abs(evt.client.transform.y)))),
                     });
                   }
                   break;
 
                 case 'RIGHT':
-                  console.log("Right");
-                  if (evt.client.transform.y < device.transform.y && evt.client.size.height > device.size.height + (Math.abs(device.transform.y - evt.client.transform.y))) {
+                  if(evt.client.transform.y > device.transform.y) {
                     walls.left.push( {
-                      start: converter.toDevicePixel(Math.abs(evt.client.transform.y - device.transform.y)),
-                      end: converter.toDevicePixel(Math.abs(evt.client.transform.y - device.transform.y) + device.size.height),
-                    });
-
-                  } else if(evt.client.transform.y > device.transform.y) {
-                    walls.left.push( {
-                      start: 0,
-                      end: converter.toDevicePixel(device.size.height - (Math.abs(evt.client.transform.y - device.transform.y))),
+                      start: converter.toDevicePixel(device.size.height -  evt.client.transform.y),
+                      end: converter.toDevicePixel(evt.client.size.height),
                     });
                   } else {
                     walls.left.push( {
-                      start: converter.toDevicePixel(Math.abs(evt.client.transform.y - device.transform.y)),
-                      end: converter.toDevicePixel(evt.client.size.height),
+                      start: 0,
+                      end: converter.toDevicePixel((Math.abs(device.transform.y) || Math.abs(evt.client.transform.y))),
                     });
                   }
                   break;
 
                 case 'TOP':
-                  console.log("Top");
-                  if (evt.client.transform.x < device.transform.x && evt.client.size.width > device.size.width + Math.abs(evt.client.transform.x - device.transform.x)) {
+                  if(device.transform.x < evt.client.transform.x) {
                     walls.bottom.push( {
-                      start: converter.toDevicePixel(Math.abs(evt.client.transform.x - device.transform.x)),
-                      end: converter.toDevicePixel(device.size.width + Math.abs(evt.client.transform.x - device.transform.x)),
-                    });
-                  } else if(evt.client.transform.x > device.transform.x) {
-                    walls.bottom.push( {
-                      start: 0,
-                      end: converter.toDevicePixel(device.size.width - Math.abs(evt.client.transform.x - device.transform.x)),
+                      start: converter.toDevicePixel(device.size.width -  evt.client.transform.x),
+                      end: converter.toDevicePixel(evt.client.size.width),
                     });
                   } else {
                     walls.bottom.push( {
-                      start: converter.toDevicePixel(Math.abs(evt.client.transform.x - device.transform.x)),
-                      end: converter.toDevicePixel(evt.client.size.width),
+                      start: 0,
+                      end: converter.toDevicePixel((Math.abs(device.transform.x) || Math.abs(evt.client.transform.x))),
                     });
                   }
                   break;
 
                 case 'BOTTOM':
-                  console.log("Bottom");
-                  if (evt.client.transform.x < device.transform.x && evt.client.size.width > device.size.width + Math.abs(evt.client.transform.x - device.transform.x)) {
+                  if(device.transform.x < evt.client.transform.x) {
+                    console.log("if", evt.client.transform.x, device.transform.x);
                     walls.top.push( {
-                      start: converter.toDevicePixel(Math.abs(evt.client.transform.x - device.transform.x)),
-                      end: converter.toDevicePixel(device.size.width + Math.abs(evt.client.transform.x - device.transform.x)),
-                    });
-                  } else if(evt.client.transform.x > device.transform.x) {
-                    walls.top.push( {
-                      start: 0,
-                      end: converter.toDevicePixel(device.size.width - Math.abs(evt.client.transform.x - device.transform.x)),
+                      start: converter.toDevicePixel(evt.client.size.width -  evt.client.transform.x),
+                      end: converter.toDevicePixel(evt.client.size.width),
                     });
                   } else {
+                    console.log("else");
                     walls.top.push( {
-                      start: converter.toDevicePixel(Math.abs(evt.client.transform.x - device.transform.x)),
-                      end: converter.toDevicePixel(evt.client.size.width),
+                      start: 0,
+                      end: converter.toDevicePixel((Math.abs(device.transform.x) || Math.abs(evt.client.transform.x))),
                     });
                   }
                   break;
 
                 default:
-                  console.log("WTF");
                   break;
               }
             });
+
+            if (walls.left.length === 0) {
+              walls.left.push({start: 0, end: window.innerHeight});
+            }
+            if (walls.top.length === 0) {
+              walls.top.push({start: 0, end: window.innerWidth});
+            }
+            if (walls.right.length === 0) {
+              walls.right.push({start: 0, end: window.innerHeight});
+            }
+            if (walls.bottom.length === 0) {
+              walls.bottom.push({start: 0, end: window.innerWidth});
+            }
 
             drawWalls(ctx);
             
@@ -260,8 +245,8 @@
               ctx.fillRect(
                 converter.toDevicePixel(particle.x),
                 converter.toDevicePixel(particle.y),
-                converter.toDevicePixel(10),
-                converter.toDevicePixel(10)
+                converter.toDevicePixel(100),
+                converter.toDevicePixel(100)
               );
             });
 
