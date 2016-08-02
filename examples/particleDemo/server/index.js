@@ -8,11 +8,21 @@ app.use(express.static(__dirname + './../static'));
 
 swip(io, {
   cluster: {
-    init: () => ({}),
+    init: () => ({ particles: [] }),
   },
 
   client: {
     init: () => ({}),
+    events: {
+      addParticle: ({ cluster, client }, particle) => {
+        console.log('called addParticle');
+        return {
+          cluster: {
+            data: { particles: { $push: [particle] } },
+          },
+        };
+      },
+    },
   },
 });
 

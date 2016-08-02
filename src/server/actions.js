@@ -4,6 +4,7 @@ const TYPE = {
   DISCONNECT: 'disconnect', // use name of disconnect event of socket.io
   LEAVE_CLUSTER: 'LEAVE_CLUSTER',
   SWIPE: 'SWIPE',
+  NEXT_STATE: 'NEXT_STATE',
   CHANGED: 'CHANGED',
 };
 
@@ -35,10 +36,27 @@ function disconnect (id) {
   };
 }
 
+function clientAction (id, { type, data }) {
+  return {
+    type: TYPE.CLIENT_ACTION,
+    data: { id, type, data },
+  };
+}
+
+
+function nextState () {
+  return {
+    type: TYPE.NEXT_STATE,
+    data: {},
+  };
+}
+
 module.exports = {
   TYPE,
   connect,
   swipe,
   leaveCluster,
   disconnect,
+  clientAction,
+  nextState,
 };

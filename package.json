@@ -23,6 +23,8 @@
     "immutability-helper": "^2.0.0",
     "lodash": "^4.13.1",
     "redux": "^3.5.2",
+    "redux-logger": "^2.6.1",
+    "redux-node-logger": "0.0.3",
     "uid": "0.0.2"
   },
   "peerDependencies": {
@@ -35,6 +37,8 @@
     "eslint": "^3.1.1",
     "eslint-config-airbnb-base": "^4.0.2",
     "eslint-plugin-import": "^1.11.1",
-    "should": "^10.0.0"
+    "should": "^10.0.0",
+    "should-sinon": "0.0.5",
+    "sinon": "^1.17.5"
   }
 }
