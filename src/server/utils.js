@@ -1,6 +1,19 @@
 const _ = require('lodash');
 
-function getHoles (clients, clientID) {
+function getClientState (state, clientID) {
+  const client = state.clients[clientID];
+
+  if (_.isNil(client.clusterID)) {
+    return { client };
+  }
+
+  return {
+    client,
+    cluster: getClusterState(state, client.clusterID),
+  };
+}
+
+function getOpenings (clients, clientID) {
   const client = clients[clientID];
   const { transform, size, adjacentClientIDs } = client;
   const adjacentClients = lookupIDs(clients, adjacentClientIDs);
@@ -119,19 +132,6 @@ function getAlignment (client1, client2) {
   throw new Error('Invalid placement of devices');
 }
 
-function getClientState (state, clientID) {
-  const client = state.clients[clientID];
-
-  if (_.isNil(client.clusterID)) {
-    return { client };
-  }
-
-  return {
-    client,
-    cluster: getClusterState(state, client.clusterID),
-  };
-}
-
 function getClusterState ({ clusters, clients }, clusterID) {
   const cluster = clusters[clusterID];
   return {
@@ -154,7 +154,7 @@ function lookupIDs (objects, objectIDs) {
 }
 
 module.exports = {
-  getHoles,
+  getOpenings,
   getClientsInCluster,
   getClusterState,
   getClientState,

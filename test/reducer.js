@@ -289,6 +289,7 @@ describe('reducer', () => {
         state2 = reducer(state1, actions.swipe('b', { direction: 'LEFT', position: { x: 0, y: 20 } }));
       });
 
+
       it('should remove second cluster', () => {
         state2.should.not.have.propertyByPath('clusters', 'A');
       });
@@ -316,6 +317,21 @@ describe('reducer', () => {
 
       it('should merge state', () => {
         state2.should.have.propertyByPath('clusters', 'B', 'data').which.eql({ sum: 5 });
+      });
+
+      it('should recalculate openings', () => {
+        state2.should.have.propertyByPath('clients', 'a', 'openings').which.eql({
+          bottom: [],
+          left: [],
+          right: [{ end: 100, start: 0 }],
+          top: [],
+        });
+        state2.should.have.propertyByPath('clients', 'b', 'openings').which.eql({
+          bottom: [],
+          left: [{ end: 100, start: 0 }],
+          right: [],
+          top: [],
+        });
       });
     });
   });

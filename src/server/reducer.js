@@ -134,7 +134,7 @@ function reducer (config) {
     const swipeB = swipes[0];
     const clientB = state.clients[swipeB.id];
 
-    const { clients, clusters } = mergeClusters(state, clientA, swipeA, clientB, swipeB);
+    const { clients, clusters } = mergeAndRecalculateClusters(state, clientA, swipeA, clientB, swipeB);
 
     return update(state, {
       swipes: { $set: [] },
@@ -155,31 +155,49 @@ function reducer (config) {
     });
   }
 
-  function mergeClusters (state, clientA, swipeA, clientB, swipeB) {
+  function mergeAndRecalculateClusters (state, clientA, swipeA, clientB, swipeB) {
     const clusterStateA = utils.getClusterState(state, clientA.clusterID);
     const clusterStateB = utils.getClusterState(state, clientB.clusterID);
+
+    return _.flow([
+      _.partial(mergeCluster, _, clientA, swipeA, clientB, swipeB),
+      _.partial(recalculateCluster, _, clientA.id, clientB.id, clusterStateA, clusterStateB),
+    ])(state);
+  }
+
+  function mergeCluster (state, clientA, swipeA, clientB, swipeB) {
+    return update(state, {
+      clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
+      clients: {
+        [clientA.id]: {
+          openings: { $set: utils.getOpenings(state.clients, clientA.id) },
+          adjacentClientIDs: { $push: [clientB.id] },
+        },
+        [clientB.id]: {
+          clusterID: { $set: clientA.clusterID },
+          adjacentClientIDs: { $push: [clientA.id] },
+          transform: { $set: getTransform(clientA, swipeA, clientB, swipeB) },
+        },
+      },
+    });
+  }
+
+  function recalculateCluster (state, clientAID, clientBID, clusterStateA, clusterStateB) {
     const clusterData = config.cluster.events.merge(clusterStateA, clusterStateB);
 
-    return update(
-      update(state, {
-        clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
-        clients: {
-          [clientA.id]: {
-            adjacentClientIDs: { $push: [clientB.id] },
-          },
-          [clientB.id]: {
-            clusterID: { $set: clientA.clusterID },
-            adjacentClientIDs: { $push: [clientA.id] },
-            transform: { $set: getTransform(clientA, swipeA, clientB, swipeB) },
-          },
+    return update(state, {
+      clusters: {
+        [clusterStateA.id]: { data: clusterData },
+      },
+      clients: {
+        [clientAID]: {
+          openings: { $set: utils.getOpenings(state.clients, clientAID) },
         },
-      }),
-      {
-        clusters: {
-          [clientA.clusterID]: { data: clusterData },
+        [clientBID]: {
+          openings: { $set: utils.getOpenings(state.clients, clientBID) },
         },
-      }
-    );
+      },
+    });
   }
 
   function getTransform (clientA, swipeA, clientB, swipeB) {
