@@ -9,23 +9,25 @@ function getHoles (client) {
 
   adjacentDevices.forEach((device) => {
     const alignment = getAlignment(client, device);
+    const diffY = Math.abs(transform.y - device.transform.y);
+    const diffX = Math.abs(transform.x - device.transform.x);
 
     switch (alignment) {
       case 'LEFT':
         if (transform.y < device.transform.y
-          && size.height > device.size.height + (Math.abs(device.transform.y - transform.y))) {
+          && size.height > (device.size.height + diffY)) {
           holes.right.push({
-            start: Math.abs(transform.y - device.transform.y),
-            end: Math.abs(transform.y - device.transform.y) + device.size.height,
+            start: diffY,
+            end: diffY + device.size.height,
           });
         } else if (transform.y > device.transform.y) {
           holes.right.push({
             start: 0,
-            end: device.size.height - (Math.abs(transform.y - device.transform.y)),
+            end: device.size.height - diffY,
           });
         } else {
           holes.right.push({
-            start: Math.abs(transform.y - device.transform.y),
+            start: diffY,
             end: size.height,
           });
         }
@@ -33,19 +35,19 @@ function getHoles (client) {
 
       case 'RIGHT':
         if (transform.y < device.transform.y
-          && size.height > device.size.height + (Math.abs(device.transform.y - transform.y))) {
+          && size.height > (device.size.height + diffY)) {
           holes.left.push({
-            start: Math.abs(transform.y - device.transform.y),
-            end: Math.abs(transform.y - device.transform.y) + device.size.height,
+            start: diffY,
+            end: diffY + device.size.height,
           });
         } else if (transform.y > device.transform.y) {
           holes.left.push({
             start: 0,
-            end: device.size.height - (Math.abs(transform.y - device.transform.y)),
+            end: device.size.height - diffY,
           });
         } else {
           holes.left.push({
-            start: Math.abs(transform.y - device.transform.y),
+            start: diffY,
             end: size.height,
           });
         }
@@ -53,19 +55,19 @@ function getHoles (client) {
 
       case 'TOP':
         if (transform.x < device.transform.x
-          && size.width > device.size.width + Math.abs(transform.x - device.transform.x)) {
+          && size.width > (device.size.width + diffX)) {
           holes.bottom.push({
-            start: Math.abs(transform.x - device.transform.x),
-            end: device.size.width + Math.abs(transform.x - device.transform.x),
+            start: diffX,
+            end: device.size.width + diffX,
           });
         } else if (transform.x > device.transform.x) {
           holes.bottom.push({
             start: 0,
-            end: device.size.width - Math.abs(transform.x - device.transform.x),
+            end: device.size.width - diffX,
           });
         } else {
           holes.bottom.push({
-            start: Math.abs(transform.x - device.transform.x),
+            start: diffX,
             end: size.width,
           });
         }
@@ -73,19 +75,19 @@ function getHoles (client) {
 
       case 'BOTTOM':
         if (transform.x < device.transform.x
-          && size.width > device.size.width + Math.abs(transform.x - device.transform.x)) {
+          && size.width > (device.size.width + diffX)) {
           holes.top.push({
-            start: Math.abs(transform.x - device.transform.x),
-            end: device.size.width + Math.abs(transform.x - device.transform.x),
+            start: diffX,
+            end: device.size.width + diffX,
           });
         } else if (transform.x > device.transform.x) {
           holes.top.push({
             start: 0,
-            end: device.size.width - Math.abs(transform.x - device.transform.x),
+            end: device.size.width - diffX,
           });
         } else {
           holes.top.push({
-            start: Math.abs(transform.x - device.transform.x),
+            start: diffX,
             end: size.width,
           });
         }

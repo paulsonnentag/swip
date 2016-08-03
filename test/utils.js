@@ -184,8 +184,8 @@ describe('getHoles', () => {
         id: 'c',
         clusterId: 'A',
         adjacentDevices: [],
-        transform: { x: -300, y: -200 },
-        size: { width: 250, height: 400 },
+        transform: { x: -300, y: -450 },
+        size: { width: 450, height: 400 },
         data: {},
       };
 
@@ -193,8 +193,8 @@ describe('getHoles', () => {
         id: 'd',
         clusterId: 'A',
         adjacentDevices: [],
-        transform: { x: 350, y: 100 },
-        size: { width: 200, height: 100 },
+        transform: { x: 100, y: -350 },
+        size: { width: 200, height: 300 },
         data: {},
       };
 
@@ -202,8 +202,8 @@ describe('getHoles', () => {
         id: 'e',
         clusterId: 'A',
         adjacentDevices: [],
-        transform: { x: -300, y: 200 },
-        size: { width: 250, height: 350 },
+        transform: { x: -100, y: 650 },
+        size: { width: 800, height: 350 },
         data: {},
       };
 
@@ -238,6 +238,72 @@ describe('getHoles', () => {
         top: [],
         right: [],
         bottom: [{ start: 0, end: 50 }],
+      });
+    });
+
+    it('should return the holes - connected leftTop to rightBottom', () => {
+      deviceA.adjacentDevices.push(deviceC);
+      deviceC.adjacentDevices.push(deviceA);
+
+      const holesClientA = utils.getHoles(state.clients.a);
+      const holesClientC = utils.getHoles(state.clients.c);
+
+      holesClientA.should.eql({
+        left: [],
+        top: [{ start: 0, end: 150 }],
+        right: [],
+        bottom: [],
+      });
+
+      holesClientC.should.eql({
+        left: [],
+        top: [],
+        right: [],
+        bottom: [{ start: 300, end: 450 }],
+      });
+    });
+
+    it('should return the holes - connected smallTop to largeBottom', () => {
+      deviceA.adjacentDevices.push(deviceD);
+      deviceD.adjacentDevices.push(deviceA);
+
+      const holesClientA = utils.getHoles(state.clients.a);
+      const holesClientD = utils.getHoles(state.clients.d);
+
+      holesClientA.should.eql({
+        left: [],
+        top: [{ start: 100, end: 300 }],
+        right: [],
+        bottom: [],
+      });
+
+      holesClientD.should.eql({
+        left: [],
+        top: [],
+        right: [],
+        bottom: [{ start: 0, end: 300 }],
+      });
+    });
+
+    it('should return the holes - connected largeTop to smallBottom', () => {
+      deviceA.adjacentDevices.push(deviceE);
+      deviceE.adjacentDevices.push(deviceA);
+
+      const holesClientA = utils.getHoles(state.clients.a);
+      const holesClientE = utils.getHoles(state.clients.e);
+
+      holesClientA.should.eql({
+        left: [],
+        top: [],
+        right: [],
+        bottom: [{ start: 0, end: 700 }],
+      });
+
+      holesClientE.should.eql({
+        left: [],
+        top: [{ start: 100, end: 500 }],
+        right: [],
+        bottom: [],
       });
     });
   });
