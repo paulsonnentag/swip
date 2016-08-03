@@ -41,6 +41,15 @@
 
       drawWalls(ctx);
 
+      function getRandomColor () {
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
+
       function drawWalls (ctx) {
         ctx.strokeStyle = "red";
         ctx.lineWidth = 50;
@@ -92,15 +101,6 @@
             return device.id === deviceID;
           })[0];
         });
-      }
-
-      function getRandomColor () {
-        var letters = '0123456789ABCDEF'.split('');
-        var color = '#';
-        for (var i = 0; i < 6; i++ ) {
-          color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
       }
 
       swip.device.requestSize(function (converter) {

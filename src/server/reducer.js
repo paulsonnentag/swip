@@ -2,7 +2,7 @@ const _ = require('lodash');
 const uid = require('uid');
 const update = require('immutability-helper');
 const actions = require('./actions');
-const selectors = require('./selectors');
+const utils = require('./utils');
 
 const SWIPE_DELAY_TOLERANCE = 500;
 
@@ -61,7 +61,7 @@ function reducer (config) {
   }
 
   function getClusterChanges (state, next, cluster) {
-    const clusterState = selectors.getClusterState(state, cluster.id);
+    const clusterState = utils.getClusterState(state, cluster.id);
     return { data: next(clusterState) };
   }
 
@@ -77,7 +77,7 @@ function reducer (config) {
   }
 
   function getClientChanges (state, next, client) {
-    const clientState = selectors.getClientState(state, client.id);
+    const clientState = utils.getClientState(state, client.id);
     return { data: next(clientState) };
   }
 
@@ -94,7 +94,7 @@ function reducer (config) {
       return state;
     }
 
-    const clientEventState = selectors.getClientState(state, client.id);
+    const clientEventState = utils.getClientState(state, client.id);
     const stateUpdates = handler(clientEventState, data);
     const changes = {};
 
@@ -173,7 +173,7 @@ function reducer (config) {
     const clusterId = clientA.clusterId;
     const cluster = {
       data: clusters[clusterId],
-      clients: selectors.getClientsInCluster(clients, clusterId).concat([clientB]),
+      clients: utils.getClientsInCluster(clients, clusterId).concat([clientB]),
     };
     const clientData = config.client.init(cluster, clientB);
 
@@ -273,10 +273,11 @@ function reducer (config) {
     });
   }
 
+  /*
   function reCluster (state, { id }) {
     const clusters = [];
     let currCluster = [];
-    const rest = selectors.getClientsInCluster(state.clients, state.clients[id].clusterId);
+    const rest = utils.getClientsInCluster(state.clients, state.clients[id].clusterId);
     rest.splice(rest.indexOf(state.clients[id]), 1);
 
     while (rest.length > 0) {
@@ -310,9 +311,10 @@ function reducer (config) {
       clusters: { $set: out },
     });
   }
+  */
 
   function removeEmptyCluster (clusters, clients, clusterId) {
-    if (selectors.getClientsInCluster(clients, clusterId).length > 1) {
+    if (utils.getClientsInCluster(clients, clusterId).length > 1) {
       return clusters;
     }
 
