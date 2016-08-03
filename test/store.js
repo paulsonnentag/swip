@@ -6,7 +6,7 @@ const redux = require('redux');
 const actions = require('../src/server/actions');
 const getAppReducer = require('../src/server/reducer');
 
-describe('store', () => {
+describe.skip('store', () => {
   const DEVICE_A = {
     size: { width: 400, height: 800 },
   };

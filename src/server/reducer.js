@@ -115,11 +115,22 @@ function reducer (config) {
   }
 
   function connect (state, { id, size }) {
-    return update(state, {
-      clients: {
-        [id]: { $set: { id, size, transform: { x: 0, y: 0 }, data: {}, connections: [] } },
+    const clusterID = uid();
+    const client = { id, size, transform: { x: 0, y: 0 }, adjacentClientIDs: [], clusterID };
+
+    const clientData = config.client.init(client);
+    const clusterData = config.cluster.init(client);
+
+    const changes = {
+      clusters: {
+        [clusterID]: { $set: { id: clusterID, data: clusterData } },
       },
-    });
+      clients: {
+        [id]: { $set: _.assign({}, client, { data: clientData }) },
+      },
+    };
+
+    return update(state, changes);
   }
 
   function doSwipe (state, swipe) {

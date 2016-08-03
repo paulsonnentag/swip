@@ -1,5 +1,5 @@
 /* global describe it beforeEach */
-
+const _ = require('lodash');
 /*eslint-disable*/
 const should = require('should');
 const sinon = require('sinon');
@@ -125,6 +125,67 @@ describe('reducer', () => {
       nextState.clients.a.should.have.property('data').which.eql({ counter: 2 });
       nextState.clients.b.should.have.property('data').which.eql({ counter: 4 });
       nextState.clusters.A.should.have.property('data').which.eql({ counter: 11 });
+    });
+  });
+
+  describe('CONNECT', () => {
+    const state = {
+      clusters: {},
+      clients: {},
+    };
+
+    const expectedClient = {
+      id: 'a',
+      size: { width: 200, height: 300 },
+      transform: { x: 0, y: 0 },
+      adjacentClientIDs: [],
+    };
+
+    let newState, reducer, initClient, initCluster;
+
+    beforeEach(() => {
+      initClient = sinon.spy(() => {
+        return { x : 'client' };
+      });
+      initCluster = sinon.spy(() => {
+        return { x: 'cluster' };
+      });
+      reducer = createReducer({
+        client: { init: initClient },
+        cluster: { init: initCluster },
+      });
+
+      newState = reducer(state, actions.connect('a', { size: { width: 200, height: 300 } }));
+    });
+
+    it('should call initClient', () => {
+      initClient.getCall(0).args[0].should.eql(expectedClient);
+      initClient.should.be.calledOnce();
+    });
+
+    it('should call initCluster', () => {
+      initCluster.getCall(0).args[0].should.eql(expectedClient);
+      initCluster.should.be.calledOnce();
+    });
+
+    it.only('should add player with new cluster', () => {
+      const clusterId = _.keys(newState.clusters)[0];
+
+      newState.should.eql({
+        clusters: {
+          [clusterId]: { id: clusterId, data: { x: 'cluster' } },
+        },
+        clients: {
+          a: {
+            id: 'a',
+            clusterID: clusterId,
+            transform: { x: 0, y: 0 },
+            size: { width: 200, height: 300 },
+            adjacentClientIDs: [],
+            data: { x: 'client' },
+          },
+        },
+      });
     });
   });
 });
