@@ -91,14 +91,14 @@ function convertTouchPos (state, converter, evt) {
     originalEvent: evt,
   };
 
-  for(let i = 0; i < evt.changedTouches.length; i++) {
-    let currTouched = evt.changedTouches[i];
+  for (let i = 0; i < evt.changedTouches.length; i++) {
+    const currTouched = evt.changedTouches[i];
 
     event.position.push({
       x: converter.toAbsPixel(currTouched.clientX) + state.client.transform.x,
       y: converter.toAbsPixel(currTouched.clientY) + state.client.transform.y,
     });
-  };
+  }
 
   return event;
 }

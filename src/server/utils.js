@@ -129,6 +129,8 @@ function getAlignment (client1, client2) {
     return 'BOTTOM';
   }
 
+  console.log(client1, client2);
+
   throw new Error('Invalid placement of devices');
 }
 

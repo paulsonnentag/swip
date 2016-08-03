@@ -10,12 +10,20 @@
         margin: 0;
         padding: 0;
       }
+
+      #test {
+        position: absolute;
+        color: white;
+        top: 0;
+        left:0;
+      }
     </style>
   </head>
 
   <body>
 
     <canvas id="canvas"></canvas>
+    <div id="test">testets</div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/swip/swip.js"></script>
@@ -37,50 +45,53 @@
         return colors[Math.floor(Math.random() * 10)];
       }
 
-      function drawWalls (ctx) {
-        ctx.lineWidth = 2;
+      function drawWalls (ctx, client) {
+        var walls = client.openings;
+        var transformX = client.transform.x;
+        var transformY = client.transform.y;
+        var width = client.size.width;
+        var height = client.size.height;
+
+        ctx.lineWidth = 20;
+        ctx.shadowBlur=5;
 
         walls.left.forEach(function (wall) {
           ctx.strokeStyle = "#ff9e00";
-          ctx.shadowBlur=5;
           ctx.shadowColor="#ff9e00";
 
           ctx.beginPath();
-          ctx.moveTo(0, wall.start);
-          ctx.lineTo(0, wall.end);
+          ctx.moveTo(transformX, wall.start + transformY);
+          ctx.lineTo(transformX, wall.end + transformY);
           ctx.stroke();
         });
 
         walls.top.forEach(function (wall) {
           ctx.strokeStyle = "#0084FF";
-          ctx.shadowBlur=5;
           ctx.shadowColor="#0084FF";
 
           ctx.beginPath();
-          ctx.moveTo(wall.start, 0);
-          ctx.lineTo(wall.end, 0);
+          ctx.moveTo(wall.start + transformX, transformY);
+          ctx.lineTo(wall.end + transformX, transformY);
           ctx.stroke();
         });
 
         walls.right.forEach(function (wall) {
           ctx.strokeStyle = "#0084FF";
-          ctx.shadowBlur=5;
           ctx.shadowColor="#0084FF";
 
           ctx.beginPath();
-          ctx.moveTo(window.innerWidth, wall.start);
-          ctx.lineTo(window.innerWidth, wall.end);
+          ctx.moveTo(width + transformX, wall.start + transformY);
+          ctx.lineTo(width + transformX, wall.end + transformY);
           ctx.stroke();
         });
 
         walls.bottom.forEach(function (wall) {
           ctx.strokeStyle = "#ff9e00";
-          ctx.shadowBlur=5;
           ctx.shadowColor="#ff9e00";
 
           ctx.beginPath();
-          ctx.moveTo(wall.start, window.innerHeight);
-          ctx.lineTo(wall.end, window.innerHeight);
+          ctx.moveTo(wall.start + transformX, height + transformY);
+          ctx.lineTo(wall.end + transformX, height + transformY);
           ctx.stroke();
         });
       }
@@ -105,7 +116,7 @@
             });
           }
 
-          client.emit('addParticle', { particles });
+          client.emit('addParticle', { particles: particles });
         });
 
         client.onDragEnd(function (evt) {
@@ -123,7 +134,7 @@
             }
           }
 
-          client.emit('addParticle', { particles });
+          client.emit('addParticle', { particles: particles });
         });
 
         client.onUpdate(function (evt) {
@@ -131,13 +142,13 @@
           if (evt.cluster) {
             ctx.fillRect(0,0, canvas.width, canvas.height);
 
-            walls = evt.client.openings;
-
-            drawWalls(ctx);
-
             ctx.save();
             ctx.translate(-converter.toDevicePixel(evt.client.transform.x), -converter.toDevicePixel(evt.client.transform.y));
             ctx.scale(converter.toDevicePixel(1), converter.toDevicePixel(1));
+
+            drawWalls(ctx, evt.client);
+
+            document.getElementById('test').innerHTML = 'Walls ' + JSON.stringify(evt.client.openings) + '<br />' + JSON.stringify(evt.client.transform);
 
             var particles = evt.cluster.data.particles;
 
