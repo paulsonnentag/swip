@@ -36,7 +36,7 @@ function swip (io, config) {
     socket.on('disconnect', () => unsubscribe());
   });
 
-  setInterval(() => store.dispatch(actions.nextState()), 33);
+  setInterval(() => store.dispatch(actions.nextState()), 40);
 
   attachServe(io.httpServer);
 }
