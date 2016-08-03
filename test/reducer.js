@@ -134,18 +134,11 @@ describe('reducer', () => {
       clients: {},
     };
 
-    const expectedClient = {
-      id: 'a',
-      size: { width: 200, height: 300 },
-      transform: { x: 0, y: 0 },
-      adjacentClientIDs: [],
-    };
-
-    let newState, reducer, initClient, initCluster;
+    let newState, reducer, initClient, initCluster, clusterID, expectedClient;
 
     beforeEach(() => {
       initClient = sinon.spy(() => {
-        return { x : 'client' };
+        return { x: 'client' };
       });
       initCluster = sinon.spy(() => {
         return { x: 'cluster' };
@@ -154,8 +147,15 @@ describe('reducer', () => {
         client: { init: initClient },
         cluster: { init: initCluster },
       });
-
       newState = reducer(state, actions.connect('a', { size: { width: 200, height: 300 } }));
+      clusterID = _.keys(newState.clusters)[0];
+      expectedClient = {
+        id: 'a',
+        clusterID: clusterID,
+        size: { width: 200, height: 300 },
+        transform: { x: 0, y: 0 },
+        adjacentClientIDs: [],
+      };
     });
 
     it('should call initClient', () => {
@@ -168,17 +168,17 @@ describe('reducer', () => {
       initCluster.should.be.calledOnce();
     });
 
-    it.only('should add player with new cluster', () => {
-      const clusterId = _.keys(newState.clusters)[0];
+    it('should add player with new cluster', () => {
+
 
       newState.should.eql({
         clusters: {
-          [clusterId]: { id: clusterId, data: { x: 'cluster' } },
+          [clusterID]: { id: clusterID, data: { x: 'cluster' } },
         },
         clients: {
           a: {
+            clusterID,
             id: 'a',
-            clusterID: clusterId,
             transform: { x: 0, y: 0 },
             size: { width: 200, height: 300 },
             adjacentClientIDs: [],
@@ -186,6 +186,79 @@ describe('reducer', () => {
           },
         },
       });
+    });
+  });
+
+  describe('SWIPE', () => {
+    const initialState = {
+      clusters: {
+        A: { id: 'A', data: {} },
+        B: { id: 'B', data: {} },
+      },
+      clients: {
+        a: {
+          id: 'a',
+          clusterId: 'A',
+          transform: { x: 0, y: 0 },
+          size: { width: 100, height: 100 },
+          adjacentClientIDs: ['b'],
+          data: {},
+        },
+        b: {
+          id: 'b',
+          clusterID: 'A',
+          transform: { x: 0, y: 0 },
+          size: { width: 100, height: 100 },
+          adjacentClientIDs: ['a'],
+          data: {},
+        },
+      },
+    };
+
+    let reducer;
+
+    beforeEach(() => {
+      reducer = createReducer({
+        client: { init: () => {} },
+        cluster: { init: () => {} },
+      });
+    });
+
+
+    it('should save first swipe', () => {
+      const state = reducer(initialState, actions.swipe('a', { direction: 'LEFT', position: { x: 0, y: 20 } }));
+
+      state.should.have.property('swipes').which.eql([{
+        direction: 'LEFT',
+        id: 'a',
+        position: {
+          x: 0,
+          y: 20,
+        },
+        timestamp: state.swipes[0].timestamp,
+      }]);
+    });
+
+    it('should only save latest swipe if delay is too big', (done) => {
+      const state1 = reducer(initialState, actions.swipe('a', { direction: 'LEFT', position: { x: 0, y: 20 } }));
+
+
+      setTimeout(() => {
+        const state2 = reducer(state1, actions.swipe('b', { direction: 'RIGHT', position: { x: 0, y: 20 } }));
+
+
+        state2.should.have.property('swipes').which.eql([{
+          direction: 'RIGHT',
+          id: 'b',
+          position: {
+            x: 0,
+            y: 20,
+          },
+          timestamp: state2.swipes[0].timestamp,
+        }]);
+
+        done();
+      }, 100);
     });
   });
 });
