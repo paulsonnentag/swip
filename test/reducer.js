@@ -73,7 +73,7 @@ describe('reducer', () => {
       });
     });
 
-    it('should call client.events.update', () => {
+    it('should call cluster.events.update', () => {
       const update = sinon.spy(() => ({}));
       const reducer = createUpdateReducer({
         updateCluster: update,
@@ -134,7 +134,12 @@ describe('reducer', () => {
       clients: {},
     };
 
-    let newState, reducer, initClient, initCluster, clusterID, expectedClient;
+    let newState;
+    let reducer;
+    let initClient;
+    let initCluster;
+    let clusterID;
+    let expectedClient;
 
     beforeEach(() => {
       initClient = sinon.spy(() => {
@@ -190,75 +195,94 @@ describe('reducer', () => {
   });
 
   describe('SWIPE', () => {
-    const initialState = {
-      clusters: {
-        A: { id: 'A', data: {} },
-        B: { id: 'B', data: {} },
-      },
-      clients: {
-        a: {
-          id: 'a',
-          clusterId: 'A',
-          transform: { x: 0, y: 0 },
-          size: { width: 100, height: 100 },
-          adjacentClientIDs: ['b'],
-          data: {},
-        },
-        b: {
-          id: 'b',
-          clusterID: 'A',
-          transform: { x: 0, y: 0 },
-          size: { width: 100, height: 100 },
-          adjacentClientIDs: ['a'],
-          data: {},
-        },
-      },
-    };
-
+    let initialState;
     let reducer;
 
     beforeEach(() => {
+      initialState = {
+        clusters: {
+          A: { id: 'A', data: { sum: 2 } },
+          B: { id: 'B', data: { sum: 3 } },
+        },
+        clients: {
+          a: {
+            id: 'a',
+            clusterID: 'A',
+            transform: { x: 0, y: 0 },
+            size: { width: 100, height: 100 },
+            adjacentClientIDs: ['b'],
+            data: {},
+          },
+          b: {
+            id: 'b',
+            clusterID: 'B',
+            transform: { x: 0, y: 0 },
+            size: { width: 100, height: 100 },
+            adjacentClientIDs: ['a'],
+            data: {},
+          },
+        },
+      };
+
       reducer = createReducer({
         client: { init: () => {} },
-        cluster: { init: () => {} },
+        cluster: {
+          init: () => {},
+          merge: (otherCluster) => {
+
+          },
+        },
       });
     });
 
+    describe('swipe handling', () => {
+      it('should save first swipe', () => {
+        const state = reducer(initialState, actions.swipe('a', { direction: 'LEFT', position: { x: 0, y: 20 } }));
 
-    it('should save first swipe', () => {
-      const state = reducer(initialState, actions.swipe('a', { direction: 'LEFT', position: { x: 0, y: 20 } }));
-
-      state.should.have.property('swipes').which.eql([{
-        direction: 'LEFT',
-        id: 'a',
-        position: {
-          x: 0,
-          y: 20,
-        },
-        timestamp: state.swipes[0].timestamp,
-      }]);
-    });
-
-    it('should only save latest swipe if delay is too big', (done) => {
-      const state1 = reducer(initialState, actions.swipe('a', { direction: 'LEFT', position: { x: 0, y: 20 } }));
-
-
-      setTimeout(() => {
-        const state2 = reducer(state1, actions.swipe('b', { direction: 'RIGHT', position: { x: 0, y: 20 } }));
-
-
-        state2.should.have.property('swipes').which.eql([{
-          direction: 'RIGHT',
-          id: 'b',
+        state.should.have.property('swipes').which.eql([{
+          direction: 'LEFT',
+          id: 'a',
           position: {
             x: 0,
             y: 20,
           },
-          timestamp: state2.swipes[0].timestamp,
+          timestamp: state.swipes[0].timestamp,
         }]);
+      });
 
-        done();
-      }, 100);
+      it('should only save latest swipe if delay is too big', (done) => {
+        const state1 = reducer(initialState, actions.swipe('a', { direction: 'LEFT', position: { x: 0, y: 20 } }));
+
+        setTimeout(() => {
+          const state2 = reducer(state1, actions.swipe('b', { direction: 'RIGHT', position: { x: 100, y: 20 } }));
+
+          state2.should.have.property('swipes').which.eql([{
+            direction: 'RIGHT',
+            id: 'b',
+            position: {
+              x: 100,
+              y: 20,
+            },
+            timestamp: state2.swipes[0].timestamp,
+          }]);
+
+          done();
+        }, 100);
+      });
+    });
+
+    describe('merge of two clusters', () => {
+      let state1;
+      let state2;
+
+      beforeEach(() => {
+        state1 = reducer(initialState, actions.swipe('a', { direction: 'RIGHT', position: { x: 100, y: 20 } }));
+        state2 = reducer(state1, actions.swipe('b', { direction: 'LEFT', position: { x: 0, y: 20 } }));
+      });
+
+      it('should remove second cluster', () => {
+        state2.should.not.have.propertyByPath('clusters', 'A');
+      });
     });
   });
 });
