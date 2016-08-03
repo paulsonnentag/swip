@@ -79,7 +79,7 @@ function reducer (config) {
 
     const client = state.clients[id];
 
-    if (!client || !client.clusterID) {
+    if (!client) {
       return state;
     }
 
