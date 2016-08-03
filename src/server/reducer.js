@@ -105,7 +105,13 @@ function reducer (config) {
 
   function connect (state, { id, size }) {
     const clusterID = uid();
-    const client = { id, size, transform: { x: 0, y: 0 }, adjacentClientIDs: [], clusterID };
+    const openings = {
+      top: [],
+      bottom: [],
+      right: [],
+      left: [],
+    };
+    const client = { id, size, transform: { x: 0, y: 0 }, adjacentClientIDs: [], clusterID, openings };
 
     const clientData = config.client.init(client);
     const clusterData = config.cluster.init(client);

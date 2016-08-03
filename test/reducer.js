@@ -156,10 +156,16 @@ describe('reducer', () => {
       clusterID = _.keys(newState.clusters)[0];
       expectedClient = {
         id: 'a',
-        clusterID: clusterID,
+        clusterID,
         size: { width: 200, height: 300 },
         transform: { x: 0, y: 0 },
         adjacentClientIDs: [],
+        openings: {
+          top: [],
+          bottom: [],
+          left: [],
+          right: [],
+        },
       };
     });
 
@@ -181,14 +187,7 @@ describe('reducer', () => {
           [clusterID]: { id: clusterID, data: { x: 'cluster' } },
         },
         clients: {
-          a: {
-            clusterID,
-            id: 'a',
-            transform: { x: 0, y: 0 },
-            size: { width: 200, height: 300 },
-            adjacentClientIDs: [],
-            data: { x: 'client' },
-          },
+          a: _.assign({}, expectedClient, { data: { x: 'client' } }),
         },
       });
     });
@@ -334,6 +333,12 @@ describe('reducer', () => {
         });
       });
     });
+  });
+
+  describe('LEAVE_CLUSTER', () => {
+
+
+
   });
 });
 
