@@ -4,7 +4,7 @@ const update = require('immutability-helper');
 const actions = require('./actions');
 const utils = require('./utils');
 
-const SWIPE_DELAY_TOLERANCE = 50;
+const SWIPE_DELAY_TOLERANCE = 100;
 
 const initialState = {
   clusters: {},

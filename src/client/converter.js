@@ -24,4 +24,4 @@ function getScalingFactor (screenSize) {
   return SIZE_REFERENCE / pixelPerCentimeter;
 }
 
-module.exports = Converter;
+export default Converter;
