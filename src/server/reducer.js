@@ -156,55 +156,30 @@ function reducer (config) {
   }
 
   function mergeClusters (state, clientA, swipeA, clientB, swipeB) {
+    const clusterStateA = utils.getClusterState(state, clientA.clusterID);
+    const clusterStateB = utils.getClusterState(state, clientB.clusterID);
+    const clusterData = config.cluster.events.merge(clusterStateA, clusterStateB);
 
-    return update(state, {
-      clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
-      clients: {},
-    });
-
-    /* const a = {
-    clients: {
-      [clientA.id]: {
-        connections: { $push: [swipeB.id] },
-      },
-      [clientB.id]: {
-        clusterID: { $set: clusterID },
-        data: { $set: clientData },
-        transform: { $set: getTransform(clientA, swipeA, clientB, swipeB) },
-        connections: { $push: [swipeA.id] },
-      },
-    }}*/
-  }
-
-  function createCluster (state, clientA, swipeA, clientB, swipeB) {
-    const clusterID = uid();
-    const clusterData = config.cluster.init([clientA, clientB]);
-    const cluster = {
-      data: clusterData,
-      clients: [clientA, clientB],
-    };
-
-    const clientAData = config.client.init(cluster, clientA);
-    const clientBData = config.client.init(cluster, clientB);
-
-    return update(state, {
-      clusters: {
-        [clusterID]: { $set: { data: clusterData, id: clusterID } },
-      },
-      clients: {
-        [clientA.id]: {
-          clusterID: { $set: clusterID },
-          data: { $set: clientAData },
-          connections: { $push: [swipeB.id] },
+    return update(
+      update(state, {
+        clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
+        clients: {
+          [clientA.id]: {
+            adjacentClientIDs: { $push: [clientB.id] },
+          },
+          [clientB.id]: {
+            clusterID: { $set: clientA.clusterID },
+            adjacentClientIDs: { $push: [clientA.id] },
+            transform: { $set: getTransform(clientA, swipeA, clientB, swipeB) },
+          },
         },
-        [clientB.id]: {
-          clusterID: { $set: clusterID },
-          data: { $set: clientBData },
-          transform: { $set: getTransform(clientA, swipeA, clientB, swipeB) },
-          connections: { $push: [swipeA.id] },
+      }),
+      {
+        clusters: {
+          [clientA.clusterID]: { data: clusterData },
         },
-      },
-    });
+      }
+    );
   }
 
   function getTransform (clientA, swipeA, clientB, swipeB) {
@@ -258,44 +233,44 @@ function reducer (config) {
   }
 
   /*
-  function reCluster (state, { id }) {
-    const clusters = [];
-    let currCluster = [];
-    const rest = utils.getClientsInCluster(state.clients, state.clients[id].clusterID);
-    rest.splice(rest.indexOf(state.clients[id]), 1);
+   function reCluster (state, { id }) {
+   const clusters = [];
+   let currCluster = [];
+   const rest = utils.getClientsInCluster(state.clients, state.clients[id].clusterID);
+   rest.splice(rest.indexOf(state.clients[id]), 1);
 
-    while (rest.length > 0) {
-      const check = [rest.shift()];
+   while (rest.length > 0) {
+   const check = [rest.shift()];
 
-      while (check.length > 0) {
-        const currClient = check.shift();
+   while (check.length > 0) {
+   const currClient = check.shift();
 
-        const clientConnections = currClient.connections;
+   const clientConnections = currClient.connections;
 
-        _.filter(clientConnections, (clientId) => rest.indexOf(state.clients[clientId]) !== -1)
-          .forEach((clientId) => {
-            check.push(state.clients[clientId]);
-            rest.splice(rest.indexOf(state.clients[clientId]), 1);
-          });
+   _.filter(clientConnections, (clientId) => rest.indexOf(state.clients[clientId]) !== -1)
+   .forEach((clientId) => {
+   check.push(state.clients[clientId]);
+   rest.splice(rest.indexOf(state.clients[clientId]), 1);
+   });
 
-        currCluster.push(currClient);
-      }
+   currCluster.push(currClient);
+   }
 
-      clusters.push(currCluster);
-      currCluster = [];
-    }
+   clusters.push(currCluster);
+   currCluster = [];
+   }
 
 
-    const out = {};
-    for (let i = 0; i < clusters.length; i++) {
-      out[i] = state.clusters[state.clients[id].clusterID];
-    }
+   const out = {};
+   for (let i = 0; i < clusters.length; i++) {
+   out[i] = state.clusters[state.clients[id].clusterID];
+   }
 
-    return update(state, {
-      clusters: { $set: out },
-    });
-  }
-  */
+   return update(state, {
+   clusters: { $set: out },
+   });
+   }
+   */
 
   function removeEmptyCluster (clusters, clients, clusterID) {
     if (utils.getClientsInCluster(clients, clusterID).length > 1) {

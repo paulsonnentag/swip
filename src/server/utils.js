@@ -119,34 +119,34 @@ function getAlignment (client1, client2) {
   throw new Error('Invalid placement of devices');
 }
 
-function getClientState (state, clientId) {
-  const client = state.clients[clientId];
+function getClientState (state, clientID) {
+  const client = state.clients[clientID];
 
-  if (_.isNil(client.clusterId)) {
+  if (_.isNil(client.clusterID)) {
     return { client };
   }
 
   return {
     client,
-    cluster: getClusterState(state, client.clusterId),
+    cluster: getClusterState(state, client.clusterID),
   };
 }
 
-function getClusterState ({ clusters, clients }, clusterId) {
-  const cluster = clusters[clusterId];
+function getClusterState ({ clusters, clients }, clusterID) {
+  const cluster = clusters[clusterID];
   return {
     id: cluster.id,
     data: cluster.data,
-    clients: getClientsInCluster(clients, clusterId),
+    clients: getClientsInCluster(clients, clusterID),
   };
 }
 
-function getClientsInCluster (clients, clusterId) {
-  if (_.isNil(clusterId)) {
+function getClientsInCluster (clients, clusterID) {
+  if (_.isNil(clusterID)) {
     return [];
   }
 
-  return _.filter(clients, (client) => client.clusterId === clusterId);
+  return _.filter(clients, (client) => client.clusterID === clusterID);
 }
 
 function lookupIDs (objects, objectIDs) {

@@ -16,15 +16,15 @@ describe('reducer', () => {
         A: { id: 'A', data: { counter: 10 } },
       },
       clients: {
-        a: { id: 'a', data: { counter: 0 }, clusterId: 'A' },
-        b: { id: 'b', data: { counter: 2 }, clusterId: 'A' },
+        a: { id: 'a', data: { counter: 0 }, clusterID: 'A' },
+        b: { id: 'b', data: { counter: 2 }, clusterID: 'A' },
       },
     };
 
     const expectedCluster = {
       clients: [
-        { clusterId: 'A', data: { counter: 0 }, id: 'a' },
-        { clusterId: 'A', data: { counter: 2 }, id: 'b' },
+        { clusterID: 'A', data: { counter: 0 }, id: 'a' },
+        { clusterID: 'A', data: { counter: 2 }, id: 'b' },
       ],
       data: { counter: 10 },
       id: 'A',
@@ -60,7 +60,7 @@ describe('reducer', () => {
         client: {
           id: 'a',
           data: { counter: 0 },
-          clusterId: 'A',
+          clusterID: 'A',
         },
       });
       update.getCall(1).args[0].should.eql({
@@ -68,7 +68,7 @@ describe('reducer', () => {
         client: {
           id: 'b',
           data: { counter: 2 },
-          clusterId: 'A',
+          clusterID: 'A',
         },
       });
     });
@@ -196,31 +196,42 @@ describe('reducer', () => {
 
   describe('SWIPE', () => {
     let initialState;
+    let clientA;
+    let clientB;
     let reducer;
+    let merge;
 
     beforeEach(() => {
+      merge = sinon.spy((cluster, otherCluster) => ({
+        sum: { $set: cluster.data.sum + otherCluster.data.sum },
+      }));
+
+      clientA = {
+        id: 'a',
+        clusterID: 'A',
+        transform: { x: 0, y: 0 },
+        size: { width: 100, height: 100 },
+        adjacentClientIDs: [],
+        data: {},
+      };
+
+      clientB = {
+        id: 'b',
+        clusterID: 'B',
+        transform: { x: 0, y: 0 },
+        size: { width: 100, height: 100 },
+        adjacentClientIDs: [],
+        data: {},
+      };
+
       initialState = {
         clusters: {
           A: { id: 'A', data: { sum: 2 } },
           B: { id: 'B', data: { sum: 3 } },
         },
         clients: {
-          a: {
-            id: 'a',
-            clusterID: 'A',
-            transform: { x: 0, y: 0 },
-            size: { width: 100, height: 100 },
-            adjacentClientIDs: ['b'],
-            data: {},
-          },
-          b: {
-            id: 'b',
-            clusterID: 'B',
-            transform: { x: 0, y: 0 },
-            size: { width: 100, height: 100 },
-            adjacentClientIDs: ['a'],
-            data: {},
-          },
+          a: clientA,
+          b: clientB,
         },
       };
 
@@ -228,9 +239,7 @@ describe('reducer', () => {
         client: { init: () => {} },
         cluster: {
           init: () => {},
-          merge: (otherCluster) => {
-
-          },
+          events: { merge },
         },
       });
     });
@@ -282,6 +291,31 @@ describe('reducer', () => {
 
       it('should remove second cluster', () => {
         state2.should.not.have.propertyByPath('clusters', 'A');
+      });
+
+      it('should update adjacentClientIDs in each client', () => {
+        state2.should.have.propertyByPath('clients', 'a', 'adjacentClientIDs').which.eql(['b']);
+        state2.should.have.propertyByPath('clients', 'b', 'adjacentClientIDs').which.eql(['a']);
+      });
+
+      it('should recalculate transform of joined client', () => {
+        state2.should.have.propertyByPath('clients', 'a', 'transform').which.eql({ x: -100, y: 0 });
+      });
+
+      it('should update clusterID of joined client', () => {
+        state2.should.have.propertyByPath('clients', 'a', 'clusterID').which.eql('B');
+      });
+
+      it('should call merge handler with both clusters', () => {
+        merge.should.be.calledOnce();
+        merge.getCall(0).args.should.eql([
+          { data: { sum: 3 }, id: 'B', clients: [clientB] },
+          { data: { sum: 2 }, id: 'A', clients: [clientA] },
+        ]);
+      });
+
+      it('should merge state', () => {
+        state2.should.have.propertyByPath('clusters', 'B', 'data').which.eql({ sum: 5 });
       });
     });
   });
