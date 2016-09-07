@@ -45,7 +45,6 @@ function init ({ socket, container }, initCallback) {
 
     client.onDragStart = (callback) => {
       container.addEventListener('touchstart', (evt) => {
-        evt.preventDefault();
         callback(converter.convertTouchPos(state.client.transform, evt));
       });
     };
