@@ -11,10 +11,16 @@ function requestSize (callback) {
     } else {
       const input = document.createElement('div');
       input.id = 'swip-device-size-modal';
-      
+
+      input.style.marginTop = '0.5em';
+      input.style.marginBottom = '0.5em';
+      input.style.width = '100%';
+      input.style.textAlign = 'center';
+      input.style.fontFamily = 'Arial';
+
       input.innerHTML = `
              <label for="swip-device-size">Please input the device size in "(inch):</label>
-            <input type="text" id="swip-device-size" placeholder="Input device Size...">
+            <input type="text" id="swip-device-size">
             <button id="swip-confirm-size">Confirm</button>
             `;
       document.body.insertBefore(input, document.body.firstChild);
