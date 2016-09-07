@@ -11,19 +11,12 @@
         padding: 0;
       }
 
-      #test {
-        position: absolute;
-        color: white;
-        top: 0;
-        left:0;
-      }
     </style>
   </head>
 
   <body>
 
     <canvas id="canvas"></canvas>
-    <div id="test">testets</div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/swip/swip.js"></script>
@@ -52,7 +45,7 @@
         var width = client.size.width;
         var height = client.size.height;
 
-        ctx.lineWidth = 20;
+        ctx.lineWidth = 10;
         ctx.shadowBlur=5;
 
         walls.left.forEach(function (wall) {
@@ -96,7 +89,7 @@
         });
       }
 
-      swip.init({ socket: socket, container: document }, function (client) {
+      swip.init({ socket: socket, container: canvas }, function (client) {
         const converter = client.converter;
 
         client.onDragStart(function (evt) {
@@ -147,8 +140,6 @@
             ctx.scale(converter.toDevicePixel(1), converter.toDevicePixel(1));
 
             drawWalls(ctx, evt.client);
-
-            document.getElementById('test').innerHTML = 'Walls ' + JSON.stringify(evt.client.openings) + '<br />' + JSON.stringify(evt.client.transform);
 
             var particles = evt.cluster.data.particles;
 

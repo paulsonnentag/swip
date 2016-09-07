@@ -129,13 +129,14 @@ function getAlignment (client1, client2) {
     return 'BOTTOM';
   }
 
-  console.log(client1, client2);
+  console.log('Invalid placement: ', client1, client2);
 
   throw new Error('Invalid placement of devices');
 }
 
 function getClusterState ({ clusters, clients }, clusterID) {
   const cluster = clusters[clusterID];
+
   return {
     id: cluster.id,
     data: cluster.data,

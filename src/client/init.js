@@ -17,8 +17,8 @@ function init ({ socket, container }, initCallback) {
 
     socket.emit('CONNECT_CLIENT', {
       size: {
-        width: converter.toAbsPixel(container.width),
-        height: converter.toAbsPixel(container.height),
+        width: converter.toAbsPixel(container.clientWidth),
+        height: converter.toAbsPixel(container.clientHeight),
       },
     });
 
