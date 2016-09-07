@@ -13,8 +13,7 @@ function getClientState (state, clientID) {
   };
 }
 
-function getOpenings (clients, clientID) {
-  const client = clients[clientID];
+function getOpenings (clients, client) {
   const { transform, size, adjacentClientIDs } = client;
   const adjacentClients = lookupIDs(clients, adjacentClientIDs);
   const holes = {

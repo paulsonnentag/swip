@@ -77,8 +77,8 @@ describe('utils', () => {
         clientA.adjacentClientIDs.push('b');
         clientB.adjacentClientIDs.push('a');
 
-        const holesClientA = utils.getOpenings(state.clients, 'a');
-        const holesClientB = utils.getOpenings(state.clients, 'b');
+        const holesClientA = utils.getOpenings(state.clients, state.clients.a);
+        const holesClientB = utils.getOpenings(state.clients, state.clients.b);
 
         holesClientA.should.eql({
           left: [],
@@ -99,8 +99,8 @@ describe('utils', () => {
         clientC.adjacentClientIDs.push('a');
         clientA.adjacentClientIDs.push('c');
 
-        const holesClientA = utils.getOpenings(state.clients, 'a');
-        const holesClientC = utils.getOpenings(state.clients, 'c');
+        const holesClientA = utils.getOpenings(state.clients, state.clients.a);
+        const holesClientC = utils.getOpenings(state.clients, state.clients.c);
 
         holesClientA.should.eql({
           left: [{ start: 0, end: 200 }],
@@ -121,8 +121,8 @@ describe('utils', () => {
         clientA.adjacentClientIDs.push('d');
         clientD.adjacentClientIDs.push('a');
 
-        const holesClientA = utils.getOpenings(state.clients, 'a');
-        const holesClientD = utils.getOpenings(state.clients, 'd');
+        const holesClientA = utils.getOpenings(state.clients, state.clients.a);
+        const holesClientD = utils.getOpenings(state.clients, state.clients.d);
 
         holesClientA.should.eql({
           left: [],
@@ -143,8 +143,8 @@ describe('utils', () => {
         clientA.adjacentClientIDs.push('e');
         clientE.adjacentClientIDs.push('a');
 
-        const holesClientA = utils.getOpenings(state.clients, 'a');
-        const holesClientE = utils.getOpenings(state.clients, 'e');
+        const holesClientA = utils.getOpenings(state.clients, state.clients.a);
+        const holesClientE = utils.getOpenings(state.clients, state.clients.e);
 
         holesClientA.should.eql({
           left: [{ start: 200, end: 550 }],
@@ -225,8 +225,8 @@ describe('utils', () => {
         clientA.adjacentClientIDs.push('b');
         clientB.adjacentClientIDs.push('a');
 
-        const holesClientA = utils.getOpenings(state.clients, 'a');
-        const holesClientB = utils.getOpenings(state.clients, 'b');
+        const holesClientA = utils.getOpenings(state.clients, state.clients.a);
+        const holesClientB = utils.getOpenings(state.clients, state.clients.b);
 
         holesClientA.should.eql({
           left: [],
@@ -247,8 +247,8 @@ describe('utils', () => {
         clientA.adjacentClientIDs.push('c');
         clientC.adjacentClientIDs.push('a');
 
-        const holesClientA = utils.getOpenings(state.clients, 'a');
-        const holesClientC = utils.getOpenings(state.clients, 'c');
+        const holesClientA = utils.getOpenings(state.clients, state.clients.a);
+        const holesClientC = utils.getOpenings(state.clients, state.clients.c);
 
         holesClientA.should.eql({
           left: [],
@@ -269,8 +269,8 @@ describe('utils', () => {
         clientA.adjacentClientIDs.push('d');
         clientD.adjacentClientIDs.push('a');
 
-        const holesClientA = utils.getOpenings(state.clients, 'a');
-        const holesClientD = utils.getOpenings(state.clients, 'd');
+        const holesClientA = utils.getOpenings(state.clients, state.clients.a);
+        const holesClientD = utils.getOpenings(state.clients, state.clients.d);
 
         holesClientA.should.eql({
           left: [],
@@ -291,8 +291,8 @@ describe('utils', () => {
         clientA.adjacentClientIDs.push('e');
         clientE.adjacentClientIDs.push('a');
 
-        const holesClientA = utils.getOpenings(state.clients, 'a');
-        const holesClientE = utils.getOpenings(state.clients, 'e');
+        const holesClientA = utils.getOpenings(state.clients, state.clients.a);
+        const holesClientE = utils.getOpenings(state.clients, state.clients.e);
 
         holesClientA.should.eql({
           left: [],

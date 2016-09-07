@@ -288,7 +288,6 @@ describe('reducer', () => {
         state2 = reducer(state1, actions.swipe('b', { direction: 'LEFT', position: { x: 0, y: 20 } }));
       });
 
-
       it('should remove second cluster', () => {
         state2.should.not.have.propertyByPath('clusters', 'A');
       });

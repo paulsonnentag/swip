@@ -174,20 +174,23 @@ function reducer (config) {
     const clusterStateB = utils.getClusterState(state, clientB.clusterID);
 
     return _.flow([
-      _.partial(mergeClusters, _, clientA, swipeA, clientB, swipeB),
+      _.partial(mergeClusters, _, clientA.id, swipeA, clientB.id, swipeB),
       _.partial(recalculateCluster, _, clientA.id, clientB.id, clusterStateA, clusterStateB),
     ])(state);
   }
 
-  function mergeClusters (state, clientA, swipeA, clientB, swipeB) {
+  function mergeClusters (state, clientAID, swipeA, clientBID, swipeB) {
+    const clientA = state.clients[clientAID];
+    const clientB = state.clients[clientBID];
+
     return update(state, {
       clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
       clients: {
-        [clientA.id]: {
-          openings: { $set: utils.getOpenings(state.clients, clientA.id) },
+        [clientAID]: {
+          openings: { $set: utils.getOpenings(state.clients, clientA) },
           adjacentClientIDs: { $push: [clientB.id] },
         },
-        [clientB.id]: {
+        [clientBID]: {
           clusterID: { $set: clientA.clusterID },
           adjacentClientIDs: { $push: [clientA.id] },
           transform: { $set: getTransform(clientA, swipeA, clientB, swipeB) },
@@ -198,6 +201,8 @@ function reducer (config) {
 
   function recalculateCluster (state, clientAID, clientBID, clusterStateA, clusterStateB) {
     const clusterData = config.cluster.events.merge(clusterStateA, clusterStateB);
+    const clientA = state.clients[clientAID];
+    const clientB = state.clients[clientBID];
 
     return update(state, {
       clusters: {
@@ -205,10 +210,10 @@ function reducer (config) {
       },
       clients: {
         [clientAID]: {
-          openings: { $set: utils.getOpenings(state.clients, clientAID) },
+          openings: { $set: utils.getOpenings(state.clients, clientA) },
         },
         [clientBID]: {
-          openings: { $set: utils.getOpenings(state.clients, clientBID) },
+          openings: { $set: utils.getOpenings(state.clients, clientB) },
         },
       },
     });
@@ -324,8 +329,25 @@ function reducer (config) {
 
     return update(state, {
       clusters: { $set: removeEmptyCluster(clusters, clients, clusterID) },
-      clients: { $set: _.omit(state.clients, [id]) },
+      clients: { $set: removeClient(clients, client) },
     });
+  }
+
+  function removeClient (clients, client) {
+    return _(clients)
+      .omit(client.id)
+      .mapValues((other) => {
+        const newAdjacentClientIDs = _.without(other.adjacentClientIDs, client.id);
+        const newClient = update(other, {
+          adjacentClientIDs: { $set: newAdjacentClientIDs },
+        });
+
+        return update(other, {
+          openings: { $set: utils.getOpenings(clients, newClient) },
+          adjacentClientIDs: { $set: newAdjacentClientIDs },
+        });
+      })
+      .value();
   }
 }
 
