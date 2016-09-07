@@ -119,13 +119,17 @@ function getOpenings (clients, clientID) {
 }
 
 function getAlignment (client1, client2) {
-  if (client2.transform.x >= (client1.transform.x + client1.size.width)) {
+  if (client2.transform.x >= (client1.transform.x + client1.size.width)
+    || equalish(client2.transform.x, (client1.transform.x + client1.size.width))) {
     return 'LEFT';
-  } else if (client1.transform.x >= (client2.transform.x + client2.size.width)) {
+  } else if (client1.transform.x >= (client2.transform.x + client2.size.width)
+    || equalish(client1.transform.x, (client2.transform.x + client2.size.width))) {
     return 'RIGHT';
-  } else if (client2.transform.y >= (client1.transform.y + client1.size.height)) {
+  } else if (client2.transform.y >= (client1.transform.y + client1.size.height)
+    || equalish(client2.transform.y, (client1.transform.y + client1.size.height))) {
     return 'TOP';
-  } else if (client1.transform.y >= (client2.transform.y + client2.size.height)) {
+  } else if (client1.transform.y >= (client2.transform.y + client2.size.height)
+    || equalish(client1.transform.y, (client2.transform.y + client2.size.height))) {
     return 'BOTTOM';
   }
 
@@ -154,6 +158,10 @@ function getClientsInCluster (clients, clusterID) {
 
 function lookupIDs (objects, objectIDs) {
   return _.map(objectIDs, (objectID) => objects[objectID]);
+}
+
+function equalish (a, b) {
+  return Math.abs(a - b) < 0.01;
 }
 
 module.exports = {

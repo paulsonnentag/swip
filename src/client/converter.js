@@ -8,13 +8,11 @@ class Converter {
   }
 
   toDevicePixel (x) {
-    // It's Very important to round the result!!!
-    return Math.floor(x / this.scalingFactor);
+    return x / this.scalingFactor;
   }
 
   toAbsPixel (x) {
-    // It's Very important to round the result!!!
-    return Math.floor(x * this.scalingFactor);
+    return x * this.scalingFactor;
   }
 
   convertClickPos (transform, evt) {
