@@ -12,13 +12,19 @@ swip(io, {
       update: (cluster) => {
         const particles = cluster.data.particles;
 
-        const updatedParticles = particles.filter((particle) => particle.ttl > 0).map((particle) => {
+        const updatedParticles = particles.filter((particle) => particle.ttl > 0)
+          .map((particle) => {
           particle.x += particle.speedX;
           particle.y += particle.speedY;
           particle.ttl--;
 
           return particle;
-        });
+        })
+          .map((particle) => {
+            
+
+            return particle;
+          });
 
         return {
           particles: { $set: updatedParticles },

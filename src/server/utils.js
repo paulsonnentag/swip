@@ -119,17 +119,26 @@ function getOpenings (clients, clientID) {
 }
 
 function getAlignment (client1, client2) {
-  if (client2.transform.x >= (client1.transform.x + client1.size.width)) {
+  const combClient1Width = (client1.transform.x + client1.size.width);
+  const combClient1Height = (client1.transform.y + client1.size.height);
+
+  const combClient2Width = (client2.transform.x + client2.size.width);
+  const combClient2Height = (client2.transform.y + client2.size.height);
+
+
+  if (client2.transform.x >= combClient1Width
+    || almostEqual(client2.transform.x, combClient1Width)) {
     return 'LEFT';
-  } else if (client1.transform.x >= (client2.transform.x + client2.size.width)) {
+  } else if (client1.transform.x >= combClient2Width
+    || almostEqual(client1.transform.x, combClient2Width)) {
     return 'RIGHT';
-  } else if (client2.transform.y >= (client1.transform.y + client1.size.height)) {
+  } else if (client2.transform.y >= combClient1Height
+    || almostEqual(client2.transform.y, combClient1Height)) {
     return 'TOP';
-  } else if (client1.transform.y >= (client2.transform.y + client2.size.height)) {
+  } else if (client1.transform.y >= combClient2Height
+    || almostEqual(client1.transform.y, combClient2Height)) {
     return 'BOTTOM';
   }
-
-  console.log('Invalid placement: ', client1, client2);
 
   throw new Error('Invalid placement of devices');
 }
@@ -154,6 +163,10 @@ function getClientsInCluster (clients, clusterID) {
 
 function lookupIDs (objects, objectIDs) {
   return _.map(objectIDs, (objectID) => objects[objectID]);
+}
+
+function almostEqual (a, b) {
+  return Math.abs(a - b) < 0.01;
 }
 
 module.exports = {
