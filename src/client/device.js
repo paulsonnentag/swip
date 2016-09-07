@@ -9,29 +9,30 @@ function requestSize (callback) {
       localStorage.setItem('deviceSize', deviceSize);
       callback(new Converter(deviceSize));
     } else {
-      const input = document.createElement('div');
-      input.id = 'swip-device-size-modal';
+      const button = document.createElement('button');
+      button.id = 'swip-device-size-button';
 
-      input.style.marginTop = '0.5em';
-      input.style.marginBottom = '0.5em';
-      input.style.width = '100%';
-      input.style.textAlign = 'center';
-      input.style.fontFamily = 'Arial';
+      button.style.marginTop = '0.5em';
+      button.style.marginBottom = '0.5em';
 
-      input.innerHTML = `
-             <label for="swip-device-size">Please input the device size in "(inch):</label>
-            <input type="text" id="swip-device-size">
-            <button id="swip-confirm-size">Confirm</button>
-            `;
-      document.body.insertBefore(input, document.body.firstChild);
+      button.style.width = '100%';
+      button.style.height = '2em';
+      button.style.textAlign = 'center';
+      button.style.fontFamily = 'Arial';
+      button.innerHTML = 'Set device size!';
 
-      document.getElementById('swip-confirm-size').addEventListener('click', () => {
-        deviceSize = document.getElementById('swip-device-size').value;
-        document.body.removeChild(input);
-        localStorage.setItem('deviceSize', deviceSize);
+      document.body.insertBefore(button, document.body.firstChild);
 
-        callback(new Converter(deviceSize));
-      });
+      document.getElementById('swip-device-size-button').onclick = () => {
+        deviceSize = prompt('Please enter the device size in "(inch): ');
+
+        if (deviceSize) {
+          document.body.removeChild(button);
+          localStorage.setItem('deviceSize', deviceSize);
+
+          callback(new Converter(deviceSize));
+        }
+      };
     }
   } else {
     callback(new Converter(localStorage.getItem('deviceSize')));
