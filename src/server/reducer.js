@@ -140,6 +140,10 @@ function reducer (config) {
     const swipeB = swipes[0];
     const clientB = state.clients[swipeB.id];
 
+    if (clientA.clusterID === clientB.clusterID) {
+      return clearSwipes(state);
+    }
+
     const { clients, clusters } = mergeAndRecalculateClusters(state, clientA, swipeA, clientB, swipeB);
 
     return update(state, {
@@ -161,17 +165,21 @@ function reducer (config) {
     });
   }
 
+  function clearSwipes (state) {
+    return update(state, { swipes: { $set: [] } });
+  }
+
   function mergeAndRecalculateClusters (state, clientA, swipeA, clientB, swipeB) {
     const clusterStateA = utils.getClusterState(state, clientA.clusterID);
     const clusterStateB = utils.getClusterState(state, clientB.clusterID);
 
     return _.flow([
-      _.partial(mergeCluster, _, clientA, swipeA, clientB, swipeB),
+      _.partial(mergeClusters, _, clientA, swipeA, clientB, swipeB),
       _.partial(recalculateCluster, _, clientA.id, clientB.id, clusterStateA, clusterStateB),
     ])(state);
   }
 
-  function mergeCluster (state, clientA, swipeA, clientB, swipeB) {
+  function mergeClusters (state, clientA, swipeA, clientB, swipeB) {
     return update(state, {
       clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
       clients: {
