@@ -11,6 +11,10 @@
         padding: 0;
       }
 
+      canvas {
+        cursor: pointer;
+      }
+
     </style>
   </head>
 
@@ -92,6 +96,22 @@
       swip.init({ socket: socket, container: canvas }, function (client) {
         const converter = client.converter;
 
+        client.onClick(function (evt) {
+          var particles = [];
+          for(var i = 0; i < 20; i++) {
+              particles.push({
+                x: evt.position.x,
+                y: evt.position.y,
+                speedX: Math.random() * 20 - 10,
+                speedY: Math.random() * 20 - 10,
+                color: getRandomColor(),
+                ttl: 10000000000,
+              });
+          }
+
+          client.emit('addParticle', { particles: particles });
+        });
+
         client.onDragStart(function (evt) {
         });
 
@@ -109,25 +129,26 @@
             });
           }
 
-          client.emit('addParticle', { particles: particles });
+          //client.emit('addParticle', { particles: particles });
         });
 
         client.onDragEnd(function (evt) {
-          var particles = [];
-          for(var i = 0; i < 20; i++) {
-            for(pos in evt.position) {
-              particles.push({
-                x: evt.position[pos].x,
-                y: evt.position[pos].y,
-                speedX: Math.random() * 20 - 10,
-                speedY: Math.random() * 20 - 10,
-                color: getRandomColor(),
-                ttl: 100,
-              });
-            }
-          }
 
-          client.emit('addParticle', { particles: particles });
+            var particles = [];
+            for(var i = 0; i < 20; i++) {
+              for(pos in evt.position) {
+                particles.push({
+                  x: evt.position[pos].x,
+                  y: evt.position[pos].y,
+                  speedX: Math.random() * 20 - 10,
+                  speedY: Math.random() * 20 - 10,
+                  color: getRandomColor(),
+                  ttl: 500,
+                });
+              }
+            }
+
+            //client.emit('addParticle', { particles: particles });
         });
 
         client.onUpdate(function (evt) {
