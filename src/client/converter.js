@@ -14,6 +14,36 @@ class Converter {
   toAbsPixel (x) {
     return x * this.scalingFactor;
   }
+
+  convertClickPos (transform, evt) {
+    const event = {
+      position: {
+        x: this.toAbsPixel(evt.clientX) + transform.x,
+        y: this.toAbsPixel(evt.clientY) + transform.y,
+      },
+      originalEvent: evt,
+    };
+
+    return event;
+  }
+
+  convertTouchPos (transform, evt) {
+    const event = {
+      position: [],
+      originalEvent: evt,
+    };
+
+    for (let i = 0; i < evt.changedTouches.length; i++) {
+      const currTouched = evt.changedTouches[i];
+
+      event.position.push({
+        x: this.toAbsPixel(currTouched.clientX) + transform.x,
+        y: this.toAbsPixel(currTouched.clientY) + transform.y,
+      });
+    }
+
+    return event;
+  }
 }
 
 function getScalingFactor (screenSize) {

@@ -3,22 +3,6 @@ const MIN_SWIPE_DIST = 5;
 const MOTION_TOLERANCE = 15;
 const startPoints = {};
 
-function onClick (element, callback) {
-  element.addEventListener('click', callback);
-}
-
-function onDragStart (element, callback) {
-  element.addEventListener('touchstart', callback);
-}
-
-function onDragMove (element, callback) {
-  element.addEventListener('touchmove', callback);
-}
-
-function onDragEnd (element, callback) {
-  element.addEventListener('touchend', callback);
-}
-
 function onSwipe (element, callback) {
   element.addEventListener('touchmove', touchMoveHandler);
 
@@ -84,11 +68,7 @@ function onMotion (callback) {
   });
 }
 
-export {
+export default {
   onSwipe,
   onMotion,
-  onClick,
-  onDragStart,
-  onDragMove,
-  onDragEnd,
 };
