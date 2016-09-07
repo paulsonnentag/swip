@@ -1,10 +1,10 @@
-import { requestSize } from './device';
-import { onSwipe, onMotion, onClick, onDragStart, onDragMove, onDragEnd } from './sensor';
+import device from './device';
+import sensor from './sensor';
 
 function init ({ socket, container }, initCallback) {
   const client = {};
 
-  requestSize((converter) => {
+  device.requestSize((converter) => {
     let state = {
       client:
         { size: {},
@@ -22,7 +22,7 @@ function init ({ socket, container }, initCallback) {
       },
     });
 
-    onSwipe(container, (evt) => {
+    sensor.onSwipe(container, (evt) => {
       socket.emit('SWIPE', {
         direction: evt.direction,
         position: { x: converter.toAbsPixel(evt.position.x),
@@ -31,32 +31,36 @@ function init ({ socket, container }, initCallback) {
       });
     });
 
-    onMotion(() => {
+    sensor.onMotion(() => {
       socket.emit('LEAVE_CLUSTER');
     });
 
     client.converter = converter;
 
     client.onClick = (callback) => {
-      onClick(container, (evt) => callback(convertClickPos(state, converter, evt)));
+      container.addEventListener('click', (evt) => {
+        callback(converter.convertClickPos(state.client.transform, converter, evt));
+      });
     };
 
     client.onDragStart = (callback) => {
-      onDragStart(container, (evt) => {
+      container.addEventListener('touchstart', (evt) => {
         evt.preventDefault();
-        callback(convertTouchPos(state, converter, evt));
+        callback(converter.convertTouchPos(state.client.transform, evt));
       });
     };
 
     client.onDragMove = (callback) => {
-      onDragMove(container, (evt) => {
+      container.addEventListener('touchmove', (evt) => {
         evt.preventDefault();
-        callback(convertTouchPos(state, converter, evt));
+        callback(converter.convertTouchPos(state.client.transform, evt));
       });
     };
 
     client.onDragEnd = (callback) => {
-      onDragEnd(container, (evt) => callback(convertTouchPos(state, converter, evt)));
+      container.addEventListener('touchend', (evt) => {
+        callback(converter.convertTouchPos(state.client.transform, converter, evt));
+      });
     };
 
     client.onUpdate = (callback) => {
@@ -72,35 +76,6 @@ function init ({ socket, container }, initCallback) {
 
     initCallback(client);
   });
-}
-
-function convertClickPos (state, converter, evt) {
-  const event = {
-    position: {
-      x: converter.toAbsPixel(evt.clientX) + state.client.transform.x,
-      y: converter.toAbsPixel(evt.clientY) + state.client.transform.y,
-    },
-    originalEvent: evt,
-  };
-  return event;
-}
-
-function convertTouchPos (state, converter, evt) {
-  const event = {
-    position: [],
-    originalEvent: evt,
-  };
-
-  for (let i = 0; i < evt.changedTouches.length; i++) {
-    const currTouched = evt.changedTouches[i];
-
-    event.position.push({
-      x: converter.toAbsPixel(currTouched.clientX) + state.client.transform.x,
-      y: converter.toAbsPixel(currTouched.clientY) + state.client.transform.y,
-    });
-  }
-
-  return event;
 }
 
 export default init;
