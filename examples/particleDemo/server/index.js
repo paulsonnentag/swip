@@ -24,6 +24,7 @@ swip(io, {
           particles: { $set: updatedParticles },
         };
       },
+      merge: () => ({}),
     },
     init: () => ({ particles: [] }),
   },
@@ -31,7 +32,7 @@ swip(io, {
   client: {
     init: () => ({}),
     events: {
-      addParticle: ({ cluster, client }, particles) => {
+      addParticle: ({ cluster, client }, { particles }) => {
         return {
           cluster: {
             data: { particles: { $push: particles } },
@@ -43,4 +44,4 @@ swip(io, {
 });
 
 
-server.listen(3000);
+server.listen(3001);

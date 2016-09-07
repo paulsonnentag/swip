@@ -1,8 +1,10 @@
 /* global window */
-const sensor = require('./sensor');
-const device = require('./device');
+import sensor from './sensor';
+import device from './device';
+import init from './init';
 
 window.swip = {
   sensor,
   device,
+  init,
 };

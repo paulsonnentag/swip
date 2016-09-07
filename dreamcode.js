@@ -89,6 +89,57 @@ swip(io, {
 
 // client
 
+/*
+* automated
+*
+socket.emit('CONNECT_CLIENT', {
+ size: {
+ width: converter.toAbsPixel(container.width),
+ height: converter.toAbsPixel(container.height),
+ }
+});
+
+swip.sensor.onSwipe(container, function (evt) {
+ socket.emit('SWIPE', { direction: evt.direction, position: { x: converter.toAbsPixel(evt.position.x), y: converter.toAbsPixel(evt.position.y) }});
+});
+
+swip.sensor.onMotion(function () {
+ socket.emit('LEAVE_CLUSTER');
+});
+*
+* */
+
+swip.init({ socket: socket, container: container}, (client) => {
+
+  client.onSwip((evt) => {
+    //add animation
+    //what should happen on swipe
+  });
+
+  client.onJoin((evt) => {
+
+  });
+
+  client.onLeave((evt) => {
+    //add animation
+    //what should happen if client leaves
+  });
+
+  /*
+  client.onClick((evt) => {
+
+  });
+
+  //custom behaviour
+  client.emit('name', {data: data});
+
+  client.onUpdate((evt) => {
+
+  });
+
+  var converter = client.converter;
+});*/
+
 const client = swip.client(socket, container);
 
 client.emit('movePaddle', { paddlePosition: 10 });

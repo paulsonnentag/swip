@@ -6,7 +6,7 @@ const createNodeLogger = require('redux-node-logger');
 const clientSource = read(require.resolve('../../dist/bundle.js'), 'utf-8');
 const actions = require('./actions');
 const reducer = require('./reducer');
-const selectors = require('./selectors');
+const utils = require('./utils');
 
 function swip (io, config) {
   const store = redux.createStore(reducer(config));
@@ -28,7 +28,7 @@ function swip (io, config) {
         return;
       }
 
-      const clientState = selectors.getClientState(state, id);
+      const clientState = utils.getClientState(state, id);
 
       socket.emit(actions.TYPE.CHANGED, clientState);
     });

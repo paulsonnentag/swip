@@ -1,5 +1,5 @@
 /* global document localStorage */
-const Converter = require('./converter');
+import Converter from './converter';
 
 function requestSize (callback) {
   if (!localStorage.getItem('deviceSize')) {
@@ -26,6 +26,6 @@ function requestSize (callback) {
   }
 }
 
-module.exports = {
+export {
   requestSize,
 };
