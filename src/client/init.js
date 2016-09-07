@@ -39,7 +39,7 @@ function init ({ socket, container }, initCallback) {
 
     client.onClick = (callback) => {
       container.addEventListener('click', (evt) => {
-        callback(converter.convertClickPos(state.client.transform, converter, evt));
+        callback(converter.convertClickPos(state.client.transform, evt));
       });
     };
 
@@ -59,7 +59,7 @@ function init ({ socket, container }, initCallback) {
 
     client.onDragEnd = (callback) => {
       container.addEventListener('touchend', (evt) => {
-        callback(converter.convertTouchPos(state.client.transform, converter, evt));
+        callback(converter.convertTouchPos(state.client.transform, evt));
       });
     };
 
