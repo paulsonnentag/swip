@@ -187,7 +187,6 @@ function reducer (config) {
       clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
       clients: {
         [clientAID]: {
-          openings: { $set: utils.getOpenings(state.clients, clientA) },
           adjacentClientIDs: { $push: [clientB.id] },
         },
         [clientBID]: {
@@ -200,7 +199,7 @@ function reducer (config) {
   }
 
   function recalculateCluster (state, clientAID, clientBID, clusterStateA, clusterStateB) {
-    const clusterData = config.cluster.events.merge(clusterStateA, clusterStateB);
+    const clusterData = config.cluster.events.merge(clusterStateA, clusterStateB, state.clients[clientBID].transform);
     const clientA = state.clients[clientAID];
     const clientB = state.clients[clientBID];
 

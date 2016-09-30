@@ -165,7 +165,7 @@ function lookupIDs (objects, objectIDs) {
 }
 
 function almostEqual (a, b) {
-  return Math.abs(a - b) < 0.01;
+  return Math.abs(a - b) < 0.1;
 }
 
 module.exports = {

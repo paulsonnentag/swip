@@ -305,11 +305,12 @@ describe('reducer', () => {
         state2.should.have.propertyByPath('clients', 'a', 'clusterID').which.eql('B');
       });
 
-      it('should call merge handler with both clusters', () => {
+      it('should call merge handler with both clusters and transform', () => {
         merge.should.be.calledOnce();
         merge.getCall(0).args.should.eql([
           { data: { sum: 3 }, id: 'B', clients: [clientB] },
           { data: { sum: 2 }, id: 'A', clients: [clientA] },
+          { x: -100, y: 0 },
         ]);
       });
 
