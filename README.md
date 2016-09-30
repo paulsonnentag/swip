@@ -27,11 +27,19 @@ npm run build
 
 # Examples
 
+## Particles
+
+![alt tag] (./assets/example1.gif)
+
 Enter the following command to run the particles demo:
 
 ```bash
 npm run particles
 ```
+
+## Golf
+
+![alt tag] (./assets/example2.gif)
 
 Enter the following command to run the golf demo:
 
