@@ -5,6 +5,7 @@ const should = require('should');
 const sinon = require('sinon');
 require('should-sinon');
 /*eslint-enable*/
+const update = require('immutability-helper');
 const createReducer = require('../src/server/reducer');
 const actions = require('../src/server/actions');
 
@@ -142,12 +143,8 @@ describe('reducer', () => {
     let expectedClient;
 
     beforeEach(() => {
-      initClient = sinon.spy(() => {
-        return { x: 'client' };
-      });
-      initCluster = sinon.spy(() => {
-        return { x: 'cluster' };
-      });
+      initClient = sinon.spy(() => ({ x: 'client' }));
+      initCluster = sinon.spy(() => ({ x: 'cluster' }));
       reducer = createReducer({
         client: { init: initClient },
         cluster: { init: initCluster },
@@ -195,8 +192,13 @@ describe('reducer', () => {
 
   describe('SWIPE', () => {
     let initialState;
+    let manyClustersInitialState;
     let clientA;
     let clientB;
+    let clientA2;
+    let clientB2;
+    let clientC;
+    let clientD;
     let reducer;
     let merge;
 
@@ -223,6 +225,27 @@ describe('reducer', () => {
         data: {},
       };
 
+      clientA2 = update(clientA, { adjacentClientIDs: { $push: ['c'] } });
+      clientB2 = update(clientB, { adjacentClientIDs: { $push: ['d'] } });
+
+      clientC = {
+        id: 'c',
+        clusterID: 'A',
+        transform: { x: -100, y: 20 },
+        size: { width: 100, height: 200 },
+        adjacentClientIDs: ['a'],
+        data: {},
+      };
+
+      clientD = {
+        id: 'd',
+        clusterID: 'B',
+        transform: { x: 100, y: -50 },
+        size: { width: 100, height: 200 },
+        adjacentClientIDs: ['b'],
+        data: {},
+      };
+
       initialState = {
         clusters: {
           A: { id: 'A', data: { sum: 2 } },
@@ -231,6 +254,16 @@ describe('reducer', () => {
         clients: {
           a: clientA,
           b: clientB,
+        },
+      };
+
+      manyClustersInitialState = {
+        clusters: initialState.clusters,
+        clients: {
+          a: clientA2,
+          b: clientB2,
+          c: clientC,
+          d: clientD,
         },
       };
 
@@ -333,12 +366,77 @@ describe('reducer', () => {
         });
       });
     });
+
+    describe('merge of two clusters with each having multiple clients', () => {
+      let state1;
+      let state2;
+
+      beforeEach(() => {
+        state1 = reducer(manyClustersInitialState, actions.swipe('a', {
+          direction: 'RIGHT',
+          position: { x: 100, y: 20 },
+        }));
+        state2 = reducer(state1, actions.swipe('b', { direction: 'LEFT', position: { x: 0, y: 20 } }));
+      });
+
+      it('should remove second cluster', () => {
+        state2.should.not.have.propertyByPath('clusters', 'A');
+      });
+
+      it('should update adjacentClientIDs in each client', () => {
+        state2.should.have.propertyByPath('clients', 'a', 'adjacentClientIDs')
+          .which.containEql('b')
+          .which.containEql('c')
+          .which.have.length(2);
+
+        state2.should.have.propertyByPath('clients', 'b', 'adjacentClientIDs')
+          .which.containEql('a')
+          .which.containEql('d')
+          .which.have.length(2);
+      });
+
+      it('should recalculate transform of joined client', () => {
+        state2.should.have.propertyByPath('clients', 'a', 'transform').which.eql({ x: -100, y: 0 });
+        state2.should.have.propertyByPath('clients', 'c', 'transform').which.eql({ x: -200, y: 20 });
+        state2.should.have.propertyByPath('clients', 'b', 'transform').which.eql({ x: 0, y: 0 });
+        state2.should.have.propertyByPath('clients', 'd', 'transform').which.eql({ x: 100, y: -50 });
+      });
+
+      it('should update clusterID of joined client', () => {
+        state2.should.have.propertyByPath('clients', 'a', 'clusterID').which.eql('B');
+        state2.should.have.propertyByPath('clients', 'c', 'clusterID').which.eql('B');
+      });
+
+      it('should call merge handler with both clusters and transform', () => {
+        merge.should.be.calledOnce();
+        merge.getCall(0).args.should.eql([
+          { data: { sum: 3 }, id: 'B', clients: [clientB2, clientD] },
+          { data: { sum: 2 }, id: 'A', clients: [clientA2, clientC] },
+          { x: -100, y: 0 },
+        ]);
+      });
+
+      it('should merge state', () => {
+        state2.should.have.propertyByPath('clusters', 'B', 'data').which.eql({ sum: 5 });
+      });
+
+      it('should recalculate openings', () => {
+        state2.should.have.propertyByPath('clients', 'a', 'openings').which.eql({
+          bottom: [],
+          left: [{ end: 100, start: 20 }],
+          right: [{ end: 100, start: 0 }],
+          top: [],
+        });
+        state2.should.have.propertyByPath('clients', 'b', 'openings').which.eql({
+          bottom: [],
+          left: [{ end: 100, start: 0 }],
+          right: [{ end: 150, start: 0 }],
+          top: [],
+        });
+      });
+    });
   });
 
-  describe('LEAVE_CLUSTER', () => {
-
-
-
-  });
+  describe('LEAVE_CLUSTER', () => {});
 });
 

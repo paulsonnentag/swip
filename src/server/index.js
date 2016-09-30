@@ -1,15 +1,15 @@
 const _ = require('lodash');
 const uid = require('uid');
 const read = require('fs').readFileSync;
-const redux = require('redux');
-const createNodeLogger = require('redux-node-logger');
+const { createStore, applyMiddleware } = require('redux');
 const clientSource = read(require.resolve('../../dist/bundle.js'), 'utf-8');
 const actions = require('./actions');
 const reducer = require('./reducer');
 const utils = require('./utils');
+const debugMiddleware = require('./debug-middleware.js');
 
 function swip (io, config) {
-  const store = redux.createStore(reducer(config));
+  const store = createStore(reducer(config), applyMiddleware(debugMiddleware));
 
   io.on('connection', (socket) => {
     const id = uid();

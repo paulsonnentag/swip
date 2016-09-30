@@ -182,37 +182,63 @@ function reducer (config) {
   function mergeClusters (state, clientAID, swipeA, clientBID, swipeB) {
     const clientA = state.clients[clientAID];
     const clientB = state.clients[clientBID];
+    const transform = getTransform(clientA, swipeA, clientB, swipeB);
+    const clientsInCluster = utils.getClientsInCluster(state.clients, clientB.clusterID);
+
+    const clientsBChanges = _(clientsInCluster)
+      .reduce((changes, client) => {
+        /* eslint-disable no-param-reassign */
+
+        if (client.id === clientBID) {
+          changes[client.id] = {
+            clusterID: { $set: clientA.clusterID },
+            adjacentClientIDs: { $push: [clientA.id] },
+            transform: { $set: transform },
+          };
+        } else {
+          changes[client.id] = {
+            clusterID: { $set: clientA.clusterID },
+            transform: {
+              $set: {
+                x: client.transform.x + transform.x,
+                y: client.transform.y + transform.y,
+              },
+            },
+          };
+        }
+
+        return changes;
+        /* eslint-enable no-param-reassign */
+      }, {});
 
     return update(state, {
       clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
-      clients: {
-        [clientAID]: {
-          adjacentClientIDs: { $push: [clientB.id] },
+      clients: _.assign(
+        {
+          [clientAID]: {
+            adjacentClientIDs: { $push: [clientB.id] },
+          },
         },
-        [clientBID]: {
-          clusterID: { $set: clientA.clusterID },
-          adjacentClientIDs: { $push: [clientA.id] },
-          transform: { $set: getTransform(clientA, swipeA, clientB, swipeB) },
-        },
-      },
+        clientsBChanges
+      ),
     });
   }
 
   function recalculateCluster (state, clientAID, clientBID, clusterStateA, clusterStateB) {
-    const clusterData = config.cluster.events.merge(clusterStateA, clusterStateB, state.clients[clientBID].transform);
-    const clientA = state.clients[clientAID];
-    const clientB = state.clients[clientBID];
+    const transform = state.clients[clientBID].transform;
+    const clusterDataChanges = config.cluster.events.merge(clusterStateA, clusterStateB, transform);
 
+    // recalculate openings and merge data of clusters
     return update(state, {
       clusters: {
-        [clusterStateA.id]: { data: clusterData },
+        [clusterStateA.id]: { data: clusterDataChanges },
       },
       clients: {
         [clientAID]: {
-          openings: { $set: utils.getOpenings(state.clients, clientA) },
+          openings: { $set: utils.getOpenings(state.clients, state.clients[clientAID]) },
         },
         [clientBID]: {
-          openings: { $set: utils.getOpenings(state.clients, clientB) },
+          openings: { $set: utils.getOpenings(state.clients, state.clients[clientBID]) },
         },
       },
     });
