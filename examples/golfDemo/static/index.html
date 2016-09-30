@@ -126,17 +126,17 @@
 
             drawOpenings(ctx, evt.client);
 
+            var golfball = evt.cluster.data.golfball;
+
             if (middlePos) {
               ctx.strokeStyle = '#FFFFFF';
               ctx.lineWidth = 3;
               ctx.shadowBlur= 5;
               ctx.beginPath();
-              ctx.moveTo(middlePos.x, middlePos.y);
-              ctx.lineTo(startPos.x, startPos.y);
+              ctx.moveTo(golfball.x, golfball.y);
+              ctx.lineTo(golfball.x + (middlePos.x - startPos.x), golfball.y + (middlePos.y - startPos.y));
               ctx.stroke();
             }
-
-            var golfball = evt.cluster.data.golfball;
 
             ctx.fillStyle = '#FFFFFF';
             ctx.shadowBlur= 0;
