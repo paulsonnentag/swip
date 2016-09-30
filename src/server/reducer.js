@@ -27,8 +27,8 @@ function reducer (config) {
       case actions.TYPE.SWIPE:
         return doSwipe(state, data);
 
-      case actions.TYPE.LEAVE_CLUSTER:
-        return leaveCluster(state, data);
+      /* case actions.TYPE.LEAVE_CLUSTER:
+        return leaveCluster(state, data); */
 
       case actions.TYPE.DISCONNECT:
         return disconnect(state, data);
@@ -293,46 +293,6 @@ function reducer (config) {
       clients: { [id]: { clusterID: { $set: null } } },
     });
   }
-
-  /*
-   function reCluster (state, { id }) {
-   const clusters = [];
-   let currCluster = [];
-   const rest = utils.getClientsInCluster(state.clients, state.clients[id].clusterID);
-   rest.splice(rest.indexOf(state.clients[id]), 1);
-
-   while (rest.length > 0) {
-   const check = [rest.shift()];
-
-   while (check.length > 0) {
-   const currClient = check.shift();
-
-   const clientConnections = currClient.connections;
-
-   _.filter(clientConnections, (clientId) => rest.indexOf(state.clients[clientId]) !== -1)
-   .forEach((clientId) => {
-   check.push(state.clients[clientId]);
-   rest.splice(rest.indexOf(state.clients[clientId]), 1);
-   });
-
-   currCluster.push(currClient);
-   }
-
-   clusters.push(currCluster);
-   currCluster = [];
-   }
-
-
-   const out = {};
-   for (let i = 0; i < clusters.length; i++) {
-   out[i] = state.clusters[state.clients[id].clusterID];
-   }
-
-   return update(state, {
-   clusters: { $set: out },
-   });
-   }
-   */
 
   function removeEmptyCluster (clusters, clients, clusterID) {
     if (utils.getClientsInCluster(clients, clusterID).length > 1) {
