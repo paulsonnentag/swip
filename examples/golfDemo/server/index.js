@@ -40,6 +40,13 @@ swip(io, {
           }
         });
 
+        let gameOver = cluster.data.gameOver;
+        const hole = cluster.data.hole;
+
+        if (Math.abs(xPos - hole.x) < 20 && Math.abs(yPos - hole.y) < 20) {
+          gameOver = true;
+        }
+
         return {
           golfball: {
             x: { $set: (xPos + speedX) },
@@ -47,11 +54,16 @@ swip(io, {
             speedX: { $set: speedX === 0 ? 0 : slowDown(speedX) },
             speedY: { $set: speedY === 0 ? 0 : slowDown(speedY) },
           },
+          gameOver: { $set: gameOver },
         };
       },
       merge: (cluster1, cluster2, transform) => ({ particles: { $set: getNewParticleDist(cluster1, cluster2, transform) } }),
     },
-    init: () => ({ golfball : { x: 50, y: 50, size: 5, speedX: 0, speedY: 0 } }),
+    init: () => ({
+      golfball: { x: 50, y: 50, size: 10, speedX: 0, speedY: 0 },
+      hole: { x: 200, y: 200 },
+      gameOver: false,
+    }),
   },
 
   client: {
@@ -61,6 +73,13 @@ swip(io, {
         return {
           cluster: {
             data: { golfball : { speedX: { $set: Math.round(speedX / 10) }, speedY: { $set: Math.round(speedY / 10) } } },
+          },
+        };
+      },
+      setHole: ({ cluster, client }, hole) => {
+        return {
+          cluster: {
+            data: { hole: { $set: hole } },
           },
         };
       },
@@ -76,7 +95,7 @@ function getNewParticleDist (cluster1, cluster2, transform) {
     }
   });
 
-  return cluster1.data.golfball;
+  return cluster1.data;
 }
 
 function slowDown (speed) {
