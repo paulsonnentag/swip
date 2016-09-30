@@ -27,6 +27,8 @@
     <script>
       var socket = io.connect();
 
+      var randomColor = getRandomColor();
+
       var canvas = document.getElementById('canvas');
       var ctx = canvas.getContext("2d");
 
@@ -104,7 +106,7 @@
                 y: evt.position.y,
                 speedX: Math.random() * 20 - 10,
                 speedY: Math.random() * 20 - 10,
-                color: getRandomColor(),
+                color: randomColor,
                 ttl: 10000000000,
               });
           }

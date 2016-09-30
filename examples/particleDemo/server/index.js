@@ -53,7 +53,7 @@ swip(io, {
           particles: { $set: updatedParticles },
         };
       },
-      merge: (cluster1, cluster2) => ({ particles: { $set: cluster1.data.particles.concat(cluster2.data.particles) } }),
+      merge: (cluster1, cluster2, transform) => ({ particles: { $set: getNewParticleDist(cluster1, cluster2, transform) } }),
     },
     init: () => ({ particles: [] }),
   },
@@ -89,13 +89,25 @@ function checkForWall (particlePos, openings, transform) {
   let isWall = true;
 
   openings.forEach((opening) => {
-
     if (particlePos >= (opening.start + transform) && particlePos <= (opening.end + transform)) {
       isWall = false;
     }
   });
 
   return isWall;
+}
+
+function getNewParticleDist (cluster1, cluster2, transform) {
+  cluster2.clients.forEach((client) => {
+    for (let i = 0; i < cluster2.data.particles.length; i++) {
+      if (isParticleInClient(cluster2.data.particles[i], client)) {
+        cluster2.data.particles[i].x += (client.transform.x + transform.x);
+        cluster2.data.particles[i].y += (client.transform.y + transform.y);
+      }
+    }
+  });
+
+  return cluster1.data.particles.concat(cluster2.data.particles);
 }
 
 server.listen(3000);
