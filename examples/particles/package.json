@@ -1,7 +1,7 @@
 {
-  "name": "swip-pong",
+  "name": "swip-particles",
   "version": "1.0.0",
-  "description": "pong clone",
+  "description": "particle example",
   "main": "index.js",
   "scripts": {
     "start": "node server/index.js",
