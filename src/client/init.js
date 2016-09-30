@@ -31,9 +31,9 @@ function init ({ socket, container }, initCallback) {
       });
     });
 
-    sensor.onMotion(() => {
+    /* sensor.onMotion(() => {
       socket.emit('LEAVE_CLUSTER');
-    });
+    }); */
 
     client.converter = converter;
 
