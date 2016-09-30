@@ -29,6 +29,7 @@
 
       var canvas = document.getElementById('canvas');
       var ctx = canvas.getContext("2d");
+      var displayed = false;
 
       canvas.setAttribute('width', window.innerWidth);
       canvas.setAttribute('height', window.innerHeight);
@@ -151,7 +152,8 @@
             ctx.arc(hole.x, hole.y, 25, 0, 2 * Math.PI);
             ctx.fill();
 
-            if (evt.cluster.data.gameOver) {
+            if (evt.cluster.data.gameOver && !displayed) {
+              displayed = true;
               alert('Game Over!');
             }
 
