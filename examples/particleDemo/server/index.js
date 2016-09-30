@@ -53,7 +53,9 @@ swip(io, {
           particles: { $set: updatedParticles },
         };
       },
-      merge: (cluster1, cluster2, transform) => ({ particles: { $set: getNewParticleDist(cluster1, cluster2, transform) } }),
+      merge: (cluster1, cluster2, transform) => ({
+        particles: { $set: getNewParticleDist(cluster1, cluster2, transform) },
+      }),
     },
     init: () => ({ particles: [] }),
   },

@@ -10,11 +10,11 @@ swip(io, {
   cluster: {
     events: {
       update: (cluster) => {
-        const golfball = cluster.data.golfball
-        const xPos = cluster.data.golfball.x;
-        const yPos = cluster.data.golfball.y;
-        let speedX = cluster.data.golfball.speedX;
-        let speedY = cluster.data.golfball.speedY;
+        const golfball = cluster.data.golfball;
+        const xPos = golfball.x;
+        const yPos = golfball.y;
+        let speedX = golfball.speedX;
+        let speedY = golfball.speedY;
 
         const currClients = cluster.clients;
 
@@ -57,7 +57,9 @@ swip(io, {
           gameOver: { $set: gameOver },
         };
       },
-      merge: (cluster1, cluster2, transform) => ({ particles: { $set: getNewParticleDist(cluster1, cluster2, transform) } }),
+      merge: (cluster1, cluster2, transform) => ({
+        particles: { $set: getNewParticleDist(cluster1, cluster2, transform) },
+      }),
     },
     init: () => ({
       golfball: { x: 50, y: 50, size: 10, speedX: 0, speedY: 0 },
