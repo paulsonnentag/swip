@@ -95,6 +95,9 @@
         var endPos = {};
 
         client.onClick(function (evt) {
+          var hole = { x: evt.position.x, y: evt.position.y };
+
+          client.emit('setHole', hole);
         });
 
         client.onDragStart(function (evt) {
@@ -140,6 +143,17 @@
             ctx.beginPath();
             ctx.arc(golfball.x, golfball.y, golfball.size, 0, 2 * Math.PI);
             ctx.fill();
+
+            var hole = evt.cluster.data.hole;
+
+            ctx.fillStyle = '#FF6666';
+            ctx.beginPath();
+            ctx.arc(hole.x, hole.y, 25, 0, 2 * Math.PI);
+            ctx.fill();
+
+            if (evt.cluster.data.gameOver) {
+              alert('Game Over!');
+            }
 
             ctx.restore();
           }
