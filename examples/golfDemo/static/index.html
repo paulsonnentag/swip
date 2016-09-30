@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Swip</title>
+    <title>Swip Golf</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
@@ -27,8 +27,6 @@
     <script>
       var socket = io.connect();
 
-      var randomColor = getRandomColor();
-
       var canvas = document.getElementById('canvas');
       var ctx = canvas.getContext("2d");
 
@@ -37,12 +35,6 @@
 
       ctx.fillStyle = '#333333';
       ctx.fillRect(0,0, canvas.width, canvas.height);
-
-      function getRandomColor () {
-        colors = ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000', '#0000ff', '#7920FF', '#FD0987', '#FF3300'];
-
-        return colors[Math.floor(Math.random() * 10)];
-      }
 
       function drawOpenings (ctx, client) {
         var openings = client.openings;
@@ -98,64 +90,31 @@
       swip.init({ socket: socket, container: canvas }, function (client) {
         const converter = client.converter;
 
-        client.onClick(function (evt) {
-          var particles = [];
-          for(var i = 0; i < 20; i++) {
-              particles.push({
-                x: evt.position.x,
-                y: evt.position.y,
-                speedX: Math.random() * 20 - 10,
-                speedY: Math.random() * 20 - 10,
-                color: randomColor,
-                ttl: 10000000000,
-              });
-          }
+        var startPos = {};
+        var middlePos;
+        var endPos = {};
 
-          client.emit('addParticle', { particles: particles });
+        client.onClick(function (evt) {
         });
 
         client.onDragStart(function (evt) {
+          startPos = { x: evt.position[0].x, y: evt.position[0].y };
         });
 
         client.onDragMove(function (evt) {
-          var particles = [];
-
-          for(pos in evt.position) {
-            particles.push({
-              x: evt.position[pos].x,
-              y: evt.position[pos].y,
-              color: getRandomColor(),
-              speedX: 0,
-              speedY: 0,
-              ttl: 25,
-            });
-          }
-
-          //client.emit('addParticle', { particles: particles });
+          middlePos = { x: evt.position[0].x, y: evt.position[0].y };
         });
 
         client.onDragEnd(function (evt) {
+          endPos = { x: evt.position[0].x, y: evt.position[0].y };
+          middlePos = null;
 
-            var particles = [];
-            for(var i = 0; i < 20; i++) {
-              for(pos in evt.position) {
-                particles.push({
-                  x: evt.position[pos].x,
-                  y: evt.position[pos].y,
-                  speedX: Math.random() * 20 - 10,
-                  speedY: Math.random() * 20 - 10,
-                  color: getRandomColor(),
-                  ttl: 500,
-                });
-              }
-            }
-
-          client.emit('addParticle', { particles: particles });
+          client.emit('hitBall', { speedX: (startPos.x - endPos.x), speedY:  (startPos.y - endPos.y) });
         });
 
         client.onUpdate(function (evt) {
 
-          if (evt.cluster) {
+          if (evt.cluster.data.golfball) {
             ctx.fillRect(0,0, canvas.width, canvas.height);
 
             ctx.save();
@@ -164,14 +123,23 @@
 
             drawOpenings(ctx, evt.client);
 
-            var particles = evt.cluster.data.particles;
+            if (middlePos) {
+              ctx.strokeStyle = '#FFFFFF';
+              ctx.lineWidth = 3;
+              ctx.shadowBlur= 5;
+              ctx.beginPath();
+              ctx.moveTo(middlePos.x, middlePos.y);
+              ctx.lineTo(startPos.x, startPos.y);
+              ctx.stroke();
+            }
 
-            particles.forEach(function (particle) {
-              ctx.fillStyle = particle.color;
-              ctx.shadowBlur=10;
-              ctx.shadowColor=particle.color;
-              ctx.fillRect( particle.x, particle.y, 10, 10 );
-            });
+            var golfball = evt.cluster.data.golfball;
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.shadowBlur= 0;
+            ctx.beginPath();
+            ctx.arc(golfball.x, golfball.y, golfball.size, 0, 2 * Math.PI);
+            ctx.fill();
 
             ctx.restore();
           }

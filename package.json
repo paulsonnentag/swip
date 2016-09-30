@@ -7,7 +7,9 @@
     "test": "mocha",
     "dev": "webpack --watch",
     "build": "webpack",
-    "particle": "nodemon examples/particleDemo/server/index.js"
+    "particle": "nodemon examples/particleDemo/server/index.js",
+    "pong": "nodemon examples/pongDemo/server/index.js",
+    "golf": "nodemon examples/golfDemo/server/index.js"
   },
   "repository": {
     "type": "git",
