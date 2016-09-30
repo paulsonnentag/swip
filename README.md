@@ -1,6 +1,15 @@
+<img src='assets/logo.png' width="350">
+
+
+
+
 > **DISCLAIMER**
 > 
-> This is a very early version of Swip.js. If the app doesn't respond you might have to reload the browser or restart the server. There is currently a bug where the server somtimes fails with 'invalid device placement', after that you have to restart the server.
+> This is a very early version of Swip.js. If the app doesn't respond you might have to reload the browser or restart the server. There is currently a bug where the server sometimes fails with 'invalid device placement', after that you have to restart the server.
+
+<img src='assets/explanation.jpg' width="400">
+
+
 
 # Installation
 
