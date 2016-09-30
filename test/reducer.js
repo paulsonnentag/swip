@@ -436,7 +436,4 @@ describe('reducer', () => {
       });
     });
   });
-
-  describe('LEAVE_CLUSTER', () => {});
 });
-
