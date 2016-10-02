@@ -1,15 +1,26 @@
-const _ = require('lodash');
-
 const MAX_LOG_SIZE = 25;
 
 let log = [];
 
 function debugMiddleware ({ getState }) {
-
   return (next) =>
     (action) => {
+      let result;
       const prevState = getState();
-      const result = next(action);
+
+      try {
+        result = next(action);
+      } catch (e) {
+        console.log('=============================');
+        console.log(JSON.stringify(addToLog(log, { nextState: getState(), prevState, action })));
+        console.log('=============================');
+        console.log(e.message);
+        console.log(e.stack);
+        console.log('=============================');
+
+        process.exit();
+      }
+
       const nextState = getState();
 
       log = addToLog(log, { action, prevState, nextState });
