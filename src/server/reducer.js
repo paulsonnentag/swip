@@ -170,16 +170,6 @@ function reducer (config) {
   }
 
   function mergeAndRecalculateClusters (state, clientA, swipeA, clientB, swipeB) {
-    const clusterStateA = utils.getClusterState(state, clientA.clusterID);
-    const clusterStateB = utils.getClusterState(state, clientB.clusterID);
-
-    return _.flow([
-      _.partial(mergeClusters, _, clientA, swipeA, clientB, swipeB),
-      _.partial(recalculateCluster, _, clientA.id, clientB.id, clusterStateA, clusterStateB),
-    ])(state);
-  }
-
-  function mergeClusters (state, clientA, swipeA, clientB, swipeB) {
     const transform = getTransform(clientA, swipeA, clientB, swipeB);
     const clientsInCluster = utils.getClientsInCluster(state.clients, clientB.clusterID);
 
@@ -205,7 +195,7 @@ function reducer (config) {
         /* eslint-enable no-param-reassign */
       }, {});
 
-    return update(state, {
+    const clusteredState = update(state, {
       clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
       clients: _.assign(
         {
@@ -216,22 +206,21 @@ function reducer (config) {
         clientsBChanges
       ),
     });
-  }
 
-  function recalculateCluster (state, clientAID, clientBID, clusterStateA, clusterStateB) {
+    const clusterStateA = utils.getClusterState(state, clientA.clusterID);
+    const clusterStateB = utils.getClusterState(state, clientB.clusterID);
     const clusterDataChanges = config.cluster.events.merge(clusterStateA, clusterStateB, transform);
 
-    // recalculate openings and merge data of clusters
-    return update(state, {
+    return update(clusteredState, {
       clusters: {
         [clusterStateA.id]: { data: clusterDataChanges },
       },
       clients: {
-        [clientAID]: {
-          openings: { $set: utils.getOpenings(state.clients, state.clients[clientAID]) },
+        [clientA.id]: {
+          openings: { $set: utils.getOpenings(clusteredState.clients, clusteredState.clients[clientA.id]) },
         },
-        [clientBID]: {
-          openings: { $set: utils.getOpenings(state.clients, state.clients[clientBID]) },
+        [clientB.id]: {
+          openings: { $set: utils.getOpenings(clusteredState.clients, clusteredState.clients[clientB.id]) },
         },
       },
     });

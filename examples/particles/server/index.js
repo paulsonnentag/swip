@@ -103,8 +103,8 @@ function getNewParticleDist (cluster1, cluster2, transform) {
   cluster2.clients.forEach((client) => {
     for (let i = 0; i < cluster2.data.particles.length; i++) {
       if (isParticleInClient(cluster2.data.particles[i], client)) {
-        cluster2.data.particles[i].x += (client.transform.x + transform.x);
-        cluster2.data.particles[i].y += (client.transform.y + transform.y);
+        cluster2.data.particles[i].x += transform.x;
+        cluster2.data.particles[i].y += transform.y;
       }
     }
   });
