@@ -16,7 +16,7 @@ function swip (io, config) {
 
     socket.on(actions.TYPE.CONNECT, (data) => store.dispatch(actions.connect(id, data)));
     socket.on(actions.TYPE.SWIPE, (data) => store.dispatch(actions.swipe(id, data)));
-    // socket.on(actions.TYPE.LEAVE_CLUSTER, () => store.dispatch(actions.leaveCluster(id)));
+    socket.on(actions.TYPE.LEAVE_CLUSTER, () => store.dispatch(actions.leaveCluster(id)));
     socket.on(actions.TYPE.DISCONNECT, () => {
       unsubscribe();
       store.dispatch(actions.disconnect(id));

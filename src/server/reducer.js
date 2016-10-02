@@ -189,22 +189,18 @@ function reducer (config) {
       .reduce((changes, client) => {
         /* eslint-disable no-param-reassign */
 
-        if (client.id === clientBID) {
-          changes[client.id] = {
-            clusterID: { $set: clientA.clusterID },
-            adjacentClientIDs: { $push: [clientA.id] },
-            transform: { $set: transform },
-          };
-        } else {
-          changes[client.id] = {
-            clusterID: { $set: clientA.clusterID },
-            transform: {
-              $set: {
-                x: client.transform.x + transform.x,
-                y: client.transform.y + transform.y,
-              },
+        changes[client.id] = {
+          clusterID: { $set: clientA.clusterID },
+          transform: {
+            $set: {
+              x: client.transform.x + (transform.x - clientB.transform.x),
+              y: client.transform.y + (transform.y - clientB.transform.y),
             },
-          };
+          },
+        };
+
+        if (client.id === clientBID) {
+          changes[client.id].adjacentClientIDs = { $push: [clientA.id] };
         }
 
         return changes;
