@@ -124,7 +124,6 @@ function getAlignment (client1, client2) {
   const combClient2Width = (client2.transform.x + client2.size.width);
   const combClient2Height = (client2.transform.y + client2.size.height);
 
-
   if (client2.transform.x >= combClient1Width
     || almostEqual(client2.transform.x, combClient1Width)) {
     return 'LEFT';
@@ -139,7 +138,7 @@ function getAlignment (client1, client2) {
     return 'BOTTOM';
   }
 
-  throw new Error('Invalid placement of devices');
+  throw new Error('Unexpected placement of devices');
 }
 
 function getClusterState ({ clusters, clients }, clusterID) {

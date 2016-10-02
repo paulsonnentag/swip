@@ -28,7 +28,7 @@ function reducer (config) {
         return doSwipe(state, data);
 
       /* case actions.TYPE.LEAVE_CLUSTER:
-        return leaveCluster(state, data); */
+       return leaveCluster(state, data); */
 
       case actions.TYPE.DISCONNECT:
         return disconnect(state, data);
@@ -170,69 +170,75 @@ function reducer (config) {
   }
 
   function mergeAndRecalculateClusters (state, clientA, swipeA, clientB, swipeB) {
-    const clusterStateA = utils.getClusterState(state, clientA.clusterID);
-    const clusterStateB = utils.getClusterState(state, clientB.clusterID);
+    const transform = getTransform(clientA, swipeA, clientB, swipeB);
 
     return _.flow([
-      _.partial(mergeClusters, _, clientA.id, swipeA, clientB.id, swipeB),
-      _.partial(recalculateCluster, _, clientA.id, clientB.id, clusterStateA, clusterStateB),
+      _.partial(mergeClusterData, _, transform, clientA.id, clientB.id),
+      _.partial(moveClientsToNewCluster, _, transform, clientA.id, clientB.id),
+      _.partial(recalculateOpenings, _, clientA.id, clientB.id),
     ])(state);
   }
 
-  function mergeClusters (state, clientAID, swipeA, clientBID, swipeB) {
-    const clientA = state.clients[clientAID];
-    const clientB = state.clients[clientBID];
-    const transform = getTransform(clientA, swipeA, clientB, swipeB);
-    const clientsInCluster = utils.getClientsInCluster(state.clients, clientB.clusterID);
-
-    const clientsBChanges = _(clientsInCluster)
-      .reduce((changes, client) => {
-        /* eslint-disable no-param-reassign */
-
-        if (client.id === clientBID) {
-          changes[client.id] = {
-            clusterID: { $set: clientA.clusterID },
-            adjacentClientIDs: { $push: [clientA.id] },
-            transform: { $set: transform },
-          };
-        } else {
-          changes[client.id] = {
-            clusterID: { $set: clientA.clusterID },
-            transform: {
-              $set: {
-                x: client.transform.x + transform.x,
-                y: client.transform.y + transform.y,
-              },
-            },
-          };
-        }
-
-        return changes;
-        /* eslint-enable no-param-reassign */
-      }, {});
+  function mergeClusterData (state, transform, clientAID, clientBID) {
+    const newClusterID = state.clients[clientAID].clusterID;
+    const oldClusterID = state.clients[clientBID].clusterID;
+    const clusterStateA = utils.getClusterState(state, newClusterID);
+    const clusterStateB = utils.getClusterState(state, oldClusterID);
+    const clusterDataChanges = config.cluster.events.merge(clusterStateA, clusterStateB, transform);
 
     return update(state, {
-      clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
+      clusters: {
+        [newClusterID]: { data: clusterDataChanges },
+      },
+    });
+  }
+
+  function moveClientsToNewCluster (state, transform, clientAID, clientBID) {
+    const oldClusterID = state.clients[clientBID].clusterID;
+
+    return update(state, {
+      clusters: { $set: _.omit(state.clusters, oldClusterID) },
       clients: _.assign(
         {
           [clientAID]: {
-            adjacentClientIDs: { $push: [clientB.id] },
+            adjacentClientIDs: { $push: [clientBID] },
           },
         },
-        clientsBChanges
+        getClientsBChanges(state, transform, clientAID, clientBID)
       ),
     });
   }
 
-  function recalculateCluster (state, clientAID, clientBID, clusterStateA, clusterStateB) {
-    const transform = state.clients[clientBID].transform;
-    const clusterDataChanges = config.cluster.events.merge(clusterStateA, clusterStateB, transform);
+  function getClientsBChanges (state, transform, clientAID, clientBID) {
+    const newClusterID = state.clients[clientAID].clusterID;
+    const oldClusterID = state.clients[clientBID].clusterID;
 
-    // recalculate openings and merge data of clusters
+    const clientsInCluster = utils.getClientsInCluster(state.clients, oldClusterID);
+
+    return _.reduce(clientsInCluster, (changes, client) => {
+      /* eslint-disable no-param-reassign */
+
+      changes[client.id] = {
+        clusterID: { $set: newClusterID },
+        transform: {
+          $set: {
+            x: client.transform.x + transform.x,
+            y: client.transform.y + transform.y,
+          },
+        },
+      };
+
+      if (client.id === clientBID) {
+        changes[client.id].adjacentClientIDs = { $push: [clientAID] };
+      }
+
+      return changes;
+      /* eslint-enable no-param-reassign */
+    }, {});
+  }
+
+  function recalculateOpenings (state, clientAID, clientBID) {
     return update(state, {
-      clusters: {
-        [clusterStateA.id]: { data: clusterDataChanges },
-      },
       clients: {
         [clientAID]: {
           openings: { $set: utils.getOpenings(state.clients, state.clients[clientAID]) },
@@ -248,26 +254,25 @@ function reducer (config) {
     switch (swipeA.direction) {
       case 'LEFT':
         return {
-          x: clientA.transform.x - clientB.size.width,
-          y: clientA.transform.y + (swipeA.position.y - swipeB.position.y),
+          x: (clientA.transform.x - clientB.size.width) - clientB.transform.x,
+          y: (clientA.transform.y + (swipeA.position.y - swipeB.position.y)) - clientB.transform.y,
         };
-
       case 'RIGHT':
         return {
-          x: clientA.transform.x + clientA.size.width,
-          y: clientA.transform.y + (swipeA.position.y - swipeB.position.y),
+          x: (clientA.transform.x + clientA.size.width) - clientB.transform.x,
+          y: (clientA.transform.y + (swipeA.position.y - swipeB.position.y)) - clientB.transform.y,
         };
 
       case 'UP':
         return {
-          x: clientA.transform.x + (swipeA.position.x - swipeB.position.x),
-          y: clientA.transform.y - clientB.size.height,
+          x: (clientA.transform.x + (swipeA.position.x - swipeB.position.x)) - clientB.transform.x,
+          y: (clientA.transform.y - clientB.size.height) - clientB.transform.y,
         };
 
       case 'DOWN':
         return {
-          x: clientA.transform.x + (swipeA.position.x - swipeB.position.x),
-          y: clientA.transform.y + clientA.size.height,
+          x: (clientA.transform.x + (swipeA.position.x - swipeB.position.x)) - clientB.transform.x,
+          y: (clientA.transform.y + clientA.size.height) - clientB.transform.y,
         };
 
       default:
