@@ -174,14 +174,12 @@ function reducer (config) {
     const clusterStateB = utils.getClusterState(state, clientB.clusterID);
 
     return _.flow([
-      _.partial(mergeClusters, _, clientA.id, swipeA, clientB.id, swipeB),
+      _.partial(mergeClusters, _, clientA, swipeA, clientB, swipeB),
       _.partial(recalculateCluster, _, clientA.id, clientB.id, clusterStateA, clusterStateB),
     ])(state);
   }
 
-  function mergeClusters (state, clientAID, swipeA, clientBID, swipeB) {
-    const clientA = state.clients[clientAID];
-    const clientB = state.clients[clientBID];
+  function mergeClusters (state, clientA, swipeA, clientB, swipeB) {
     const transform = getTransform(clientA, swipeA, clientB, swipeB);
     const clientsInCluster = utils.getClientsInCluster(state.clients, clientB.clusterID);
 
@@ -193,13 +191,13 @@ function reducer (config) {
           clusterID: { $set: clientA.clusterID },
           transform: {
             $set: {
-              x: client.transform.x + (transform.x - clientB.transform.x),
-              y: client.transform.y + (transform.y - clientB.transform.y),
+              x: client.transform.x + transform.x,
+              y: client.transform.y + transform.y,
             },
           },
         };
 
-        if (client.id === clientBID) {
+        if (client.id === clientB.id) {
           changes[client.id].adjacentClientIDs = { $push: [clientA.id] };
         }
 
@@ -211,7 +209,7 @@ function reducer (config) {
       clusters: { $set: _.omit(state.clusters, clientB.clusterID) },
       clients: _.assign(
         {
-          [clientAID]: {
+          [clientA.id]: {
             adjacentClientIDs: { $push: [clientB.id] },
           },
         },
@@ -221,7 +219,6 @@ function reducer (config) {
   }
 
   function recalculateCluster (state, clientAID, clientBID, clusterStateA, clusterStateB) {
-    const transform = state.clients[clientBID].transform;
     const clusterDataChanges = config.cluster.events.merge(clusterStateA, clusterStateB, transform);
 
     // recalculate openings and merge data of clusters
@@ -244,26 +241,25 @@ function reducer (config) {
     switch (swipeA.direction) {
       case 'LEFT':
         return {
-          x: clientA.transform.x - clientB.size.width,
-          y: clientA.transform.y + (swipeA.position.y - swipeB.position.y),
+          x: (clientA.transform.x - clientB.size.width) - clientB.transform.x,
+          y: (clientA.transform.y + (swipeA.position.y - swipeB.position.y)) - clientB.transform.y,
         };
-
       case 'RIGHT':
         return {
-          x: clientA.transform.x + clientA.size.width,
-          y: clientA.transform.y + (swipeA.position.y - swipeB.position.y),
+          x: (clientA.transform.x + clientA.size.width) - clientB.transform.x,
+          y: (clientA.transform.y + (swipeA.position.y - swipeB.position.y)) - clientB.transform.y,
         };
 
       case 'UP':
         return {
-          x: clientA.transform.x + (swipeA.position.x - swipeB.position.x),
-          y: clientA.transform.y - clientB.size.height,
+          x: (clientA.transform.x + (swipeA.position.x - swipeB.position.x)) - clientB.transform.x,
+          y: (clientA.transform.y - clientB.size.height) - clientB.transform.y,
         };
 
       case 'DOWN':
         return {
-          x: clientA.transform.x + (swipeA.position.x - swipeB.position.x),
-          y: clientA.transform.y + clientA.size.height,
+          x: (clientA.transform.x + (swipeA.position.x - swipeB.position.x)) - clientB.transform.x,
+          y: (clientA.transform.y + clientA.size.height) - clientB.transform.y,
         };
 
       default:
