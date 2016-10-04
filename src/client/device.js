@@ -1,44 +1,38 @@
-/* global document localStorage prompt */
-import Converter from './converter';
+/* global localStorage prompt */
 
-function requestSize (callback) {
-  if (!localStorage.getItem('deviceSize')) {
-    let deviceSize = prompt('Please enter the device size in "(inch): ');
+const DEVICE_SIZE_KEY = 'SWIP_DEVICE_SIZE';
 
-    if (deviceSize) {
-      localStorage.setItem('deviceSize', deviceSize);
-      callback(new Converter(deviceSize));
-    } else {
-      const button = document.createElement('button');
-      button.id = 'swip-device-size-button';
+function requestSize () {
+  const storedSize = parseFloat(localStorage.getItem(DEVICE_SIZE_KEY));
 
-      button.style.marginTop = '0.5em';
-      button.style.marginBottom = '0.5em';
+  if (!Number.isNaN(storedSize)) {
+    return storedSize;
+  }
 
-      button.style.width = '100%';
-      button.style.height = '2em';
-      button.style.textAlign = 'center';
-      button.style.fontFamily = 'Arial';
-      button.innerHTML = 'Set device size!';
+  /* eslint-disable no-alert */
+  const inputSize = parseFloat(prompt('Please enter the device size in "(inch): '));
+  /* eslint-enable no-alert */
 
-      document.body.insertBefore(button, document.body.firstChild);
+  if (!Number.isNaN(inputSize)) {
+    localStorage.setItem(DEVICE_SIZE_KEY, inputSize);
+  }
 
-      document.getElementById('swip-device-size-button').onclick = () => {
-        deviceSize = prompt('Please enter the device size in "(inch): ');
+  return inputSize;
+}
 
-        if (deviceSize) {
-          document.body.removeChild(button);
-          localStorage.setItem('deviceSize', deviceSize);
-
-          callback(new Converter(deviceSize));
-        }
-      };
-    }
-  } else {
-    callback(new Converter(localStorage.getItem('deviceSize')));
+function requestFullscreen (element) {
+  if (element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if (element.mozRequestFullScreen) {
+    element.mozRequestFullScreen();
+  } else if (element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  } else if (element.msRequestFullscreen) {
+    element.msRequestFullscreen();
   }
 }
 
 export default {
   requestSize,
+  requestFullscreen,
 };

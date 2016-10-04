@@ -1,80 +1,150 @@
+/* global document */
+
 import device from './device';
 import sensor from './sensor';
+import Converter from './converter';
+import './style.css';
 
-function init ({ socket, container }, initCallback) {
-  const client = {};
+function init ({ socket, container, type }, initApp) {
+  const { stage, connectButton } = startView({ container, type });
+  let size = device.requestSize();
 
-  device.requestSize((converter) => {
-    let state = {
-      client:
-        { size: {},
-          transform: { x: 0, y: 0 },
-        },
-      cluster: {
-        data: {},
+  connectButton.onclick = function () {
+    // device.requestFullscreen(container);
+
+    if (Number.isNaN(size)) {
+      size = device.requestSize();
+    } else {
+      const client = new Client({ size, socket, stage: stage.element });
+
+      connectButton.style.display = 'none';
+
+      initApp(client);
+    }
+  };
+}
+
+class Client {
+
+  constructor ({ size, stage, socket }) {
+    this.converter = new Converter(size);
+    this.stage = stage;
+    this.socket = socket;
+    this.state = {
+      client: {
+        transform: { x: 0, y: 0 },
       },
     };
 
-    socket.emit('CONNECT_CLIENT', {
+    this.connect();
+    this.initEventListener();
+  }
+
+  connect () {
+    this.socket.emit('CONNECT_CLIENT', {
       size: {
-        width: converter.toAbsPixel(container.clientWidth),
-        height: converter.toAbsPixel(container.clientHeight),
+        width: this.converter.toAbsPixel(this.stage.clientWidth),
+        height: this.converter.toAbsPixel(this.stage.clientHeight),
       },
     });
+  }
 
-    sensor.onSwipe(container, (evt) => {
-      socket.emit('SWIPE', {
+  initEventListener () {
+    sensor.onSwipe(this.stage, (evt) => {
+      this.socket.emit('SWIPE', {
         direction: evt.direction,
-        position: { x: converter.toAbsPixel(evt.position.x),
-          y: converter.toAbsPixel(evt.position.y),
+        position: {
+          x: this.converter.toAbsPixel(evt.position.x),
+          y: this.converter.toAbsPixel(evt.position.y),
         },
       });
     });
+  }
 
-    /* sensor.onMotion(() => {
-      socket.emit('LEAVE_CLUSTER');
-    }); */
+  onClick (callback) {
+    this.stage.addEventListener('click', (evt) => {
+      callback(this.converter.convertClickPos(this.state.client.transform, evt));
+    });
+  }
 
-    client.converter = converter;
+  onDragStart (callback) {
+    this.stage.addEventListener('touchstart', (evt) => {
+      callback(this.converter.convertTouchPos(this.state.client.transform, evt));
+    });
+  }
 
-    client.onClick = (callback) => {
-      container.addEventListener('click', (evt) => {
-        callback(converter.convertClickPos(state.client.transform, evt));
-      });
-    };
+  onDragMove (callback) {
+    this.stage.addEventListener('touchmove', (evt) => {
+      evt.preventDefault();
+      callback(this.converter.convertTouchPos(this.state.client.transform, evt));
+    });
+  }
 
-    client.onDragStart = (callback) => {
-      container.addEventListener('touchstart', (evt) => {
-        callback(converter.convertTouchPos(state.client.transform, evt));
-      });
-    };
+  onDragEnd (callback) {
+    this.stage.addEventListener('touchend', (evt) => {
+      callback(this.converter.convertTouchPos(this.state.client.transform, evt));
+    });
+  }
 
-    client.onDragMove = (callback) => {
-      container.addEventListener('touchmove', (evt) => {
-        evt.preventDefault();
-        callback(converter.convertTouchPos(state.client.transform, evt));
-      });
-    };
+  onUpdate (callback) {
+    this.socket.on('CHANGED', (evt) => {
+      callback(evt);
+    });
+  }
 
-    client.onDragEnd = (callback) => {
-      container.addEventListener('touchend', (evt) => {
-        callback(converter.convertTouchPos(state.client.transform, evt));
-      });
-    };
+  emit (type, data) {
+    this.socket.emit('CLIENT_ACTION', { type, data });
+  }
+}
 
-    client.onUpdate = (callback) => {
-      socket.on('CHANGED', (evt) => {
-        state = evt;
-        callback(evt);
-      });
-    };
 
-    client.emit = (type, data) => {
-      socket.emit('CLIENT_ACTION', { type, data });
-    };
+function startView ({ container, type }) {
+  container.classList.add('SwipRoot');
+  container.innerHTML = '';
 
-    initCallback(client);
-  });
+  const connectButton = document.createElement('button');
+  connectButton.innerText = 'connect';
+  connectButton.classList.add('SwipButton');
+
+  container.appendChild(connectButton);
+
+  const stage = getStage(type);
+  stage.resize(container.clientWidth, container.clientHeight);
+  container.appendChild(stage.element);
+
+  return { stage, connectButton };
+}
+
+
+function getStage (type) {
+  if (type === 'dom') {
+    return new DOMStage();
+  }
+
+  return new CanvasStage();
+}
+
+class CanvasStage {
+  constructor () {
+    this.element = document.createElement('canvas');
+    this.element.style.cursor = 'pointer';
+  }
+
+  resize (width, height) {
+    this.element.width = width;
+    this.element.height = height;
+  }
+}
+
+class DOMStage {
+  constructor () {
+    this.element = document.createElement('div');
+  }
+
+  resize (width, height) {
+    this.element.style.width = `${width}px`;
+    this.element.style.height = `${height}px`;
+  }
 }
 
 export default init;

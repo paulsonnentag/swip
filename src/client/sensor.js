@@ -1,4 +1,5 @@
 /* global window */
+
 const MIN_SWIPE_DIST = 5;
 const MOTION_TOLERANCE = 15;
 const startPoints = {};

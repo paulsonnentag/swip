@@ -9,136 +9,79 @@
       html, body {
         margin: 0;
         padding: 0;
+        width: 100%;
+        height: 100%;
       }
-
-      canvas {
-        cursor: pointer;
-      }
-
     </style>
   </head>
 
   <body>
 
-    <canvas id="canvas"></canvas>
+    <div id="root"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/swip/swip.js"></script>
     <script>
-      var socket = io.connect();
+      (function () {
+        'use strict';
 
-      var randomColor = getRandomColor();
+        var socket = io.connect();
 
-      var canvas = document.getElementById('canvas');
-      var ctx = canvas.getContext("2d");
+        swip.init({
+          socket: socket,
+          container: document.getElementById('root'),
+          type: 'canvas',
+        }, function (client) {
+          var converter = client.converter;
+          var stage = client.stage;
+          var ctx = stage.getContext('2d');
+          ctx.fillStyle = '#333333';
+          ctx.fillRect(0, 0, stage.width, stage.height);
 
-      canvas.setAttribute('width', window.innerWidth);
-      canvas.setAttribute('height', window.innerHeight);
 
-      ctx.fillStyle = '#333333';
-      ctx.fillRect(0,0, canvas.width, canvas.height);
-
-      function getRandomColor () {
-        colors = ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000', '#0000ff', '#7920FF', '#FD0987', '#FF3300'];
-
-        return colors[Math.floor(Math.random() * 10)];
-      }
-
-      function drawOpenings (ctx, client) {
-        var openings = client.openings;
-        var transformX = client.transform.x;
-        var transformY = client.transform.y;
-        var width = client.size.width;
-        var height = client.size.height;
-
-        ctx.lineWidth = 5;
-        ctx.shadowBlur=5;
-
-        openings.left.forEach(function (wall) {
-          ctx.strokeStyle = "#ff9e00";
-          ctx.shadowColor="#ff9e00";
-
-          ctx.beginPath();
-          ctx.moveTo(transformX, wall.start + transformY);
-          ctx.lineTo(transformX, wall.end + transformY);
-          ctx.stroke();
-        });
-
-        openings.top.forEach(function (wall) {
-          ctx.strokeStyle = "#0084FF";
-          ctx.shadowColor="#0084FF";
-
-          ctx.beginPath();
-          ctx.moveTo(wall.start + transformX, transformY);
-          ctx.lineTo(wall.end + transformX, transformY);
-          ctx.stroke();
-        });
-
-        openings.right.forEach(function (wall) {
-          ctx.strokeStyle = "#0084FF";
-          ctx.shadowColor="#0084FF";
-
-          ctx.beginPath();
-          ctx.moveTo(width + transformX, wall.start + transformY);
-          ctx.lineTo(width + transformX, wall.end + transformY);
-          ctx.stroke();
-        });
-
-        openings.bottom.forEach(function (wall) {
-          ctx.strokeStyle = "#ff9e00";
-          ctx.shadowColor="#ff9e00";
-
-          ctx.beginPath();
-          ctx.moveTo(wall.start + transformX, height + transformY);
-          ctx.lineTo(wall.end + transformX, height + transformY);
-          ctx.stroke();
-        });
-      }
-
-      swip.init({ socket: socket, container: canvas }, function (client) {
-        const converter = client.converter;
-
-        client.onClick(function (evt) {
-          var particles = [];
-          for(var i = 0; i < 20; i++) {
+          client.onClick(function (evt) {
+            var particles = [];
+            for (var i = 0; i < 20; i++) {
               particles.push({
                 x: evt.position.x,
                 y: evt.position.y,
                 speedX: Math.random() * 20 - 10,
                 speedY: Math.random() * 20 - 10,
-                color: randomColor,
+                color: getRandomColor(),
                 ttl: 10000000000,
               });
-          }
+            }
 
-          client.emit('addParticle', { particles: particles });
-        });
+            client.emit('addParticle', { particles: particles });
+          });
 
-        client.onDragStart(function (evt) {
-        });
+          client.onDragStart(function (evt) {
+          });
 
-        client.onDragMove(function (evt) {
-          var particles = [];
-
-          for(pos in evt.position) {
-            particles.push({
-              x: evt.position[pos].x,
-              y: evt.position[pos].y,
-              color: getRandomColor(),
-              speedX: 0,
-              speedY: 0,
-              ttl: 25,
-            });
-          }
-
-          //client.emit('addParticle', { particles: particles });
-        });
-
-        client.onDragEnd(function (evt) {
-
+          client.onDragMove(function (evt) {
+            var pos;
             var particles = [];
-            for(var i = 0; i < 20; i++) {
-              for(pos in evt.position) {
+
+            for (pos in evt.position) {
+              particles.push({
+                x: evt.position[pos].x,
+                y: evt.position[pos].y,
+                color: getRandomColor(),
+                speedX: 0,
+                speedY: 0,
+                ttl: 25,
+              });
+            }
+
+            client.emit('addParticle', { particles: particles });
+          });
+
+          client.onDragEnd(function (evt) {
+            var pos;
+            var particles = [];
+
+            for (var i = 0; i < 20; i++) {
+              for (pos in evt.position) {
                 particles.push({
                   x: evt.position[pos].x,
                   y: evt.position[pos].y,
@@ -150,33 +93,92 @@
               }
             }
 
-          client.emit('addParticle', { particles: particles });
+            client.emit('addParticle', { particles: particles });
+          });
+
+          client.onUpdate(function (evt) {
+
+            if (evt.cluster) {
+              ctx.fillRect(0, 0, stage.width, stage.height);
+
+              ctx.save();
+              ctx.translate(-converter.toDevicePixel(evt.client.transform.x), -converter.toDevicePixel(evt.client.transform.y));
+              ctx.scale(converter.toDevicePixel(1), converter.toDevicePixel(1));
+
+              drawOpenings(ctx, evt.client);
+
+              var particles = evt.cluster.data.particles;
+
+              particles.forEach(function (particle) {
+                ctx.fillStyle = particle.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = particle.color;
+                ctx.fillRect(particle.x, particle.y, 10, 10);
+              });
+
+              ctx.restore();
+            }
+          });
         });
 
-        client.onUpdate(function (evt) {
 
-          if (evt.cluster) {
-            ctx.fillRect(0,0, canvas.width, canvas.height);
+        function getRandomColor () {
+          var colors = ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000', '#0000ff', '#7920FF', '#FD0987', '#FF3300'];
 
-            ctx.save();
-            ctx.translate(-converter.toDevicePixel(evt.client.transform.x), -converter.toDevicePixel(evt.client.transform.y));
-            ctx.scale(converter.toDevicePixel(1), converter.toDevicePixel(1));
+          return colors[Math.floor(Math.random() * 10)];
+        }
 
-            drawOpenings(ctx, evt.client);
+        function drawOpenings (ctx, client) {
+          var openings = client.openings;
+          var transformX = client.transform.x;
+          var transformY = client.transform.y;
+          var width = client.size.width;
+          var height = client.size.height;
 
-            var particles = evt.cluster.data.particles;
+          ctx.lineWidth = 5;
+          ctx.shadowBlur = 5;
 
-            particles.forEach(function (particle) {
-              ctx.fillStyle = particle.color;
-              ctx.shadowBlur=10;
-              ctx.shadowColor=particle.color;
-              ctx.fillRect( particle.x, particle.y, 10, 10 );
-            });
+          openings.left.forEach(function (wall) {
+            ctx.strokeStyle = "#ff9e00";
+            ctx.shadowColor = "#ff9e00";
 
-            ctx.restore();
-          }
-        });
-      });
+            ctx.beginPath();
+            ctx.moveTo(transformX, wall.start + transformY);
+            ctx.lineTo(transformX, wall.end + transformY);
+            ctx.stroke();
+          });
+
+          openings.top.forEach(function (wall) {
+            ctx.strokeStyle = "#0084FF";
+            ctx.shadowColor = "#0084FF";
+
+            ctx.beginPath();
+            ctx.moveTo(wall.start + transformX, transformY);
+            ctx.lineTo(wall.end + transformX, transformY);
+            ctx.stroke();
+          });
+
+          openings.right.forEach(function (wall) {
+            ctx.strokeStyle = "#0084FF";
+            ctx.shadowColor = "#0084FF";
+
+            ctx.beginPath();
+            ctx.moveTo(width + transformX, wall.start + transformY);
+            ctx.lineTo(width + transformX, wall.end + transformY);
+            ctx.stroke();
+          });
+
+          openings.bottom.forEach(function (wall) {
+            ctx.strokeStyle = "#ff9e00";
+            ctx.shadowColor = "#ff9e00";
+
+            ctx.beginPath();
+            ctx.moveTo(wall.start + transformX, height + transformY);
+            ctx.lineTo(wall.end + transformX, height + transformY);
+            ctx.stroke();
+          });
+        }
+      }());
     </script>
   </body>
 </html>
