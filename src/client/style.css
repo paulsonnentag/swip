@@ -1,0 +1,33 @@
+.SwipRoot {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.SwipButton {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -100px;
+    margin-top: -25px;
+    background: #2196F3;
+    border: 0;
+    border-radius: 3px;
+    color: #fff;
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+    width: 200px;
+    height: 50px;
+    font-size: 1.3em;
+}
+
+.SwipStage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
