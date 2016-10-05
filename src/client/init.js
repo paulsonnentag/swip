@@ -12,8 +12,6 @@ function init ({ socket, container, type }, initApp) {
   stage.resize(container.clientWidth, container.clientHeight);
 
   window.addEventListener('resize', () => {
-    console.log('resize', container.clientWidth, container.clientHeight);
-
     stage.resize(container.clientWidth, container.clientHeight);
   });
 
@@ -26,8 +24,6 @@ function init ({ socket, container, type }, initApp) {
       connectButton.style.display = 'none';
 
       window.addEventListener('resize', () => {
-        console.log('reconnect');
-
         client.reconnect();
       });
 
