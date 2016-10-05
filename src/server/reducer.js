@@ -12,7 +12,7 @@ const initialState = {
   swipes: [],
 };
 
-function reducer (config) {
+function createReducer (config) {
   return (state = initialState, { type, data }) => {
     switch (type) {
       case actions.TYPE.NEXT_STATE:
@@ -27,11 +27,11 @@ function reducer (config) {
       case actions.TYPE.SWIPE:
         return doSwipe(state, data);
 
-      /* case actions.TYPE.LEAVE_CLUSTER:
-       return leaveCluster(state, data); */
-
       case actions.TYPE.DISCONNECT:
         return disconnect(state, data);
+
+      case actions.TYPE.RECONNECT:
+        return reconnect(state, data);
 
       default:
         return state;
@@ -280,33 +280,6 @@ function reducer (config) {
     }
   }
 
-  function leaveCluster (state, { id }) {
-    const { clients, clusters } = state;
-    const client = state.clients[id];
-
-    if (!client) {
-      return state;
-    }
-    const clusterID = client.clusterID;
-
-    if (_.isNil(clusterID)) {
-      return state;
-    }
-
-    return update(state, {
-      clusters: { $set: removeEmptyCluster(clusters, clients, clusterID) },
-      clients: { [id]: { clusterID: { $set: null } } },
-    });
-  }
-
-  function removeEmptyCluster (clusters, clients, clusterID) {
-    if (utils.getClientsInCluster(clients, clusterID).length > 1) {
-      return clusters;
-    }
-
-    return _.omit(clusters, [clusterID]);
-  }
-
   function disconnect (state, { id }) {
     const { clients, clusters } = state;
     const client = clients[id];
@@ -321,6 +294,14 @@ function reducer (config) {
       clusters: { $set: removeEmptyCluster(clusters, clients, clusterID) },
       clients: { $set: removeClient(clients, client) },
     });
+  }
+
+  function removeEmptyCluster (clusters, clients, clusterID) {
+    if (utils.getClientsInCluster(clients, clusterID).length > 1) {
+      return clusters;
+    }
+
+    return _.omit(clusters, [clusterID]);
   }
 
   function removeClient (clients, client) {
@@ -339,6 +320,13 @@ function reducer (config) {
       })
       .value();
   }
+
+  function reconnect (state, { id, size }) {
+    return _.flow([
+      _.partial(disconnect, _, { id }),
+      _.partial(connect, _, { id, size }),
+    ])(state);
+  }
 }
 
-module.exports = reducer;
+module.exports = createReducer;

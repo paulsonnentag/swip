@@ -11,6 +11,12 @@ function init ({ socket, container, type }, initApp) {
 
   stage.resize(container.clientWidth, container.clientHeight);
 
+  window.addEventListener('resize', () => {
+    console.log('resize', container.clientWidth, container.clientHeight);
+
+    stage.resize(container.clientWidth, container.clientHeight);
+  });
+
   connectButton.onclick = () => {
     if (Number.isNaN(size)) {
       size = device.requestSize();
@@ -18,6 +24,12 @@ function init ({ socket, container, type }, initApp) {
       const client = new Client({ size, socket, stage: stage.element });
 
       connectButton.style.display = 'none';
+
+      window.addEventListener('resize', () => {
+        console.log('reconnect');
+
+        client.reconnect();
+      });
 
       initApp(client);
     }
@@ -41,7 +53,16 @@ class Client {
   }
 
   connect () {
-    this.socket.emit('CONNECT_CLIENT', {
+    this.socket.emit('CONNECT', {
+      size: {
+        width: this.converter.toAbsPixel(this.stage.clientWidth),
+        height: this.converter.toAbsPixel(this.stage.clientHeight),
+      },
+    });
+  }
+
+  reconnect () {
+    this.socket.emit('RECONNECT', {
       size: {
         width: this.converter.toAbsPixel(this.stage.clientWidth),
         height: this.converter.toAbsPixel(this.stage.clientHeight),
