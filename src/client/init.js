@@ -1,4 +1,4 @@
-/* global document */
+/* global document window screen */
 
 import device from './device';
 import sensor from './sensor';
@@ -9,9 +9,9 @@ function init ({ socket, container, type }, initApp) {
   const { stage, connectButton } = startView({ container, type });
   let size = device.requestSize();
 
-  connectButton.onclick = function () {
-    // device.requestFullscreen(container);
+  stage.resize(container.clientWidth, container.clientHeight);
 
+  connectButton.onclick = () => {
     if (Number.isNaN(size)) {
       size = device.requestSize();
     } else {
@@ -87,8 +87,9 @@ class Client {
   }
 
   onUpdate (callback) {
-    this.socket.on('CHANGED', (evt) => {
-      callback(evt);
+    this.socket.on('CHANGED', (state) => {
+      this.state = state;
+      callback(state);
     });
   }
 

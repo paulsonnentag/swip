@@ -1,4 +1,4 @@
-/* global localStorage prompt */
+/* global localStorage prompt document */
 
 const DEVICE_SIZE_KEY = 'SWIP_DEVICE_SIZE';
 
@@ -32,7 +32,19 @@ function requestFullscreen (element) {
   }
 }
 
+function hasFullscreenSupport () {
+  const element = document.documentElement;
+
+  return (
+    element.requestFullscreen ||
+    element.mozRequestFullScreen ||
+    element.webkitRequestFullscreen ||
+    element.msRequestFullscreen
+  );
+}
+
 export default {
   requestSize,
   requestFullscreen,
+  hasFullscreenSupport,
 };
