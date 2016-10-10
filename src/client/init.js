@@ -6,37 +6,82 @@ import Converter from './converter';
 import './style.css';
 
 function init ({ socket, container, type }, initApp) {
-  const { stage, connectButton } = startView({ container, type });
-  let size = device.requestSize();
+  return new ClientView({ socket, container, type, initApp });
+}
 
-  stage.resize(container.clientWidth, container.clientHeight);
+class ClientView {
 
-  window.addEventListener('resize', () => {
-    stage.resize(container.clientWidth, container.clientHeight);
-  });
+  constructor ({ container, type, socket, initApp }) {
+    this.socket = socket;
 
-  connectButton.onclick = () => {
-    if (Number.isNaN(size)) {
-      size = device.requestSize();
+    this.initApp = initApp;
+
+    // init container
+    this.container = container;
+    this.container.classList.add('SwipRoot');
+    this.container.innerHTML = '';
+
+    // init stage
+    this.stage = getStage(type);
+    this.stage.resize(container.clientWidth, container.clientHeight);
+    this.container.appendChild(this.stage.element);
+    window.addEventListener('resize', () => {
+      this.stage.resize(container.clientWidth, container.clientHeight);
+    });
+
+
+    // init swip points
+    this.swipPoints = new SwipPoints();
+    this.container.appendChild(this.swipPoints.element);
+
+    this.size = device.requestSize();
+
+    // add connect button if size is not set
+    if (Number.isNaN(this.size)) {
+      this.connectButton = document.createElement('button');
+      this.connectButton.innerText = 'connect';
+      this.connectButton.classList.add('SwipButton');
+      this.connectButton.onclick = () => this.connect();
+      this.container.appendChild(this.connectButton);
     } else {
-      const client = new Client({ size, socket, stage: stage.element });
+      this.initClient();
+    }
+  }
 
-      connectButton.style.display = 'none';
+  initClient () {
+    this.client = new Client({
+      size: this.size,
+      socket: this.socket,
+      stage: this.stage.element,
+      swipPoints: this.swipPoints,
+      container: this.container,
+    });
+
+    this.initApp(this.client);
+  }
+
+  connect () {
+    this.size = device.requestSize();
+
+    if (!Number.isNaN(this.size)) {
+      this.connectButton.style.display = 'none';
+
+      this.initClient();
 
       window.addEventListener('resize', () => {
-        client.reconnect();
+        this.client.reconnect();
       });
-
-      initApp(client);
     }
-  };
+  }
 }
 
 class Client {
 
-  constructor ({ size, stage, socket }) {
+  constructor ({ size, stage, container, socket, swipPoints }) {
     this.converter = new Converter(size);
     this.stage = stage;
+    this.container = container;
+    this.swipPoints = swipPoints;
     this.socket = socket;
     this.state = {
       client: {
@@ -67,13 +112,17 @@ class Client {
   }
 
   initEventListener () {
-    sensor.onSwipe(this.stage, (evt) => {
+    sensor.onSwipe(document.body, (evt) => {
+      const position = {
+        x: this.converter.toAbsPixel(evt.position.x),
+        y: this.converter.toAbsPixel(evt.position.y),
+      };
+
+      this.swipPoints.animatePoint(evt.position.x, evt.position.y);
+
       this.socket.emit('SWIPE', {
         direction: evt.direction,
-        position: {
-          x: this.converter.toAbsPixel(evt.position.x),
-          y: this.converter.toAbsPixel(evt.position.y),
-        },
+        position,
       });
     });
   }
@@ -116,23 +165,40 @@ class Client {
 }
 
 
-function startView ({ container, type }) {
-  container.classList.add('SwipRoot');
-  container.innerHTML = '';
+class SwipPoints {
+  constructor () {
+    this.initPoints();
+  }
 
-  const connectButton = document.createElement('button');
-  connectButton.innerText = 'connect';
-  connectButton.classList.add('SwipButton');
+  initPoints () {
+    let i;
+    this.nextPoint = 0;
+    this.points = [];
 
-  container.appendChild(connectButton);
+    this.element = document.createElement('div');
 
-  const stage = getStage(type);
-  stage.resize(container.clientWidth, container.clientHeight);
-  container.appendChild(stage.element);
+    for (i = 0; i < 5; i++) {
+      const point = this.points[i] = document.createElement('div');
+      point.classList.add('SwipPoint');
+      this.element.appendChild(point);
+    }
+  }
 
-  return { stage, connectButton };
+  animatePoint (x, y) {
+    const point = this.points[this.nextPoint];
+
+    point.style.top = `${y}px`;
+    point.style.left = `${x}px`;
+    point.classList.remove('SwipPoint--start-animation');
+
+    // force reflow
+    void point.offsetWidth;
+
+    point.classList.add('SwipPoint--start-animation');
+
+    this.nextPoint = (this.nextPoint + 1) % this.points.length;
+  }
 }
-
 
 function getStage (type) {
   if (type === 'dom') {
