@@ -52,7 +52,7 @@
               });
             }
 
-            client.emit('addParticle', { particles: particles });
+            //client.emit('addParticle', { particles: particles });
           });
 
           client.onDragStart(function (evt) {
@@ -73,7 +73,7 @@
               });
             }
 
-            client.emit('addParticle', { particles: particles });
+            //client.emit('addParticle', { particles: particles });
           });
 
           client.onDragEnd(function (evt) {
@@ -93,7 +93,7 @@
               }
             }
 
-            client.emit('addParticle', { particles: particles });
+            //client.emit('addParticle', { particles: particles });
           });
 
           client.onUpdate(function (evt) {
@@ -120,7 +120,6 @@
             }
           });
         });
-
 
         function getRandomColor () {
           var colors = ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000', '#0000ff', '#7920FF', '#FD0987', '#FF3300'];

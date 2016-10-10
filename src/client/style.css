@@ -32,3 +32,41 @@
     right: 0;
     bottom: 0;
 }
+
+
+.SwipPoint {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    margin: -35px 0 0 -35px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: rgba(125, 125, 125, 0.5);
+    opacity: 0;
+}
+
+.SwipPoint--start-animation {
+    animation: expand 0.3s;
+}
+
+@keyframes expand {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    25% {
+        opacity: 1;
+    }
+
+    75% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
