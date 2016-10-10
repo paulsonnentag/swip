@@ -38,62 +38,33 @@
           ctx.fillStyle = '#333333';
           ctx.fillRect(0, 0, stage.width, stage.height);
 
+          var blobs = [];
 
           client.onClick(function (evt) {
-            var particles = [];
-            for (var i = 0; i < 20; i++) {
-              particles.push({
-                x: evt.position.x,
-                y: evt.position.y,
-                speedX: Math.random() * 20 - 10,
-                speedY: Math.random() * 20 - 10,
-                color: getRandomColor(),
-                ttl: 10000000000,
-              });
-            }
-
-            //client.emit('addParticle', { particles: particles });
           });
 
           client.onDragStart(function (evt) {
+            evt.position.forEach(function (pos) {
+              blobs.push({
+                x: pos.x,
+                y: pos.y,
+                speedX: 15,
+                speedY: 15,
+                size: 200
+              });
+            });
           });
 
           client.onDragMove(function (evt) {
-            var pos;
-            var particles = [];
-
-            for (pos in evt.position) {
-              particles.push({
-                x: evt.position[pos].x,
-                y: evt.position[pos].y,
-                color: getRandomColor(),
-                speedX: 0,
-                speedY: 0,
-                ttl: 25,
-              });
+            for(var i = 0; i < evt.position.length; i++) {
+                blobs[i].x = evt.position[i].x;
+                blobs[i].y = evt.position[i].y;
             }
-
-            //client.emit('addParticle', { particles: particles });
           });
 
           client.onDragEnd(function (evt) {
-            var pos;
-            var particles = [];
-
-            for (var i = 0; i < 20; i++) {
-              for (pos in evt.position) {
-                particles.push({
-                  x: evt.position[pos].x,
-                  y: evt.position[pos].y,
-                  speedX: Math.random() * 20 - 10,
-                  speedY: Math.random() * 20 - 10,
-                  color: getRandomColor(),
-                  ttl: 500,
-                });
-              }
-            }
-
-            //client.emit('addParticle', { particles: particles });
+            client.emit('addBlobs', { blobs: blobs } );
+            blobs = [];
           });
 
           client.onUpdate(function (evt) {
@@ -107,25 +78,34 @@
 
               drawOpenings(ctx, evt.client);
 
-              var particles = evt.cluster.data.particles;
+              if (blobs) {
+                for(var i = 0; i < blobs.length; i++) {
+                  blobs[i].size += 0.5;
+                  blobs[i].speedX = blobs[i].speedX >= 0 ? blobs[i].speedX - 0.1 : 0.1;
+                  blobs[i].speedY = blobs[i].speedY >= 0 ? blobs[i].speedY - 0.1 : 0.1;
+                }
+              }
 
-              particles.forEach(function (particle) {
-                ctx.fillStyle = particle.color;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = particle.color;
-                ctx.fillRect(particle.x, particle.y, 10, 10);
+              blobs.forEach(function(blob) {
+                ctx.beginPath();
+                ctx.arc(blob.x, blob.y, blob.size , 0, 2 * Math.PI, false);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fill();
+              });
+
+              var updatedBlobs = evt.cluster.data.blobs;
+
+              updatedBlobs.forEach(function (blob) {
+                ctx.beginPath();
+                ctx.arc(blob.x, blob.y, blob.size , 0, 2 * Math.PI, false);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fill();
               });
 
               ctx.restore();
             }
           });
         });
-
-        function getRandomColor () {
-          var colors = ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000', '#0000ff', '#7920FF', '#FD0987', '#FF3300'];
-
-          return colors[Math.floor(Math.random() * 10)];
-        }
 
         function drawOpenings (ctx, client) {
           var openings = client.openings;
