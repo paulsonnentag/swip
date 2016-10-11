@@ -27,13 +27,13 @@ swip(io, {
           if (isParticleInClient(ball, client)) {
             if (((ball.speedX < 0) &&
               ((nextPosX - boundaryOffset) < client.transform.x) && !isWallOpen(client.transform.y, client.openings.left, nextPosY))) {
-              nextPosX = client.transform.y + boundaryOffset;
+              nextPosX = client.transform.x + boundaryOffset;
               nextSpeedX = ball.speedX * -1;
             } else if (
               ((ball.speedX > 0) &&
               ((nextPosX + boundaryOffset) > (client.transform.x + client.size.width)) && !isWallOpen(client.transform.y, client.openings.right, nextPosY))
             ) {
-              nextPosX = client.transform.y + (client.size.width - boundaryOffset);
+              nextPosX = client.transform.x + (client.size.width - boundaryOffset);
               nextSpeedX = ball.speedX * -1;
             }
 
@@ -75,25 +75,21 @@ swip(io, {
   client: {
     init: () => ({}),
     events: {
-      hitBall: ({ cluster, client }, { speedX, speedY }) => {
-        return {
-          cluster: {
-            data: {
-              ball: {
-                speedX: { $set: speedX },
-                speedY: { $set: speedY },
-              },
+      hitBall: ({ cluster, client }, { speedX, speedY }) => ({
+        cluster: {
+          data: {
+            ball: {
+              speedX: { $set: speedX },
+              speedY: { $set: speedY },
             },
           },
-        };
-      },
-      setHole: ({ cluster, client }, hole) => {
-        return {
-          cluster: {
-            data: { hole: { $set: hole } },
-          },
-        };
-      },
+        },
+      }),
+      setHole: ({ cluster, client }, hole) => ({
+        cluster: {
+          data: { hole: { $set: hole } },
+        },
+      }),
     },
   },
 });
