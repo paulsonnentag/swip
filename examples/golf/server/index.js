@@ -11,50 +11,50 @@ swip(io, {
     events: {
       update: (cluster) => {
         const ball = cluster.data.ball;
-        const xPos = ball.x;
-        const yPos = ball.y;
-        let speedX = ball.speedX;
-        let speedY = ball.speedY;
+        let nextPosX = ball.x + ball.speedX;
+        let nextPosY = ball.y + ball.speedY;
+        let nextSpeedX = ball.speedX;
+        let nextSpeedY = ball.speedY;
 
         const currClients = cluster.clients;
 
-        const tresholdX = Math.abs(speedX);
-        const tresholdY = Math.abs(speedY);
 
         currClients.forEach((client) => {
           if (isParticleInClient(ball, client)) {
-            const leftSide = client.transform.x + tresholdX;
-            const rightSide = (client.transform.x + client.size.width) - tresholdX;
-            const topSide = client.transform.y + tresholdY;
-            const bottomSide = (client.transform.y + client.size.height) - tresholdY;
-
-            if ((xPos >= rightSide && checkForWall(yPos, client.openings.right, client.transform.y))
-              || (xPos <= leftSide && checkForWall(yPos, client.openings.left, client.transform.y))) {
-              speedX *= -1;
+            if (((ball.speedX < 0) &&
+              ((nextPosX - ball.radius) < client.transform.x) && !isWallOpen(client.transform.y, client.openings.left, nextPosY))) {
+              nextPosX = client.transform.y + ball.radius;
+              nextSpeedX = ball.speedX * -1;
+            } else if (
+              ((ball.speedX > 0) &&
+              ((nextPosX + ball.radius) > (client.transform.x + client.size.width)) && !isWallOpen(client.transform.y, client.openings.right, nextPosY))
+            ) {
+              nextPosX = client.transform.y + (client.size.width - ball.radius);
+              nextSpeedX = ball.speedX * -1;
             }
 
-            if ((yPos >= bottomSide && checkForWall(xPos, client.openings.bottom, client.transform.x))
-              || (yPos <= topSide && checkForWall(xPos, client.openings.top, client.transform.x))) {
-              speedY *= -1;
+            if (((ball.speedY < 0) &&
+              ((nextPosY - ball.radius) < client.transform.y && !isWallOpen(client.transform.x, client.openings.top, nextPosX)))
+            ) {
+              nextPosY = client.transform.y + ball.radius;
+              nextSpeedY = ball.speedY * -1;
+
+            } else if (((ball.speedY > 0) &&
+              ((nextPosY + ball.radius) > (client.transform.y + client.size.height)) && !isWallOpen(client.transform.x, client.openings.bottom, nextPosX))
+            ) {
+              nextPosY = client.transform.y + (client.size.height - ball.radius);
+              nextSpeedY = ball.speedY * -1;
             }
           }
         });
 
-        let gameOver = cluster.data.gameOver;
-        const hole = cluster.data.hole;
-
-        if (Math.abs(xPos - hole.x) < 20 && Math.abs(yPos - hole.y) < 20) {
-          gameOver = true;
-        }
-
         return {
           ball: {
-            x: { $set: (xPos + speedX) },
-            y: { $set: (yPos + speedY) },
-            speedX: { $set: speedX === 0 ? 0 : slowDown(speedX) },
-            speedY: { $set: speedY === 0 ? 0 : slowDown(speedY) },
+            x: { $set: nextPosX },
+            y: { $set: nextPosY },
+            speedX: { $set: nextSpeedX * 0.97 },
+            speedY: { $set: nextSpeedY * 0.97 },
           },
-          gameOver: { $set: gameOver },
         };
       },
       merge: (cluster1, cluster2, transform) => ({
@@ -74,7 +74,12 @@ swip(io, {
       hitBall: ({ cluster, client }, { speedX, speedY }) => {
         return {
           cluster: {
-            data: { ball : { speedX: { $set: speedX }, speedY: { $set: speedY } } },
+            data: {
+              ball: {
+                speedX: { $set: speedX },
+                speedY: { $set: speedY },
+              },
+            },
           },
         };
       },
@@ -100,10 +105,6 @@ function getNewParticleDist (cluster1, cluster2, transform) {
   return cluster1.data;
 }
 
-function slowDown (speed) {
-  return speed > 0 ? speed - 1 : speed + 1;
-}
-
 function isParticleInClient (ball, client) {
   const leftSide = client.transform.x;
   const rightSide = (client.transform.x + client.size.width);
@@ -117,16 +118,16 @@ function isParticleInClient (ball, client) {
   return false;
 }
 
-function checkForWall (particlePos, openings, transform) {
-  let isWall = true;
+function isWallOpen (transform, openings, particlePos) {
+  let isOpen = false;
 
   openings.forEach((opening) => {
     if (particlePos >= (opening.start + transform) && particlePos <= (opening.end + transform)) {
-      isWall = false;
+      isOpen = true;
     }
   });
 
-  return isWall;
+  return isOpen;
 }
 
 server.listen(3000);
