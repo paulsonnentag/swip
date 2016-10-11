@@ -10,63 +10,63 @@ swip(io, {
   cluster: {
     events: {
       update: (cluster) => {
-        const particles = cluster.data.particles;
+        const blobs = cluster.data.blobs;
 
-        const updatedParticles = particles.filter((particle) => particle.ttl > 0)
-          .map((particle) => {
-            particle.x += particle.speedX;
-            particle.y += particle.speedY;
-            particle.ttl--;
+        const updatedBlobs = blobs.map((blob) => {
+          blob.x += blob.speedX;
+          blob.y += blob.speedY;
 
-            return particle;
-          })
-          .map((particle) => {
+          return blob;
+        })
+          .map((blob) => {
             const currClients = cluster.clients;
 
-            const tresholdX = Math.abs(particle.speedX);
-            const tresholdY = Math.abs(particle.speedY);
+            console.log(blob.size);
+
+            const tresholdX = Math.abs(blob.speedX);
+            const tresholdY = Math.abs(blob.speedY);
 
             currClients.forEach((client) => {
-              if (isParticleInClient(particle, client)) {
+              if (isParticleInClient(blob, client)) {
                 const leftSide = client.transform.x + tresholdX;
                 const rightSide = (client.transform.x + client.size.width) - tresholdX;
                 const topSide = client.transform.y + tresholdY;
                 const bottomSide = (client.transform.y + client.size.height) - tresholdY;
 
 
-                if ((particle.x >= rightSide && checkForWall(particle.y, client.openings.right, client.transform.y))
-                  || (particle.x <= leftSide && checkForWall(particle.y, client.openings.left, client.transform.y))) {
-                  particle.speedX *= -1;
+                if ((blob.x + blob.size >= rightSide && checkForWall(blob.y + blob.size, client.openings.right, client.transform.y))
+                  || (blob.x - blob.size <= leftSide && checkForWall(blob.y - blob.size, client.openings.left, client.transform.y))) {
+                  blob.speedX *= -1;
                 }
 
-                if ((particle.y >= bottomSide && checkForWall(particle.x, client.openings.bottom, client.transform.x))
-                  || (particle.y <= topSide && checkForWall(particle.x, client.openings.top, client.transform.x))) {
-                  particle.speedY *= -1;
+                if ((blob.y + blob.size >= bottomSide && checkForWall(blob.x + blob.size, client.openings.bottom, client.transform.x))
+                  || (blob.y - blob.size <= topSide && checkForWall(blob.x - blob.size, client.openings.top, client.transform.x))) {
+                  blob.speedY *= -1;
                 }
               }
             });
 
-            return particle;
+            return blob;
           });
 
         return {
-          particles: { $set: updatedParticles },
+          blobs: { $set: updatedBlobs },
         };
       },
       merge: (cluster1, cluster2, transform) => ({
-        particles: { $set: getNewParticleDist(cluster1, cluster2, transform) },
+        blobs: { $set: getNewParticleDist(cluster1, cluster2, transform) },
       }),
     },
-    init: () => ({ particles: [] }),
+    init: () => ({ blobs: [] }),
   },
 
   client: {
     init: () => ({}),
     events: {
-      addParticle: ({ cluster, client }, { particles }) => {
+      addBlobs: ({ cluster, client }, { blobs }) => {
         return {
           cluster: {
-            data: { particles: { $push: particles } },
+            data: { blobs: { $push: blobs } },
           },
         };
       },

@@ -1,7 +1,8 @@
 const TYPE = {
   CLIENT_ACTION: 'CLIENT_ACTION',
-  CONNECT: 'CONNECT_CLIENT',
-  DISCONNECT: 'disconnect', // use name of disconnect event of socket.io
+  CONNECT: 'CONNECT',
+  DISCONNECT: 'DISCONNECT',
+  RECONNECT: 'RECONNECT',
   LEAVE_CLUSTER: 'LEAVE_CLUSTER',
   SWIPE: 'SWIPE',
   NEXT_STATE: 'NEXT_STATE',
@@ -36,6 +37,13 @@ function disconnect (id) {
   };
 }
 
+function reconnect (id, { size }) {
+  return {
+    type: TYPE.RECONNECT,
+    data: { id, size },
+  };
+}
+
 function clientAction (id, { type, data }) {
   return {
     type: TYPE.CLIENT_ACTION,
@@ -57,6 +65,7 @@ module.exports = {
   swipe,
   leaveCluster,
   disconnect,
+  reconnect,
   clientAction,
   nextState,
 };

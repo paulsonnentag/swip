@@ -1,4 +1,5 @@
 /* global window */
+
 const MIN_SWIPE_DIST = 5;
 const MOTION_TOLERANCE = 15;
 const startPoints = {};
@@ -40,15 +41,15 @@ function touchEndHandler (evt, callback) {
 
     if (diffX > diffY && diffX > MIN_SWIPE_DIST) {
       if (end.x < start.x && end.x <= horBorder) {
-        callback({ direction: 'LEFT', position: { x: end.x, y: end.y } });
+        callback({ direction: 'LEFT', position: { x: 0, y: end.y } });
       } else if (end.x > start.x && end.x >= window.innerWidth - horBorder) {
-        callback({ direction: 'RIGHT', position: { x: end.x, y: end.y } });
+        callback({ direction: 'RIGHT', position: { x: window.innerWidth, y: end.y } });
       }
     } else if (diffY > diffX && diffY > MIN_SWIPE_DIST) {
       if (end.y < start.y && end.y <= vertBorder) {
-        callback({ direction: 'UP', position: { x: end.x, y: end.y } });
+        callback({ direction: 'UP', position: { x: end.x, y: 0 } });
       } else if (end.y > start.y && end.y >= window.innerHeight - vertBorder) {
-        callback({ direction: 'DOWN', position: { x: end.x, y: end.y } });
+        callback({ direction: 'DOWN', position: { x: end.x, y: window.innerHeight } });
       }
     }
   });

@@ -10,9 +10,27 @@ const createReducer = require('../src/server/reducer');
 const actions = require('../src/server/actions');
 
 
+function getNoopReducer () {
+  return createReducer({
+    client: {
+      init: () => ({}),
+      events: {
+        update: () => ({}),
+      },
+    },
+    cluster: {
+      init: () => ({}),
+      events: {
+        update: () => ({}),
+        merge: () => ({}),
+      },
+    },
+  });
+}
+
 describe('reducer', () => {
   describe('NEXT_STATE', () => {
-    const initalState = {
+    const initialState = {
       clusters: {
         A: { id: 'A', data: { counter: 10 } },
       },
@@ -53,7 +71,7 @@ describe('reducer', () => {
         updateClient: update,
       });
 
-      reducer(initalState, actions.nextState());
+      reducer(initialState, actions.nextState());
 
       update.should.be.calledTwice();
       update.getCall(0).args[0].should.eql({
@@ -80,7 +98,7 @@ describe('reducer', () => {
         updateCluster: update,
       });
 
-      reducer(initalState, actions.nextState());
+      reducer(initialState, actions.nextState());
 
       update.should.be.calledOnce();
       update.getCall(0).args[0].should.eql(expectedCluster);
@@ -93,7 +111,7 @@ describe('reducer', () => {
         }),
       });
 
-      const nextState = reducer(initalState, actions.nextState());
+      const nextState = reducer(initialState, actions.nextState());
 
       nextState.clusters.A.should.have.property('data').which.eql({ counter: 11 });
     });
@@ -105,7 +123,7 @@ describe('reducer', () => {
         }),
       });
 
-      const nextState = reducer(initalState, actions.nextState());
+      const nextState = reducer(initialState, actions.nextState());
 
       nextState.clients.a.should.have.property('data').which.eql({ counter: 2 });
       nextState.clients.b.should.have.property('data').which.eql({ counter: 4 });
@@ -121,7 +139,7 @@ describe('reducer', () => {
         }),
       });
 
-      const nextState = reducer(initalState, actions.nextState());
+      const nextState = reducer(initialState, actions.nextState());
 
       nextState.clients.a.should.have.property('data').which.eql({ counter: 2 });
       nextState.clients.b.should.have.property('data').which.eql({ counter: 4 });
@@ -434,6 +452,40 @@ describe('reducer', () => {
           top: [],
         });
       });
+    });
+  });
+
+  describe('RECONNECT', () => {
+    let initialState;
+    let nextState;
+    let reducer;
+
+    beforeEach(() => {
+      reducer = getNoopReducer();
+      initialState = {
+        clusters: {
+          A: { id: 'A', data: { counter: 10 } },
+        },
+        clients: {
+          a: {
+            id: 'a',
+            data: { counter: 0 },
+            clusterID: 'A',
+            size: { width: 100, height: 200 },
+          },
+        },
+      };
+
+      nextState = reducer(initialState, actions.reconnect('a', { size: { width: 200, height: 100 } }));
+    });
+
+    it('should assign client to new cluster', () => {
+      nextState.should.have.propertyByPath('clients', 'a', 'clusterID').which.not.eql('A');
+      nextState.should.have.propertyByPath('clusters', nextState.clients.a.clusterID);
+    });
+
+    it('should update client size', () => {
+      nextState.should.have.propertyByPath('clients', 'a', 'size').which.eql({ width: 200, height: 100 });
     });
   });
 });
