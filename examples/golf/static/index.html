@@ -34,48 +34,73 @@
           var width = client.size.width;
           var height = client.size.height;
 
-          ctx.lineWidth = 5;
+          ctx.lineWidth = 20;
           ctx.shadowBlur = 5;
+          ctx.strokeStyle = '#fff';
 
-          openings.left.forEach(function (wall) {
-            ctx.strokeStyle = "#ff9e00";
-            ctx.shadowColor = "#ff9e00";
 
-            ctx.beginPath();
-            ctx.moveTo(transformX, wall.start + transformY);
-            ctx.lineTo(transformX, wall.end + transformY);
+          // left
+
+          ctx.beginPath();
+          ctx.moveTo(transformX, transformY);
+
+          openings.left.sort(openingSort).forEach(function (opening) {
+            ctx.lineTo(transformX, opening.start + transformY);
             ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(transformX, opening.end + transformY);
           });
 
-          openings.top.forEach(function (wall) {
-            ctx.strokeStyle = "#0084FF";
-            ctx.shadowColor = "#0084FF";
+          ctx.lineTo(transformX, height + transformY);
+          ctx.stroke();
 
-            ctx.beginPath();
-            ctx.moveTo(wall.start + transformX, transformY);
-            ctx.lineTo(wall.end + transformX, transformY);
+          // right
+          ctx.beginPath();
+          ctx.moveTo(width + transformX, transformY);
+
+          openings.right.sort(openingSort).forEach(function (opening) {
+            ctx.lineTo(width + transformX, opening.start + transformY);
             ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(width + transformX, opening.end + transformY);
           });
 
-          openings.right.forEach(function (wall) {
-            ctx.strokeStyle = "#0084FF";
-            ctx.shadowColor = "#0084FF";
+          ctx.lineTo(width + transformX, height + transformY);
+          ctx.stroke();
 
-            ctx.beginPath();
-            ctx.moveTo(width + transformX, wall.start + transformY);
-            ctx.lineTo(width + transformX, wall.end + transformY);
+
+          // top
+          ctx.beginPath();
+          ctx.moveTo(transformX, transformY);
+
+          openings.top.sort(openingSort).forEach(function (opening) {
+            ctx.lineTo(opening.start + transformX, transformY);
             ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(opening.end + transformX, transformY);
           });
 
-          openings.bottom.forEach(function (wall) {
-            ctx.strokeStyle = "#ff9e00";
-            ctx.shadowColor = "#ff9e00";
+          ctx.lineTo(width + transformX, transformY);
+          ctx.stroke();
 
-            ctx.beginPath();
-            ctx.moveTo(wall.start + transformX, height + transformY);
-            ctx.lineTo(wall.end + transformX, height + transformY);
+
+          // bottom
+          ctx.beginPath();
+          ctx.moveTo(transformX, height + transformY);
+
+          openings.bottom.sort(openingSort).forEach(function (opening) {
+            ctx.lineTo(opening.start + transformX, height + transformY);
             ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(opening.end + transformX, height + transformY);
           });
+
+          ctx.lineTo(width + transformX, height + transformY);
+          ctx.stroke();
+        }
+
+        function openingSort (openingA, openingB) {
+            return openingB.start - openingA.start;
         }
 
         swip.init({ socket: socket, container: document.getElementById('root') }, function (client) {

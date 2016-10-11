@@ -6,6 +6,8 @@ const swip = require('../../../src/server/index.js');
 
 app.use(express.static(__dirname + './../static'));
 
+const WALL_SIZE = 10;
+
 swip(io, {
   cluster: {
     events: {
@@ -18,31 +20,33 @@ swip(io, {
 
         const currClients = cluster.clients;
 
+        const boundaryOffset = ball.radius + WALL_SIZE
+
 
         currClients.forEach((client) => {
           if (isParticleInClient(ball, client)) {
             if (((ball.speedX < 0) &&
-              ((nextPosX - ball.radius) < client.transform.x) && !isWallOpen(client.transform.y, client.openings.left, nextPosY))) {
-              nextPosX = client.transform.y + ball.radius;
+              ((nextPosX - boundaryOffset) < client.transform.x) && !isWallOpen(client.transform.y, client.openings.left, nextPosY))) {
+              nextPosX = client.transform.y + boundaryOffset;
               nextSpeedX = ball.speedX * -1;
             } else if (
               ((ball.speedX > 0) &&
-              ((nextPosX + ball.radius) > (client.transform.x + client.size.width)) && !isWallOpen(client.transform.y, client.openings.right, nextPosY))
+              ((nextPosX + boundaryOffset) > (client.transform.x + client.size.width)) && !isWallOpen(client.transform.y, client.openings.right, nextPosY))
             ) {
-              nextPosX = client.transform.y + (client.size.width - ball.radius);
+              nextPosX = client.transform.y + (client.size.width - boundaryOffset);
               nextSpeedX = ball.speedX * -1;
             }
 
             if (((ball.speedY < 0) &&
-              ((nextPosY - ball.radius) < client.transform.y && !isWallOpen(client.transform.x, client.openings.top, nextPosX)))
+              ((nextPosY - boundaryOffset) < client.transform.y && !isWallOpen(client.transform.x, client.openings.top, nextPosX)))
             ) {
-              nextPosY = client.transform.y + ball.radius;
+              nextPosY = client.transform.y + boundaryOffset;
               nextSpeedY = ball.speedY * -1;
 
             } else if (((ball.speedY > 0) &&
-              ((nextPosY + ball.radius) > (client.transform.y + client.size.height)) && !isWallOpen(client.transform.x, client.openings.bottom, nextPosX))
+              ((nextPosY + boundaryOffset) > (client.transform.y + client.size.height)) && !isWallOpen(client.transform.x, client.openings.bottom, nextPosX))
             ) {
-              nextPosY = client.transform.y + (client.size.height - ball.radius);
+              nextPosY = client.transform.y + (client.size.height - boundaryOffset);
               nextSpeedY = ball.speedY * -1;
             }
           }
@@ -62,7 +66,7 @@ swip(io, {
       }),
     },
     init: () => ({
-      ball: { x: 50, y: 50, radius: 15, speedX: 0, speedY: 0 },
+      ball: { x: 50, y: 50, radius: 10, speedX: 0, speedY: 0 },
       hole: { x: 200, y: 200 },
       gameOver: false,
     }),
