@@ -21,8 +21,6 @@ swip(io, {
           .map((blob) => {
             const currClients = cluster.clients;
 
-            console.log(blob.size);
-
             const tresholdX = Math.abs(blob.speedX);
             const tresholdY = Math.abs(blob.speedY);
 
@@ -101,15 +99,15 @@ function checkForWall (particlePos, openings, transform) {
 
 function getNewParticleDist (cluster1, cluster2, transform) {
   cluster2.clients.forEach((client) => {
-    for (let i = 0; i < cluster2.data.particles.length; i++) {
-      if (isParticleInClient(cluster2.data.particles[i], client)) {
-        cluster2.data.particles[i].x += transform.x;
-        cluster2.data.particles[i].y += transform.y;
+    for (let i = 0; i < cluster2.data.blobs.length; i++) {
+      if (isParticleInClient(cluster2.data.blobs[i], client)) {
+        cluster2.data.blobs[i].x += transform.x;
+        cluster2.data.blobs[i].y += transform.y;
       }
     }
   });
 
-  return cluster1.data.particles.concat(cluster2.data.particles);
+  return cluster1.data.blobs.concat(cluster2.data.blobs);
 }
 
 server.listen(3000);
