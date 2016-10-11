@@ -9,156 +9,167 @@
       html, body {
         margin: 0;
         padding: 0;
+        width: 100%;
+        height: 100%;
       }
-
-      canvas {
-        cursor: pointer;
-      }
-
     </style>
   </head>
 
   <body>
 
-    <canvas id="canvas"></canvas>
+    <div id="root"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/swip/swip.js"></script>
     <script>
-      var socket = io.connect();
+      (function () {
+        'use strict';
 
-      var canvas = document.getElementById('canvas');
-      var ctx = canvas.getContext("2d");
+        var socket = io.connect();
 
-      canvas.setAttribute('width', window.innerWidth);
-      canvas.setAttribute('height', window.innerHeight);
+        function drawOpenings (ctx, client) {
+          var openings = client.openings;
+          var transformX = client.transform.x;
+          var transformY = client.transform.y;
+          var width = client.size.width;
+          var height = client.size.height;
 
-      ctx.fillStyle = '#333333';
-      ctx.fillRect(0,0, canvas.width, canvas.height);
+          ctx.lineWidth = 5;
+          ctx.shadowBlur = 5;
 
-      function drawOpenings (ctx, client) {
-        var openings = client.openings;
-        var transformX = client.transform.x;
-        var transformY = client.transform.y;
-        var width = client.size.width;
-        var height = client.size.height;
+          openings.left.forEach(function (wall) {
+            ctx.strokeStyle = "#ff9e00";
+            ctx.shadowColor = "#ff9e00";
 
-        ctx.lineWidth = 5;
-        ctx.shadowBlur=5;
+            ctx.beginPath();
+            ctx.moveTo(transformX, wall.start + transformY);
+            ctx.lineTo(transformX, wall.end + transformY);
+            ctx.stroke();
+          });
 
-        openings.left.forEach(function (wall) {
-          ctx.strokeStyle = "#ff9e00";
-          ctx.shadowColor="#ff9e00";
+          openings.top.forEach(function (wall) {
+            ctx.strokeStyle = "#0084FF";
+            ctx.shadowColor = "#0084FF";
 
-          ctx.beginPath();
-          ctx.moveTo(transformX, wall.start + transformY);
-          ctx.lineTo(transformX, wall.end + transformY);
-          ctx.stroke();
-        });
+            ctx.beginPath();
+            ctx.moveTo(wall.start + transformX, transformY);
+            ctx.lineTo(wall.end + transformX, transformY);
+            ctx.stroke();
+          });
 
-        openings.top.forEach(function (wall) {
-          ctx.strokeStyle = "#0084FF";
-          ctx.shadowColor="#0084FF";
+          openings.right.forEach(function (wall) {
+            ctx.strokeStyle = "#0084FF";
+            ctx.shadowColor = "#0084FF";
 
-          ctx.beginPath();
-          ctx.moveTo(wall.start + transformX, transformY);
-          ctx.lineTo(wall.end + transformX, transformY);
-          ctx.stroke();
-        });
+            ctx.beginPath();
+            ctx.moveTo(width + transformX, wall.start + transformY);
+            ctx.lineTo(width + transformX, wall.end + transformY);
+            ctx.stroke();
+          });
 
-        openings.right.forEach(function (wall) {
-          ctx.strokeStyle = "#0084FF";
-          ctx.shadowColor="#0084FF";
+          openings.bottom.forEach(function (wall) {
+            ctx.strokeStyle = "#ff9e00";
+            ctx.shadowColor = "#ff9e00";
 
-          ctx.beginPath();
-          ctx.moveTo(width + transformX, wall.start + transformY);
-          ctx.lineTo(width + transformX, wall.end + transformY);
-          ctx.stroke();
-        });
+            ctx.beginPath();
+            ctx.moveTo(wall.start + transformX, height + transformY);
+            ctx.lineTo(wall.end + transformX, height + transformY);
+            ctx.stroke();
+          });
+        }
 
-        openings.bottom.forEach(function (wall) {
-          ctx.strokeStyle = "#ff9e00";
-          ctx.shadowColor="#ff9e00";
+        swip.init({ socket: socket, container: document.getElementById('root') }, function (client) {
+          var converter = client.converter;
+          var stage = client.stage;
+          var ctx = stage.getContext('2d');
 
-          ctx.beginPath();
-          ctx.moveTo(wall.start + transformX, height + transformY);
-          ctx.lineTo(wall.end + transformX, height + transformY);
-          ctx.stroke();
-        });
-      }
+          var state = null;
+          var dragPosition = null;
+          var dragging = false;
 
-      swip.init({ socket: socket, container: canvas }, function (client) {
-        const converter = client.converter;
 
-        var startPos = {};
-        var middlePos;
-        var endPos = {};
+          client.onClick(function (evt) {
+            var hole = { x: evt.position.x, y: evt.position.y };
 
-        client.onClick(function (evt) {
-          var hole = { x: evt.position.x, y: evt.position.y };
+            client.emit('setHole', hole);
+          });
 
-          client.emit('setHole', hole);
-        });
+          client.onDragStart(function (evt) {
+            if (!state) {
+              return;
+            }
 
-        client.onDragStart(function (evt) {
-          startPos = { x: evt.position[0].x, y: evt.position[0].y };
-        });
+            var distanceX = evt.position[0].x - state.cluster.data.ball.x;
+            var distanceY = evt.position[0].y - state.cluster.data.ball.y;
+            var distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
 
-        client.onDragMove(function (evt) {
-          middlePos = { x: evt.position[0].x, y: evt.position[0].y };
-        });
+            if (distance < (2 * state.cluster.data.ball.radius)) {
+              dragging = true;
+              dragPosition = evt.position[0];
+            }
+          });
 
-        client.onDragEnd(function (evt) {
-          endPos = { x: evt.position[0].x, y: evt.position[0].y };
-          middlePos = null;
+          client.onDragMove(function (evt) {
+            if (dragging) {
+              dragPosition = evt.position[0];
+            }
+          });
 
-          client.emit('hitBall', { speedX: (startPos.x - endPos.x), speedY:  (startPos.y - endPos.y) });
-        });
+          client.onDragEnd(function (evt) {
+            dragging = false;
 
-        client.onUpdate(function (evt) {
 
-          if (evt.cluster.data.golfball) {
-            ctx.fillRect(0,0, canvas.width, canvas.height);
+            //client.emit('hitBall', { speedX: (startPos.x - endPos.x), speedY: (startPos.y - endPos.y) });
+          });
 
-            ctx.save();
-            ctx.translate(-converter.toDevicePixel(evt.client.transform.x), -converter.toDevicePixel(evt.client.transform.y));
-            ctx.scale(converter.toDevicePixel(1), converter.toDevicePixel(1));
+          client.onUpdate(function (data) {
+            state = data;
 
-            drawOpenings(ctx, evt.client);
+            if (state) {
+              ctx.fillStyle = '#333';
+              ctx.fillRect(0, 0, stage.width, stage.height);
 
-            var golfball = evt.cluster.data.golfball;
+              ctx.save();
+              ctx.translate(-converter.toDevicePixel(state.client.transform.x), -converter.toDevicePixel(state.client.transform.y));
+              ctx.scale(converter.toDevicePixel(1), converter.toDevicePixel(1));
 
-            if (middlePos) {
-              ctx.strokeStyle = '#FFFFFF';
-              ctx.lineWidth = 3;
-              ctx.shadowBlur= 5;
+              drawOpenings(ctx, state.client);
+
+              var ball = state.cluster.data.ball;
+
+              if (dragging) {
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 5;
+                ctx.beginPath();
+                ctx.moveTo(ball.x, ball.y);
+                ctx.lineTo(dragPosition.x, dragPosition.y);
+                ctx.stroke();
+              }
+
+              ctx.fillStyle = '#FFFFFF';
+              ctx.shadowBlur = 0;
               ctx.beginPath();
-              ctx.moveTo(golfball.x, golfball.y);
-              ctx.lineTo(golfball.x + (middlePos.x - startPos.x), golfball.y + (middlePos.y - startPos.y));
-              ctx.stroke();
+              ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI);
+              ctx.fill();
+
+              var hole = state.cluster.data.hole;
+
+              ctx.fillStyle = '#FF6666';
+              ctx.beginPath();
+              ctx.arc(hole.x, hole.y, 25, 0, 2 * Math.PI);
+              ctx.fill();
+
+              if (state.cluster.data.gameOver) {
+                alert('Game Over!');
+              }
+
+              ctx.restore();
             }
-
-            ctx.fillStyle = '#FFFFFF';
-            ctx.shadowBlur= 0;
-            ctx.beginPath();
-            ctx.arc(golfball.x, golfball.y, golfball.size, 0, 2 * Math.PI);
-            ctx.fill();
-
-            var hole = evt.cluster.data.hole;
-
-            ctx.fillStyle = '#FF6666';
-            ctx.beginPath();
-            ctx.arc(hole.x, hole.y, 25, 0, 2 * Math.PI);
-            ctx.fill();
-
-            if (evt.cluster.data.gameOver) {
-              alert('Game Over!');
-            }
-
-            ctx.restore();
-          }
+          });
         });
-      });
+
+      }());
     </script>
   </body>
 </html>

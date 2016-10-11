@@ -10,11 +10,11 @@ swip(io, {
   cluster: {
     events: {
       update: (cluster) => {
-        const golfball = cluster.data.golfball;
-        const xPos = golfball.x;
-        const yPos = golfball.y;
-        let speedX = golfball.speedX;
-        let speedY = golfball.speedY;
+        const ball = cluster.data.ball;
+        const xPos = ball.x;
+        const yPos = ball.y;
+        let speedX = ball.speedX;
+        let speedY = ball.speedY;
 
         const currClients = cluster.clients;
 
@@ -22,7 +22,7 @@ swip(io, {
         const tresholdY = Math.abs(speedY);
 
         currClients.forEach((client) => {
-          if (isParticleInClient(golfball, client)) {
+          if (isParticleInClient(ball, client)) {
             const leftSide = client.transform.x + tresholdX;
             const rightSide = (client.transform.x + client.size.width) - tresholdX;
             const topSide = client.transform.y + tresholdY;
@@ -48,7 +48,7 @@ swip(io, {
         }
 
         return {
-          golfball: {
+          ball: {
             x: { $set: (xPos + speedX) },
             y: { $set: (yPos + speedY) },
             speedX: { $set: speedX === 0 ? 0 : slowDown(speedX) },
@@ -62,7 +62,7 @@ swip(io, {
       }),
     },
     init: () => ({
-      golfball: { x: 50, y: 50, size: 10, speedX: 0, speedY: 0 },
+      ball: { x: 50, y: 50, radius: 15, speedX: 0, speedY: 0 },
       hole: { x: 200, y: 200 },
       gameOver: false,
     }),
@@ -74,7 +74,7 @@ swip(io, {
       hitBall: ({ cluster, client }, { speedX, speedY }) => {
         return {
           cluster: {
-            data: { golfball : { speedX: { $set: Math.round(speedX / 10) }, speedY: { $set: Math.round(speedY / 10) } } },
+            data: { ball : { speedX: { $set: speedX }, speedY: { $set: speedY } } },
           },
         };
       },
@@ -91,9 +91,9 @@ swip(io, {
 
 function getNewParticleDist (cluster1, cluster2, transform) {
   cluster2.clients.forEach((client) => {
-    if (isParticleInClient(cluster2.data.golfball, client)) {
-      cluster2.data.golfball.x += (client.transform.x + transform.x);
-      cluster2.data.golfball.y += (client.transform.y + transform.y);
+    if (isParticleInClient(cluster2.data.ball, client)) {
+      cluster2.data.ball.x += (client.transform.x + transform.x);
+      cluster2.data.ball.y += (client.transform.y + transform.y);
     }
   });
 
@@ -104,13 +104,13 @@ function slowDown (speed) {
   return speed > 0 ? speed - 1 : speed + 1;
 }
 
-function isParticleInClient (golfball, client) {
+function isParticleInClient (ball, client) {
   const leftSide = client.transform.x;
   const rightSide = (client.transform.x + client.size.width);
   const topSide = client.transform.y;
   const bottomSide = (client.transform.y + client.size.height);
 
-  if (golfball.x < rightSide && golfball.x > leftSide && golfball.y > topSide && golfball.y < bottomSide) {
+  if (ball.x < rightSide && ball.x > leftSide && ball.y > topSide && ball.y < bottomSide) {
     return true;
   }
 
