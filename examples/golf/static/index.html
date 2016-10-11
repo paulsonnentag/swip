@@ -110,16 +110,28 @@
           });
 
           client.onDragMove(function (evt) {
+            var distanceX = evt.position[0].x - state.cluster.data.ball.x;
+            var distanceY = evt.position[0].y - state.cluster.data.ball.y;
+            var distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+
             if (dragging) {
-              dragPosition = evt.position[0];
+              if (distance > 150) {
+                dragPosition = {
+                  x:  state.cluster.data.ball.x + (distanceX / distance) * 150,
+                  y:  state.cluster.data.ball.y + (distanceY / distance) * 150
+                }
+              } else {
+                dragPosition = evt.position[0];
+              }
             }
           });
 
           client.onDragEnd(function (evt) {
             dragging = false;
-
-
-            //client.emit('hitBall', { speedX: (startPos.x - endPos.x), speedY: (startPos.y - endPos.y) });
+            client.emit('hitBall', {
+              speedX: (dragPosition.x - state.cluster.data.ball.x) / 2,
+              speedY: (dragPosition.y - state.cluster.data.ball.y) / 2
+            });
           });
 
           client.onUpdate(function (data) {
