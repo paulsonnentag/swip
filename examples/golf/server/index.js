@@ -6,7 +6,7 @@ const swip = require('../../../src/server/index.js');
 
 app.use(express.static(__dirname + './../static'));
 
-const WALL_SIZE = 10;
+const WALL_SIZE = 20;
 
 swip(io, {
   cluster: {
@@ -20,7 +20,7 @@ swip(io, {
 
         const currClients = cluster.clients;
 
-        const boundaryOffset = ball.radius + WALL_SIZE
+        const boundaryOffset = ball.radius + WALL_SIZE;
 
 
         currClients.forEach((client) => {

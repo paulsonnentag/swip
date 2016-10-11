@@ -34,13 +34,14 @@
           var width = client.size.width;
           var height = client.size.height;
 
-          ctx.lineWidth = 20;
-          ctx.shadowBlur = 5;
-          ctx.strokeStyle = '#fff';
+          ctx.save();
+          ctx.lineWidth = 40;
+          ctx.shadowColor = '#dba863';
+          ctx.shadowBlur = 10;
 
+          ctx.strokeStyle = '#ffde99';
 
           // left
-
           ctx.beginPath();
           ctx.moveTo(transformX, transformY);
 
@@ -97,13 +98,15 @@
 
           ctx.lineTo(width + transformX, height + transformY);
           ctx.stroke();
+          ctx.restore();
         }
 
         function openingSort (openingA, openingB) {
-            return openingB.start - openingA.start;
+          return openingB.start - openingA.start;
         }
 
         swip.init({ socket: socket, container: document.getElementById('root') }, function (client) {
+          var pattern;
           var converter = client.converter;
           var stage = client.stage;
           var ctx = stage.getContext('2d');
@@ -159,11 +162,24 @@
             }
           });
 
+          var img = new Image();
+          img.src = './assets/grass.svg';
+
+          img.onload = function () {
+            pattern = ctx.createPattern(img, 'repeat');
+          };
+
           client.onUpdate(function (data) {
             state = data;
 
             if (state) {
-              ctx.fillStyle = '#333';
+
+              if (pattern) {
+                ctx.fillStyle = pattern;
+              } else {
+                ctx.fillStyle = '#80d735';
+              }
+
               ctx.fillRect(0, 0, stage.width, stage.height);
 
               ctx.save();
@@ -176,31 +192,32 @@
 
               if (dragging) {
                 ctx.strokeStyle = '#FFFFFF';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
                 ctx.lineWidth = 3;
                 ctx.shadowBlur = 5;
+
+                let angle = -Math.atan2(dragPosition.x - ball.x, dragPosition.y - ball.y) + Math.PI / 2;
+
                 ctx.beginPath();
-                ctx.moveTo(ball.x, ball.y);
-                ctx.lineTo(dragPosition.x, dragPosition.y);
-                ctx.stroke();
+                ctx.arc(ball.x, ball.y, ball.radius * 2, angle + Math.PI / 2,  angle - Math.PI / 2);
+
+                ctx.arc(dragPosition.x, dragPosition.y, ball.radius, angle - Math.PI / 2,  angle + Math.PI / 2);
+
+
+                ctx.fill();
+
+
               }
 
               ctx.fillStyle = '#FFFFFF';
-              ctx.shadowBlur = 0;
+              ctx.shadowBlur = 10;
+              ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
               ctx.beginPath();
 
               ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI);
               ctx.fill();
 
               var hole = state.cluster.data.hole;
-
-              ctx.fillStyle = '#FF6666';
-              ctx.beginPath();
-              ctx.arc(hole.x, hole.y, 25, 0, 2 * Math.PI);
-              ctx.fill();
-
-              if (state.cluster.data.gameOver) {
-                alert('Game Over!');
-              }
 
               ctx.restore();
             }
