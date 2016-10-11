@@ -7,12 +7,14 @@ const swip = require('../../../src/server/index.js');
 app.use(express.static(`${__dirname}/../client`));
 
 const WALL_SIZE = 20;
+const SPEED_THRESHOLD = 50;
 
 swip(io, {
   cluster: {
     events: {
       update: (cluster) => {
         const ball = cluster.data.ball;
+        const hole = cluster.data.hole;
         const clients = cluster.clients;
 
         let nextPosX = ball.x + ball.speedX;
@@ -25,25 +27,21 @@ swip(io, {
 
         if (client) { // update speed and position if collision happens
           if (((ball.speedX < 0) &&
-              ((nextPosX - boundaryOffset) < client.transform.x) &&
-              !isWallOpenAtPosition(client.transform.y, client.openings.left, nextPosY))) {
+            ((nextPosX - boundaryOffset) < client.transform.x) && !isWallOpenAtPosition(client.transform.y, client.openings.left, nextPosY))) {
             nextPosX = client.transform.x + boundaryOffset;
             nextSpeedX = ball.speedX * -1;
           } else if (((ball.speedX > 0) &&
-                     ((nextPosX + boundaryOffset) > (client.transform.x + client.size.width)) &&
-                     !isWallOpenAtPosition(client.transform.y, client.openings.right, nextPosY))) {
+            ((nextPosX + boundaryOffset) > (client.transform.x + client.size.width)) && !isWallOpenAtPosition(client.transform.y, client.openings.right, nextPosY))) {
             nextPosX = client.transform.x + (client.size.width - boundaryOffset);
             nextSpeedX = ball.speedX * -1;
           }
 
           if (((ball.speedY < 0) &&
-              ((nextPosY - boundaryOffset) < client.transform.y &&
-              !isWallOpenAtPosition(client.transform.x, client.openings.top, nextPosX)))) {
+            ((nextPosY - boundaryOffset) < client.transform.y && !isWallOpenAtPosition(client.transform.x, client.openings.top, nextPosX)))) {
             nextPosY = client.transform.y + boundaryOffset;
             nextSpeedY = ball.speedY * -1;
           } else if (((ball.speedY > 0) &&
-                     ((nextPosY + boundaryOffset) > (client.transform.y + client.size.height)) &&
-                     !isWallOpenAtPosition(client.transform.x, client.openings.bottom, nextPosX))
+            ((nextPosY + boundaryOffset) > (client.transform.y + client.size.height)) && !isWallOpenAtPosition(client.transform.x, client.openings.bottom, nextPosX))
           ) {
             nextPosY = client.transform.y + (client.size.height - boundaryOffset);
             nextSpeedY = ball.speedY * -1;
@@ -52,6 +50,13 @@ swip(io, {
           const firstClient = clients[0];
           nextPosX = firstClient.transform.x + (firstClient.size.width / 2);
           nextPosY = firstClient.transform.y + (firstClient.size.height / 2);
+          nextSpeedX = 0;
+          nextSpeedY = 0;
+        }
+
+        if (isInsideHole(hole, ball)) {
+          nextPosX = (ball.x + hole.x) / 2;
+          nextPosY = (ball.y + hole.y) / 2;
           nextSpeedX = 0;
           nextSpeedY = 0;
         }
@@ -69,7 +74,7 @@ swip(io, {
     },
     init: () => ({
       ball: { x: 50, y: 50, radius: 10, speedX: 0, speedY: 0 },
-      hole: { x: 200, y: 200 },
+      hole: { x: 200, y: 200, radius: 15 },
       gameOver: false,
     }),
   },
@@ -87,9 +92,14 @@ swip(io, {
           },
         },
       }),
-      setHole: ({ cluster, client }, hole) => ({
+      setHole: ({ cluster, client }, { x, y }) => ({
         cluster: {
-          data: { hole: { $set: hole } },
+          data: {
+            hole: {
+              x: { $set: x },
+              y: { $set: y },
+            },
+          },
         },
       }),
     },
@@ -109,6 +119,15 @@ function isWallOpenAtPosition (transform, openings, particlePos) {
   return openings.some((opening) => (
     particlePos >= (opening.start + transform) && particlePos <= (opening.end + transform)
   ));
+}
+
+function isInsideHole (hole, ball) {
+  const distanceX = hole.x - ball.x;
+  const distanceY = hole.y - ball.y;
+  const distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+  const speed = Math.sqrt(Math.pow(ball.speedX, 2) + Math.pow(ball.speedY, 2));
+
+  return distance <= hole.radius && speed < SPEED_THRESHOLD;
 }
 
 server.listen(3000);

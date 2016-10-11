@@ -69,7 +69,7 @@
 
       applyTransform(ctx, converter, client.transform);
       drawBackground(ctx, client);
-      drawHole(ctx, ball, hole);
+      drawHole(ctx, hole);
 
       if (dragging) {
         drawArrow(ctx, ball, dragPosition);
@@ -211,7 +211,7 @@
     ctx.restore();
   }
 
-  function drawHole (ctx, ball, hole) {
+  function drawHole (ctx, hole) {
     ctx.save();
 
     ctx.fillStyle = 'black';
@@ -219,7 +219,7 @@
     ctx.lineWidth = 2;
 
     ctx.beginPath();
-    ctx.arc(hole.x, hole.y, ball.radius * 1.25, 0, 2 * Math.PI);
+    ctx.arc(hole.x, hole.y, hole.radius, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
 
