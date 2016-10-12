@@ -9,6 +9,7 @@
     var stage = client.stage;
     var ctx = stage.getContext('2d');
 
+    var counter = 0;
     var blobs = [];
     var activeBlobs = [];
     var blobsClicked = [];
@@ -16,7 +17,7 @@
     client.onDragStart(function (evt) {
       evt.position.forEach(function (pos) {
         for (var i = 0; i < blobs.length; i++) {
-          if (touchInRadius(pos.x, pos.y, blobs[i].x, blobs[i].y, blobs[i].size)) {
+          if (touchInRadius(pos.x, pos.y, blobs[i].x, blobs[i].y, blobs[i].size * 2)) {
             blobsClicked.push({blob: blobs[i], index: i, lastX: pos.x, lastY: pos.y});
             blobs[i].speedX = 0;
             blobs[i].speedY = 0;
@@ -49,21 +50,28 @@
           }
         });
       } else {
-        evt.position.forEach(function (pos) {
-          for (var i = 0; i < blobs.length; i++) {
-            if (touchInRadius(pos.x, pos.y, blobs[i].x, blobs[i].y, blobs[i].size)) {
-              blobs[i].x = pos.x;
-              blobs[i].y = pos.y;
+        if (counter >= 2) {
+          counter = 0;
+
+          evt.position.forEach(function (pos) {
+            for (var i = 0; i < blobs.length; i++) {
+              if (touchInRadius(pos.x, pos.y, blobs[i].x, blobs[i].y, blobs[i].size * 5) && indexInClicked(i, blobsClicked)) {
+                blobs[i].x = pos.x;
+                blobs[i].y = pos.y;
+              }
             }
-          }
-          for (var i = 0; i < blobsClicked.length; i++) {
-            if (touchInRadius(pos.x, pos.y, blobsClicked[i].x, blobsClicked[i].y, blobsClicked[i].size)) {
-              blobsClicked[i].lastX = pos.x;
-              blobsClicked[i].lastY = pos.y;
+
+            for (var i = 0; i < blobsClicked.length; i++) {
+              if (touchInRadius(pos.x, pos.y, blobsClicked[i].x, blobsClicked[i].y, blobsClicked[i].size * 5)) {
+                blobsClicked[i].lastX = pos.x;
+                blobsClicked[i].lastY = pos.y;
+              }
             }
-          }
-          client.emit('updateBlobs', { blobs: blobs })
-        });
+
+            client.emit('updateBlobs', {blobs: blobs})
+          });
+        }
+        counter++;
       }
     });
 
@@ -84,54 +92,57 @@
         });
       } else {
         evt.position.forEach(function (pos) {
-          var emitBlobs = [];
           for (var i = 0; i < blobsClicked.length; i++) {
             var currBlob = blobsClicked[i].blob;
             var currBlobIndex = blobsClicked[i].index;
             var startX = blobsClicked[i].lastX;
             var startY = blobsClicked[i].lastY;
 
-            if (touchInRadius(pos.x, pos.y, currBlob.x, currBlob.y, currBlob.size * 10)) {
-              blobs[currBlobIndex].speedX = (Math.abs(pos.x) - Math.abs(startX)) / 10;
-              blobs[currBlobIndex].speedY = (Math.abs(pos.y) - Math.abs(startY)) / 10;
+            if (touchInRadius(pos.x, pos.y, currBlob.x, currBlob.y, currBlob.size * 20)) {
+              blobs[currBlobIndex].speedX = (pos.x - startX) / 10;
+              blobs[currBlobIndex].speedY = (pos.y - startY) / 10;
               blobsClicked.splice(i, 1);
               i--;
             }
           }
-          if (emitBlobs) {
-            client.emit('updateBlobs', { blobs: blobs })
-          }
+          client.emit('updateBlobs', { blobs: blobs })
         });
         blobsClicked = [];
       }
     });
 
     client.onUpdate(function (evt) {
+      var updatedBlobs = evt.cluster.data.blobs;
+      blobs = updatedBlobs;
 
-      if (evt.cluster) {
-        var updatedBlobs = evt.cluster.data.blobs;
-        blobs = updatedBlobs;
+      ctx.save();
 
-        ctx.fillStyle = evt.cluster.data.backgroundColor;
-        ctx.fillRect(0, 0, stage.width, stage.height);
+      applyTransform(ctx, converter, evt.client.transform);
 
-        ctx.save();
-        ctx.translate(-converter.toDevicePixel(evt.client.transform.x), -converter.toDevicePixel(evt.client.transform.y));
-        ctx.scale(converter.toDevicePixel(1), converter.toDevicePixel(1));
+      drawBackground(ctx, evt);
+      drawOpenings(ctx, evt.client);
+      increaseActiveBlobSize(activeBlobs);
+      drawBlobs(ctx, activeBlobs, updatedBlobs);
 
-        drawOpenings(ctx, evt.client);
-        drawBlobs();
-
-        ctx.restore();
-      }
+      ctx.restore();
     });
   });
 
-  function applyTransform () {
+  function drawBackground (ctx, evt) {
+    ctx.save();
 
+    ctx.fillStyle = evt.cluster.data.backgroundColor;
+    ctx.fillRect(evt.client.transform.x, evt.client.transform.y, evt.client.size.width, evt.client.size.height);
+
+    ctx.restore();
   }
 
-  function increaseActiveBlobSize () {
+  function applyTransform (ctx, converter, transform) {
+    ctx.translate(-converter.toDevicePixel(transform.x), -converter.toDevicePixel(transform.y));
+    ctx.scale(converter.toDevicePixel(1), converter.toDevicePixel(1));
+  }
+
+  function increaseActiveBlobSize (activeBlobs) {
     if (activeBlobs) {
       for(var i = 0; i < activeBlobs.length; i++) {
         activeBlobs[i].size += 1;
@@ -139,7 +150,11 @@
     }
   }
 
-  function drawBlobs () {
+  function drawBlobs (ctx, activeBlobs, updatedBlobs) {
+    ctx.shadowBlur = 0;
+
+    ctx.save();
+
     activeBlobs.forEach(function(blob) {
       ctx.beginPath();
       ctx.arc(blob.x, blob.y, blob.size , 0, 2 * Math.PI, false);
@@ -153,11 +168,12 @@
       ctx.fillStyle = '#FFFFFF';
       ctx.fill();
     });
+
+    ctx.restore();
   }
 
   function touchInRadius (posX, posY, blobX, blobY, blobsSize) {
     var inRadius = false;
-    blobsSize *= 2;
 
     if ((posX < (blobX + blobsSize) && posX > (blobX - blobsSize)) &&
       (posY < (blobY + blobsSize) && posY > (blobY - blobsSize))) {
@@ -165,6 +181,15 @@
     }
 
     return inRadius;
+  }
+
+  function indexInClicked (index, blobsClicked) {
+    for (var i = 0; i < blobsClicked.length; i++) {
+      if (blobsClicked[i].index == index) {
+        return true;
+      }
+    }
+    return false;
   }
 
   function drawOpenings (ctx, client) {
