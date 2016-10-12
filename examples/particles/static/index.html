@@ -44,9 +44,12 @@
             evt.position.forEach(function (pos) {
               for (var i = 0; i < blobs.length; i++) {
                 if (touchInRadius(pos.x, pos.y, blobs[i].x, blobs[i].y, blobs[i].size)) {
-                  blobsClicked.push({blob: blobs[i], xStart: pos.x, yStart: pos.y});
+                  blobsClicked.push({blob: blobs[i], index: i, lastX: pos.x, lastY: pos.y});
+                  blobs[i].speedX = 0;
+                  blobs[i].speedY = 0;
                 }
               }
+              client.emit('updateBlobs', { blobs: blobs })
             });
 
             if (blobsClicked == false) {
@@ -80,6 +83,12 @@
                     blobs[i].y = pos.y;
                   }
                 }
+                for (var i = 0; i < blobsClicked.length; i++) {
+                  if (touchInRadius(pos.x, pos.y, blobsClicked[i].x, blobsClicked[i].y, blobsClicked[i].size)) {
+                    blobsClicked[i].lastX = pos.x;
+                    blobsClicked[i].lastY = pos.y;
+                  }
+                }
                 client.emit('updateBlobs', { blobs: blobs })
               });
             }
@@ -101,6 +110,25 @@
                 }
               });
             } else {
+              evt.position.forEach(function (pos) {
+                var emitBlobs = [];
+                for (var i = 0; i < blobsClicked.length; i++) {
+                  var currBlob = blobsClicked[i].blob;
+                  var currBlobIndex = blobsClicked[i].index;
+                  var startX = blobsClicked[i].lastX;
+                  var startY = blobsClicked[i].lastY;
+
+                  if (touchInRadius(pos.x, pos.y, currBlob.x, currBlob.y, currBlob.size * 10)) {
+                    blobs[currBlobIndex].speedX = (Math.abs(pos.x) - Math.abs(startX)) / 10;
+                    blobs[currBlobIndex].speedY = (Math.abs(pos.y) - Math.abs(startY)) / 10;
+                    blobsClicked.splice(i, 1);
+                    i--;
+                  }
+                }
+                if (emitBlobs) {
+                  client.emit('updateBlobs', { blobs: blobs })
+                }
+              });
               blobsClicked = [];
             }
           });
