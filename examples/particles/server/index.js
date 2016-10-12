@@ -21,15 +21,12 @@ swip(io, {
           .map((blob) => {
             const currClients = cluster.clients;
 
-            const tresholdX = Math.abs(blob.speedX);
-            const tresholdY = Math.abs(blob.speedY);
-
             currClients.forEach((client) => {
               if (isParticleInClient(blob, client)) {
-                const leftSide = client.transform.x + tresholdX;
-                const rightSide = (client.transform.x + client.size.width) - tresholdX;
-                const topSide = client.transform.y + tresholdY;
-                const bottomSide = (client.transform.y + client.size.height) - tresholdY;
+                const leftSide = client.transform.x;
+                const rightSide = (client.transform.x + client.size.width)
+                const topSide = client.transform.y;
+                const bottomSide = (client.transform.y + client.size.height);
 
 
                 if ((blob.x + blob.size >= rightSide && checkForWall(blob.y + blob.size, client.openings.right, client.transform.y))
