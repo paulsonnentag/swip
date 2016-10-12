@@ -53,9 +53,10 @@ swip(io, {
       },
       merge: (cluster1, cluster2, transform) => ({
         blobs: { $set: getNewParticleDist(cluster1, cluster2, transform) },
+        backgroundColor: { $set: cluster1.data.backgroundColor },
       }),
     },
-    init: () => ({ blobs: [] }),
+    init: () => ({ blobs: [], backgroundColor: getRandomColor() }),
   },
 
   client: {
@@ -65,6 +66,13 @@ swip(io, {
         return {
           cluster: {
             data: { blobs: { $push: blobs } },
+          },
+        };
+      },
+      updateBlobs: ({ cluster, client }, { blobs }) => {
+        return {
+          cluster: {
+            data: { blobs: { $set: blobs } },
           },
         };
       },
@@ -108,6 +116,16 @@ function getNewParticleDist (cluster1, cluster2, transform) {
   });
 
   return cluster1.data.blobs.concat(cluster2.data.blobs);
+}
+
+function getRandomColor () {
+  const letters = '0123456789AB'.split('');
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.round(Math.random() * 12)];
+  }
+
+  return color;
 }
 
 server.listen(3000);
