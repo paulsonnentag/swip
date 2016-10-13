@@ -75,7 +75,6 @@ swip(io, {
     init: () => ({
       ball: { x: 50, y: 50, radius: 10, speedX: 0, speedY: 0 },
       hole: { x: 200, y: 200, radius: 15 },
-      gameOver: false,
     }),
   },
 
