@@ -11,38 +11,57 @@ swip(io, {
     events: {
       update: (cluster) => {
         const blobs = cluster.data.blobs;
+        const clients = cluster.clients;
 
         const updatedBlobs = blobs.map((blob) => {
-          blob.x += blob.speedX;
-          blob.y += blob.speedY;
+          const boundaryOffset = blob.size;
+          const client = clients.find((c) => isParticleInClient(blob, c));
+
+          let nextPosX = blob.x + blob.speedX;
+          let nextPosY = blob.y + blob.speedY;
+          let nextSpeedX = blob.speedX;
+          let nextSpeedY = blob.speedY;
+
+          if (client) { // update speed and position if collision happens
+            if (((blob.speedX < 0) &&
+              ((nextPosX - boundaryOffset) < client.transform.x)
+              && !isWallOpenAtPosition(client.transform.y, client.openings.left, nextPosY))) {
+              nextPosX = client.transform.x + boundaryOffset;
+              nextSpeedX = blob.speedX * -1;
+            } else if (((blob.speedX > 0) &&
+              ((nextPosX + boundaryOffset) > (client.transform.x + client.size.width))
+              && !isWallOpenAtPosition(client.transform.y, client.openings.right, nextPosY))) {
+              nextPosX = client.transform.x + (client.size.width - boundaryOffset);
+              nextSpeedX = blob.speedX * -1;
+            }
+
+            if (((blob.speedY < 0) &&
+              ((nextPosY - boundaryOffset) < client.transform.y
+              && !isWallOpenAtPosition(client.transform.x, client.openings.top, nextPosX)))) {
+              nextPosY = client.transform.y + boundaryOffset;
+              nextSpeedY = blob.speedY * -1;
+            } else if (((blob.speedY > 0) &&
+              ((nextPosY + boundaryOffset) > (client.transform.y + client.size.height))
+              && !isWallOpenAtPosition(client.transform.x, client.openings.bottom, nextPosX))
+            ) {
+              nextPosY = client.transform.y + (client.size.height - boundaryOffset);
+              nextSpeedY = blob.speedY * -1;
+            }
+          } else { // reset blob to first client of cluster
+            const firstClient = clients[0];
+            nextPosX = firstClient.transform.x + (firstClient.size.width / 2);
+            nextPosY = firstClient.transform.y + (firstClient.size.height / 2);
+            nextSpeedX = 0;
+            nextSpeedY = 0;
+          }
+
+          blob.x = nextPosX;
+          blob.y = nextPosY;
+          blob.speedX = nextSpeedX;
+          blob.speedY = nextSpeedY;
 
           return blob;
-        })
-          .map((blob) => {
-            const currClients = cluster.clients;
-
-            currClients.forEach((client) => {
-              if (isParticleInClient(blob, client)) {
-                const leftSide = client.transform.x;
-                const rightSide = (client.transform.x + client.size.width)
-                const topSide = client.transform.y;
-                const bottomSide = (client.transform.y + client.size.height);
-
-
-                if ((blob.x + blob.size >= rightSide && checkForWall(blob.y + blob.size, client.openings.right, client.transform.y))
-                  || (blob.x - blob.size <= leftSide && checkForWall(blob.y - blob.size, client.openings.left, client.transform.y))) {
-                  blob.speedX *= -1;
-                }
-
-                if ((blob.y + blob.size >= bottomSide && checkForWall(blob.x + blob.size, client.openings.bottom, client.transform.x))
-                  || (blob.y - blob.size <= topSide && checkForWall(blob.x - blob.size, client.openings.top, client.transform.x))) {
-                  blob.speedY *= -1;
-                }
-              }
-            });
-
-            return blob;
-          });
+        });
 
         return {
           blobs: { $set: updatedBlobs },
@@ -90,16 +109,10 @@ function isParticleInClient (particle, client) {
   return false;
 }
 
-function checkForWall (particlePos, openings, transform) {
-  let isWall = true;
-
-  openings.forEach((opening) => {
-    if (particlePos >= (opening.start + transform) && particlePos <= (opening.end + transform)) {
-      isWall = false;
-    }
-  });
-
-  return isWall;
+function isWallOpenAtPosition (transform, openings, particlePos) {
+  return openings.some((opening) => (
+    particlePos >= (opening.start + transform) && particlePos <= (opening.end + transform)
+  ));
 }
 
 function getNewParticleDist (cluster1, cluster2, transform) {

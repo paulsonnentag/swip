@@ -12,21 +12,21 @@
     var counter = 0;
     var blobs = [];
     var activeBlobs = [];
-    var blobsClicked = [];
+    var clickedBlobs = [];
 
     client.onDragStart(function (evt) {
       evt.position.forEach(function (pos) {
         for (var i = 0; i < blobs.length; i++) {
           if (touchInRadius(pos.x, pos.y, blobs[i].x, blobs[i].y, blobs[i].size * 2)) {
-            blobsClicked.push({blob: blobs[i], index: i, lastX: pos.x, lastY: pos.y});
-            blobs[i].speedX = 0;
-            blobs[i].speedY = 0;
+            clickedBlobs.push(blobs.splice(i, 1)[0]);
           }
         }
-        client.emit('updateBlobs', { blobs: blobs })
       });
+      if (clickedBlobs.length > 0) {
+        client.emit('updateBlobs', { blobs: blobs });
+      }
 
-      if (blobsClicked == false) {
+      if (clickedBlobs == false) {
         evt.position.forEach(function (pos) {
           activeBlobs.push({
             x: pos.x,
@@ -40,7 +40,7 @@
     });
 
     client.onDragMove(function (evt) {
-      if (blobsClicked == false) {
+      if (clickedBlobs == false) {
         evt.position.forEach(function (pos) {
           for (var i = 0; i < activeBlobs.length; i++) {
             if (touchInRadius(pos.x, pos.y, activeBlobs[i].x, activeBlobs[i].y, activeBlobs[i].size)) {
@@ -51,32 +51,22 @@
         });
       } else {
         if (counter >= 2) {
-          counter = 0;
-
           evt.position.forEach(function (pos) {
-            for (var i = 0; i < blobs.length; i++) {
-              if (touchInRadius(pos.x, pos.y, blobs[i].x, blobs[i].y, blobs[i].size * 5) && indexInClicked(i, blobsClicked)) {
-                blobs[i].x = pos.x;
-                blobs[i].y = pos.y;
+            for (var i = 0; i < clickedBlobs.length; i++) {
+              if (touchInRadius(pos.x, pos.y, clickedBlobs[i].x, clickedBlobs[i].y, clickedBlobs[i].size * 10)) {
+                clickedBlobs[i].x = pos.x;
+                clickedBlobs[i].y = pos.y;
               }
             }
-
-            for (var i = 0; i < blobsClicked.length; i++) {
-              if (touchInRadius(pos.x, pos.y, blobsClicked[i].x, blobsClicked[i].y, blobsClicked[i].size * 5)) {
-                blobsClicked[i].lastX = pos.x;
-                blobsClicked[i].lastY = pos.y;
-              }
-            }
-
-            client.emit('updateBlobs', {blobs: blobs})
           });
+          counter = 0;
         }
         counter++;
       }
     });
 
     client.onDragEnd(function (evt) {
-      if (blobsClicked == false) {
+      if (clickedBlobs == false) {
         evt.position.forEach(function (pos) {
           var emitBlobs = [];
           for (var i = 0; i < activeBlobs.length; i++) {
@@ -92,22 +82,22 @@
         });
       } else {
         evt.position.forEach(function (pos) {
-          for (var i = 0; i < blobsClicked.length; i++) {
-            var currBlob = blobsClicked[i].blob;
-            var currBlobIndex = blobsClicked[i].index;
-            var startX = blobsClicked[i].lastX;
-            var startY = blobsClicked[i].lastY;
+          var emitBlobs = [];
+          for (var i = 0; i < clickedBlobs.length; i++) {
+            var startX = clickedBlobs[i].x;
+            var startY = clickedBlobs[i].y;
 
-            if (touchInRadius(pos.x, pos.y, currBlob.x, currBlob.y, currBlob.size * 20)) {
-              blobs[currBlobIndex].speedX = (pos.x - startX) / 10;
-              blobs[currBlobIndex].speedY = (pos.y - startY) / 10;
-              blobsClicked.splice(i, 1);
+            if (touchInRadius(pos.x, pos.y, clickedBlobs[i].x, clickedBlobs[i].y, clickedBlobs[i].size * 40)) {
+              clickedBlobs[i].x = pos.x;
+              clickedBlobs[i].y = pos.y;
+              clickedBlobs[i].speedX = (pos.x - startX) / 2;
+              clickedBlobs[i].speedY = (pos.y - startY) / 2;
+              emitBlobs.push(clickedBlobs.splice(i, 1)[0]);
               i--;
             }
           }
-          client.emit('updateBlobs', { blobs: blobs })
+          client.emit('addBlobs', { blobs: emitBlobs });
         });
-        blobsClicked = [];
       }
     });
 
@@ -122,7 +112,7 @@
       drawBackground(ctx, evt);
       drawOpenings(ctx, evt.client);
       increaseActiveBlobSize(activeBlobs);
-      drawBlobs(ctx, activeBlobs, updatedBlobs);
+      drawBlobs(ctx, activeBlobs, clickedBlobs, updatedBlobs);
 
       ctx.restore();
     });
@@ -150,12 +140,19 @@
     }
   }
 
-  function drawBlobs (ctx, activeBlobs, updatedBlobs) {
+  function drawBlobs (ctx, activeBlobs, clickedBlobs, updatedBlobs) {
     ctx.shadowBlur = 0;
 
     ctx.save();
 
     activeBlobs.forEach(function(blob) {
+      ctx.beginPath();
+      ctx.arc(blob.x, blob.y, blob.size , 0, 2 * Math.PI, false);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+    });
+
+    clickedBlobs.forEach(function(blob) {
       ctx.beginPath();
       ctx.arc(blob.x, blob.y, blob.size , 0, 2 * Math.PI, false);
       ctx.fillStyle = '#FFFFFF';
@@ -183,9 +180,9 @@
     return inRadius;
   }
 
-  function indexInClicked (index, blobsClicked) {
-    for (var i = 0; i < blobsClicked.length; i++) {
-      if (blobsClicked[i].index == index) {
+  function indexInClicked (index, clickedBlobs) {
+    for (var i = 0; i < clickedBlobs.length; i++) {
+      if (clickedBlobs[i].index == index) {
         return true;
       }
     }
