@@ -59,12 +59,10 @@
     });
 
     swip.sensor.onChangeOrientation(throttle(function (evt) {
-
       client.emit('updateOrientation', {
         rotationX: evt.rotation.x,
         rotationY: evt.rotation.y
       });
-
     }, 200));
 
 

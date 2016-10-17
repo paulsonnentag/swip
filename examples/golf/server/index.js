@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+// eslint-disable-next-line new-cap
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const swip = require('../../../src/server/index.js');
@@ -31,30 +32,34 @@ swip(io, {
 
         if (client) {
           if (Math.abs(client.data.rotationX) > ANGLE_INACCURACY) {
-            downhillAccelerationX = client.data.rotationX * DOWNHILL_ACCELERATION_SCALE;
+            downhillAccelerationX = (client.data.rotationX - ANGLE_INACCURACY) * DOWNHILL_ACCELERATION_SCALE;
           }
 
           if (Math.abs(client.data.rotationY) > ANGLE_INACCURACY) {
-            downhillAccelerationY = client.data.rotationY * DOWNHILL_ACCELERATION_SCALE;
+            downhillAccelerationY = (client.data.rotationY - ANGLE_INACCURACY) * DOWNHILL_ACCELERATION_SCALE;
           }
 
           // update speed and position if collision happens
           if (((ball.speedX < 0) &&
-            ((nextPosX - boundaryOffset) < client.transform.x) && !isWallOpenAtPosition(client.transform.y, client.openings.left, nextPosY))) {
+            ((nextPosX - boundaryOffset) < client.transform.x) &&
+            !isWallOpenAtPosition(client.transform.y, client.openings.left, nextPosY))) {
             nextPosX = client.transform.x + boundaryOffset;
             nextSpeedX = ball.speedX * -1;
           } else if (((ball.speedX > 0) &&
-            ((nextPosX + boundaryOffset) > (client.transform.x + client.size.width)) && !isWallOpenAtPosition(client.transform.y, client.openings.right, nextPosY))) {
+            ((nextPosX + boundaryOffset) > (client.transform.x + client.size.width)) &&
+            !isWallOpenAtPosition(client.transform.y, client.openings.right, nextPosY))) {
             nextPosX = client.transform.x + (client.size.width - boundaryOffset);
             nextSpeedX = ball.speedX * -1;
           }
 
           if (((ball.speedY < 0) &&
-            ((nextPosY - boundaryOffset) < client.transform.y && !isWallOpenAtPosition(client.transform.x, client.openings.top, nextPosX)))) {
+            ((nextPosY - boundaryOffset) < client.transform.y &&
+            !isWallOpenAtPosition(client.transform.x, client.openings.top, nextPosX)))) {
             nextPosY = client.transform.y + boundaryOffset;
             nextSpeedY = ball.speedY * -1;
           } else if (((ball.speedY > 0) &&
-            ((nextPosY + boundaryOffset) > (client.transform.y + client.size.height)) && !isWallOpenAtPosition(client.transform.x, client.openings.bottom, nextPosX))
+            ((nextPosY + boundaryOffset) > (client.transform.y + client.size.height)) &&
+            !isWallOpenAtPosition(client.transform.x, client.openings.bottom, nextPosX))
           ) {
             nextPosY = client.transform.y + (client.size.height - boundaryOffset);
             nextSpeedY = ball.speedY * -1;
