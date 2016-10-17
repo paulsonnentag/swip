@@ -40,17 +40,8 @@
     });
 
     client.onDragMove(function (evt) {
-      if (clickedBlobs == false) {
-        evt.position.forEach(function (pos) {
-          for (var i = 0; i < activeBlobs.length; i++) {
-            if (touchInRadius(pos.x, pos.y, activeBlobs[i].x, activeBlobs[i].y, activeBlobs[i].size)) {
-              activeBlobs.splice(i, 1);
-              i--;
-            }
-          }
-        });
-      } else {
-        if (counter >= 2) {
+      if (clickedBlobs.length > 0) {
+        if (counter >= 3) {
           evt.position.forEach(function (pos) {
             for (var i = 0; i < clickedBlobs.length; i++) {
               if (touchInRadius(pos.x, pos.y, clickedBlobs[i].x, clickedBlobs[i].y, clickedBlobs[i].size * 10)) {
@@ -111,7 +102,7 @@
 
       drawBackground(ctx, evt);
       drawOpenings(ctx, evt.client);
-      increaseActiveBlobSize(activeBlobs);
+      increaseActiveBlobSize(activeBlobs, converter);
       drawBlobs(ctx, activeBlobs, clickedBlobs, updatedBlobs);
 
       ctx.restore();
@@ -132,10 +123,12 @@
     ctx.scale(converter.toDevicePixel(1), converter.toDevicePixel(1));
   }
 
-  function increaseActiveBlobSize (activeBlobs) {
+  function increaseActiveBlobSize (activeBlobs, converter) {
     if (activeBlobs) {
       for(var i = 0; i < activeBlobs.length; i++) {
-        activeBlobs[i].size += 1;
+        if (activeBlobs[i].size < converter.toAbsPixel(100)) {
+          activeBlobs[i].size += 1;
+        }
       }
     }
   }
