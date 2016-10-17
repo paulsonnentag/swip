@@ -57,6 +57,8 @@ class ClientView {
       container: this.container,
     });
 
+    window.addEventListener('resize', () => this.client.reconnect());
+
     this.initApp(this.client);
   }
 
@@ -67,10 +69,6 @@ class ClientView {
       this.connectButton.style.display = 'none';
 
       this.initClient();
-
-      window.addEventListener('resize', () => {
-        this.client.reconnect();
-      });
     }
   }
 }
