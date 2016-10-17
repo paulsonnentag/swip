@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+// eslint-disable-next-line new-cap
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const swip = require('../../../src/server/index.js');
@@ -8,6 +9,8 @@ app.use(express.static(`${__dirname}/../client`));
 
 const WALL_SIZE = 20;
 const SPEED_THRESHOLD = 50;
+const DOWNHILL_ACCELERATION_SCALE = 1 / 20;
+const ANGLE_INACCURACY = 3;
 
 swip(io, {
   cluster: {
@@ -17,6 +20,8 @@ swip(io, {
         const hole = cluster.data.hole;
         const clients = cluster.clients;
 
+        let downhillAccelerationX = 0;
+        let downhillAccelerationY = 0;
         let nextPosX = ball.x + ball.speedX;
         let nextPosY = ball.y + ball.speedY;
         let nextSpeedX = ball.speedX;
@@ -25,23 +30,36 @@ swip(io, {
         const boundaryOffset = ball.radius + WALL_SIZE;
         const client = clients.find((c) => isParticleInClient(ball, c));
 
-        if (client) { // update speed and position if collision happens
+        if (client) {
+          if (Math.abs(client.data.rotationX) > ANGLE_INACCURACY) {
+            downhillAccelerationX = (client.data.rotationX - ANGLE_INACCURACY) * DOWNHILL_ACCELERATION_SCALE;
+          }
+
+          if (Math.abs(client.data.rotationY) > ANGLE_INACCURACY) {
+            downhillAccelerationY = (client.data.rotationY - ANGLE_INACCURACY) * DOWNHILL_ACCELERATION_SCALE;
+          }
+
+          // update speed and position if collision happens
           if (((ball.speedX < 0) &&
-            ((nextPosX - boundaryOffset) < client.transform.x) && !isWallOpenAtPosition(client.transform.y, client.openings.left, nextPosY))) {
+            ((nextPosX - boundaryOffset) < client.transform.x) &&
+            !isWallOpenAtPosition(client.transform.y, client.openings.left, nextPosY))) {
             nextPosX = client.transform.x + boundaryOffset;
             nextSpeedX = ball.speedX * -1;
           } else if (((ball.speedX > 0) &&
-            ((nextPosX + boundaryOffset) > (client.transform.x + client.size.width)) && !isWallOpenAtPosition(client.transform.y, client.openings.right, nextPosY))) {
+            ((nextPosX + boundaryOffset) > (client.transform.x + client.size.width)) &&
+            !isWallOpenAtPosition(client.transform.y, client.openings.right, nextPosY))) {
             nextPosX = client.transform.x + (client.size.width - boundaryOffset);
             nextSpeedX = ball.speedX * -1;
           }
 
           if (((ball.speedY < 0) &&
-            ((nextPosY - boundaryOffset) < client.transform.y && !isWallOpenAtPosition(client.transform.x, client.openings.top, nextPosX)))) {
+            ((nextPosY - boundaryOffset) < client.transform.y &&
+            !isWallOpenAtPosition(client.transform.x, client.openings.top, nextPosX)))) {
             nextPosY = client.transform.y + boundaryOffset;
             nextSpeedY = ball.speedY * -1;
           } else if (((ball.speedY > 0) &&
-            ((nextPosY + boundaryOffset) > (client.transform.y + client.size.height)) && !isWallOpenAtPosition(client.transform.x, client.openings.bottom, nextPosX))
+            ((nextPosY + boundaryOffset) > (client.transform.y + client.size.height)) &&
+            !isWallOpenAtPosition(client.transform.x, client.openings.bottom, nextPosX))
           ) {
             nextPosY = client.transform.y + (client.size.height - boundaryOffset);
             nextSpeedY = ball.speedY * -1;
@@ -65,8 +83,8 @@ swip(io, {
           ball: {
             x: { $set: nextPosX },
             y: { $set: nextPosY },
-            speedX: { $set: nextSpeedX * 0.97 },
-            speedY: { $set: nextSpeedY * 0.97 },
+            speedX: { $set: (nextSpeedX + downhillAccelerationX) * 0.97 },
+            speedY: { $set: (nextSpeedY + downhillAccelerationY) * 0.97 },
           },
         };
       },
@@ -75,13 +93,13 @@ swip(io, {
     init: () => ({
       ball: { x: 50, y: 50, radius: 10, speedX: 0, speedY: 0 },
       hole: { x: 200, y: 200, radius: 15 },
-      gameOver: false,
     }),
   },
 
   client: {
-    init: () => ({}),
+    init: () => ({ rotationX: 0, rotationY: 0 }),
     events: {
+
       hitBall: ({ cluster, client }, { speedX, speedY }) => ({
         cluster: {
           data: {
@@ -92,6 +110,7 @@ swip(io, {
           },
         },
       }),
+
       setHole: ({ cluster, client }, { x, y }) => ({
         cluster: {
           data: {
@@ -99,6 +118,15 @@ swip(io, {
               x: { $set: x },
               y: { $set: y },
             },
+          },
+        },
+      }),
+
+      updateOrientation: ({ cluster, client }, { rotationX, rotationY }) => ({
+        client: {
+          data: {
+            rotationX: { $set: rotationX },
+            rotationY: { $set: rotationY },
           },
         },
       }),
