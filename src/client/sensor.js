@@ -70,12 +70,22 @@ function onMove (callback) {
 }
 
 function onChangeOrientation (callback) {
+  let prevBeta = null;
+  let prevGamma = null;
+
   window.addEventListener('deviceorientation', (evt) => {
-    const beta = evt.beta;
-    const gamma = evt.gamma;
-    const orientation = screen.orientation || screen.mozOrientation || screen.msOrientation;
-    const rotation = getRotation({ orientation, beta, gamma });
-    callback({ rotation });
+    const beta = Math.round(evt.beta);
+    const gamma = Math.round(evt.gamma);
+
+    if (beta !== prevBeta || gamma !== prevGamma) {
+      const orientation = screen.orientation || screen.mozOrientation || screen.msOrientation;
+      const rotation = getRotation({ orientation, beta, gamma });
+
+      callback({ rotation });
+    }
+
+    prevBeta = beta;
+    prevGamma = gamma;
   });
 }
 

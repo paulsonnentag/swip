@@ -58,6 +58,15 @@
       }
     });
 
+    swip.sensor.onChangeOrientation(throttle(function (evt) {
+
+      client.emit('updateOrientation', {
+        rotationX: evt.rotation.x,
+        rotationY: evt.rotation.y
+      });
+
+    }, 200));
+
 
     client.onUpdate(function (evt) {
       state = evt;
@@ -142,7 +151,6 @@
     ctx.lineTo(width + transformX, height + transformY);
     ctx.stroke();
 
-
     // top
     ctx.beginPath();
     ctx.moveTo(transformX, transformY);
@@ -156,7 +164,6 @@
 
     ctx.lineTo(width + transformX, transformY);
     ctx.stroke();
-
 
     // bottom
     ctx.beginPath();
@@ -224,6 +231,29 @@
     ctx.stroke();
 
     ctx.restore();
+  }
+
+  function throttle(fn, threshhold, scope) {
+    threshhold || (threshhold = 250);
+    var last,
+      deferTimer;
+    return function () {
+      var context = scope || this;
+
+      var now = +new Date,
+        args = arguments;
+      if (last && now < last + threshhold) {
+        // hold on to it
+        clearTimeout(deferTimer);
+        deferTimer = setTimeout(function () {
+          last = now;
+          fn.apply(context, args);
+        }, threshhold);
+      } else {
+        last = now;
+        fn.apply(context, args);
+      }
+    };
   }
 
 }());

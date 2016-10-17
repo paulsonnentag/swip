@@ -112,7 +112,7 @@ class Client {
   }
 
   initEventListener () {
-    sensor.onSwipe(document.body, (evt) => {
+    sensor.onSwipe(this.container, (evt) => {
       const position = {
         x: this.converter.toAbsPixel(evt.position.x),
         y: this.converter.toAbsPixel(evt.position.y),

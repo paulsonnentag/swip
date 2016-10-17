@@ -8,6 +8,8 @@ app.use(express.static(`${__dirname}/../client`));
 
 const WALL_SIZE = 20;
 const SPEED_THRESHOLD = 50;
+const DOWNHILL_ACCELERATION_SCALE = 1 / 20;
+const ANGLE_INACCURACY = 3;
 
 swip(io, {
   cluster: {
@@ -17,6 +19,8 @@ swip(io, {
         const hole = cluster.data.hole;
         const clients = cluster.clients;
 
+        let downhillAccelerationX = 0;
+        let downhillAccelerationY = 0;
         let nextPosX = ball.x + ball.speedX;
         let nextPosY = ball.y + ball.speedY;
         let nextSpeedX = ball.speedX;
@@ -25,7 +29,16 @@ swip(io, {
         const boundaryOffset = ball.radius + WALL_SIZE;
         const client = clients.find((c) => isParticleInClient(ball, c));
 
-        if (client) { // update speed and position if collision happens
+        if (client) {
+          if (Math.abs(client.data.rotationX) > ANGLE_INACCURACY) {
+            downhillAccelerationX = client.data.rotationX * DOWNHILL_ACCELERATION_SCALE;
+          }
+
+          if (Math.abs(client.data.rotationY) > ANGLE_INACCURACY) {
+            downhillAccelerationY = client.data.rotationY * DOWNHILL_ACCELERATION_SCALE;
+          }
+
+          // update speed and position if collision happens
           if (((ball.speedX < 0) &&
             ((nextPosX - boundaryOffset) < client.transform.x) && !isWallOpenAtPosition(client.transform.y, client.openings.left, nextPosY))) {
             nextPosX = client.transform.x + boundaryOffset;
@@ -65,8 +78,8 @@ swip(io, {
           ball: {
             x: { $set: nextPosX },
             y: { $set: nextPosY },
-            speedX: { $set: nextSpeedX * 0.97 },
-            speedY: { $set: nextSpeedY * 0.97 },
+            speedX: { $set: (nextSpeedX + downhillAccelerationX) * 0.97 },
+            speedY: { $set: (nextSpeedY + downhillAccelerationY) * 0.97 },
           },
         };
       },
@@ -79,8 +92,9 @@ swip(io, {
   },
 
   client: {
-    init: () => ({}),
+    init: () => ({ rotationX: 0, rotationY: 0 }),
     events: {
+
       hitBall: ({ cluster, client }, { speedX, speedY }) => ({
         cluster: {
           data: {
@@ -91,6 +105,7 @@ swip(io, {
           },
         },
       }),
+
       setHole: ({ cluster, client }, { x, y }) => ({
         cluster: {
           data: {
@@ -98,6 +113,15 @@ swip(io, {
               x: { $set: x },
               y: { $set: y },
             },
+          },
+        },
+      }),
+
+      updateOrientation: ({ cluster, client }, { rotationX, rotationY }) => ({
+        client: {
+          data: {
+            rotationX: { $set: rotationX },
+            rotationY: { $set: rotationY },
           },
         },
       }),
