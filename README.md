@@ -34,6 +34,8 @@ npm run build
 
 Enter the following command to run the particles demo:
 
+![blob_demo](https://www.youtube.com/watch?v=qXOwT0ieOgw)
+
 ```bash
 npm run particles
 ```
@@ -41,6 +43,8 @@ npm run particles
 ## Golf
 
 ![alt tag] (./assets/golf_demo.gif)
+
+![golf_demo](https://www.youtube.com/watch?v=ZE0gxa-p8HY)
 
 Enter the following command to run the golf demo:
 
