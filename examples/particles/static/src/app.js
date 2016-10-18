@@ -53,6 +53,15 @@
           counter = 0;
         }
         counter++;
+      } else {
+        evt.position.forEach(function (pos) {
+          for (var i = 0; i < activeBlobs.length; i++) {
+           if (touchInRadius(pos.x, pos.y, activeBlobs[i].x, activeBlobs[i].y, activeBlobs[i].size)) {
+            activeBlobs.splice(i, 1);
+            i--;
+           }
+          }
+        });
       }
     });
 
