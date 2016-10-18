@@ -7,24 +7,22 @@ class Converter {
     this.scalingFactor = getScalingFactor(screenSize);
   }
 
-  toDevicePixel (x) {
-    return x / this.scalingFactor;
+  toDevicePixel (value) {
+    return value / this.scalingFactor;
   }
 
-  toAbsPixel (x) {
-    return x * this.scalingFactor;
+  toAbsPixel (value) {
+    return value * this.scalingFactor;
   }
 
   convertClickPos (transform, evt) {
-    const event = {
+    return {
       position: {
         x: this.toAbsPixel(evt.clientX) + transform.x,
         y: this.toAbsPixel(evt.clientY) + transform.y,
       },
       originalEvent: evt,
     };
-
-    return event;
   }
 
   convertTouchPos (transform, evt) {

@@ -1,132 +1,161 @@
 const express = require('express');
 const app = express();
+// eslint-disable-next-line new-cap
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const swip = require('../../../src/server/index.js');
 
-app.use(express.static(__dirname + './../static'));
+app.use(express.static(`${__dirname}/../client`));
+
+const WALL_SIZE = 20;
+const SPEED_THRESHOLD = 50;
+const DOWNHILL_ACCELERATION_SCALE = 1 / 20;
+const ANGLE_INACCURACY = 3;
 
 swip(io, {
   cluster: {
     events: {
       update: (cluster) => {
-        const golfball = cluster.data.golfball;
-        const xPos = golfball.x;
-        const yPos = golfball.y;
-        let speedX = golfball.speedX;
-        let speedY = golfball.speedY;
-
-        const currClients = cluster.clients;
-
-        const tresholdX = Math.abs(speedX);
-        const tresholdY = Math.abs(speedY);
-
-        currClients.forEach((client) => {
-          if (isParticleInClient(golfball, client)) {
-            const leftSide = client.transform.x + tresholdX;
-            const rightSide = (client.transform.x + client.size.width) - tresholdX;
-            const topSide = client.transform.y + tresholdY;
-            const bottomSide = (client.transform.y + client.size.height) - tresholdY;
-
-            if ((xPos >= rightSide && checkForWall(yPos, client.openings.right, client.transform.y))
-              || (xPos <= leftSide && checkForWall(yPos, client.openings.left, client.transform.y))) {
-              speedX *= -1;
-            }
-
-            if ((yPos >= bottomSide && checkForWall(xPos, client.openings.bottom, client.transform.x))
-              || (yPos <= topSide && checkForWall(xPos, client.openings.top, client.transform.x))) {
-              speedY *= -1;
-            }
-          }
-        });
-
-        let gameOver = cluster.data.gameOver;
+        const ball = cluster.data.ball;
         const hole = cluster.data.hole;
+        const clients = cluster.clients;
 
-        if (Math.abs(xPos - hole.x) < 20 && Math.abs(yPos - hole.y) < 20) {
-          gameOver = true;
+        let downhillAccelerationX = 0;
+        let downhillAccelerationY = 0;
+        let nextPosX = ball.x + ball.speedX;
+        let nextPosY = ball.y + ball.speedY;
+        let nextSpeedX = ball.speedX;
+        let nextSpeedY = ball.speedY;
+
+        const boundaryOffset = ball.radius + WALL_SIZE;
+        const client = clients.find((c) => isParticleInClient(ball, c));
+
+        if (client) {
+          if (Math.abs(client.data.rotationX) > ANGLE_INACCURACY) {
+            downhillAccelerationX = (client.data.rotationX - ANGLE_INACCURACY) * DOWNHILL_ACCELERATION_SCALE;
+          }
+
+          if (Math.abs(client.data.rotationY) > ANGLE_INACCURACY) {
+            downhillAccelerationY = (client.data.rotationY - ANGLE_INACCURACY) * DOWNHILL_ACCELERATION_SCALE;
+          }
+
+          // update speed and position if collision happens
+          if (((ball.speedX < 0) &&
+            ((nextPosX - boundaryOffset) < client.transform.x) &&
+            !isWallOpenAtPosition(client.transform.y, client.openings.left, nextPosY))) {
+            nextPosX = client.transform.x + boundaryOffset;
+            nextSpeedX = ball.speedX * -1;
+          } else if (((ball.speedX > 0) &&
+            ((nextPosX + boundaryOffset) > (client.transform.x + client.size.width)) &&
+            !isWallOpenAtPosition(client.transform.y, client.openings.right, nextPosY))) {
+            nextPosX = client.transform.x + (client.size.width - boundaryOffset);
+            nextSpeedX = ball.speedX * -1;
+          }
+
+          if (((ball.speedY < 0) &&
+            ((nextPosY - boundaryOffset) < client.transform.y &&
+            !isWallOpenAtPosition(client.transform.x, client.openings.top, nextPosX)))) {
+            nextPosY = client.transform.y + boundaryOffset;
+            nextSpeedY = ball.speedY * -1;
+          } else if (((ball.speedY > 0) &&
+            ((nextPosY + boundaryOffset) > (client.transform.y + client.size.height)) &&
+            !isWallOpenAtPosition(client.transform.x, client.openings.bottom, nextPosX))
+          ) {
+            nextPosY = client.transform.y + (client.size.height - boundaryOffset);
+            nextSpeedY = ball.speedY * -1;
+          }
+        } else { // reset ball to first client of cluster
+          const firstClient = clients[0];
+          nextPosX = firstClient.transform.x + (firstClient.size.width / 2);
+          nextPosY = firstClient.transform.y + (firstClient.size.height / 2);
+          nextSpeedX = 0;
+          nextSpeedY = 0;
+        }
+
+        if (isInsideHole(hole, ball)) {
+          nextPosX = (ball.x + hole.x) / 2;
+          nextPosY = (ball.y + hole.y) / 2;
+          nextSpeedX = 0;
+          nextSpeedY = 0;
         }
 
         return {
-          golfball: {
-            x: { $set: (xPos + speedX) },
-            y: { $set: (yPos + speedY) },
-            speedX: { $set: speedX === 0 ? 0 : slowDown(speedX) },
-            speedY: { $set: speedY === 0 ? 0 : slowDown(speedY) },
+          ball: {
+            x: { $set: nextPosX },
+            y: { $set: nextPosY },
+            speedX: { $set: (nextSpeedX + downhillAccelerationX) * 0.97 },
+            speedY: { $set: (nextSpeedY + downhillAccelerationY) * 0.97 },
           },
-          gameOver: { $set: gameOver },
         };
       },
-      merge: (cluster1, cluster2, transform) => ({
-        particles: { $set: getNewParticleDist(cluster1, cluster2, transform) },
-      }),
+      merge: () => ({}),
     },
     init: () => ({
-      golfball: { x: 50, y: 50, size: 10, speedX: 0, speedY: 0 },
-      hole: { x: 200, y: 200 },
-      gameOver: false,
+      ball: { x: 50, y: 50, radius: 10, speedX: 0, speedY: 0 },
+      hole: { x: 200, y: 200, radius: 15 },
     }),
   },
 
   client: {
-    init: () => ({}),
+    init: () => ({ rotationX: 0, rotationY: 0 }),
     events: {
-      hitBall: ({ cluster, client }, { speedX, speedY }) => {
-        return {
-          cluster: {
-            data: { golfball : { speedX: { $set: Math.round(speedX / 10) }, speedY: { $set: Math.round(speedY / 10) } } },
+
+      hitBall: ({ cluster, client }, { speedX, speedY }) => ({
+        cluster: {
+          data: {
+            ball: {
+              speedX: { $set: speedX },
+              speedY: { $set: speedY },
+            },
           },
-        };
-      },
-      setHole: ({ cluster, client }, hole) => {
-        return {
-          cluster: {
-            data: { hole: { $set: hole } },
+        },
+      }),
+
+      setHole: ({ cluster, client }, { x, y }) => ({
+        cluster: {
+          data: {
+            hole: {
+              x: { $set: x },
+              y: { $set: y },
+            },
           },
-        };
-      },
+        },
+      }),
+
+      updateOrientation: ({ cluster, client }, { rotationX, rotationY }) => ({
+        client: {
+          data: {
+            rotationX: { $set: rotationX },
+            rotationY: { $set: rotationY },
+          },
+        },
+      }),
     },
   },
 });
 
-function getNewParticleDist (cluster1, cluster2, transform) {
-  cluster2.clients.forEach((client) => {
-    if (isParticleInClient(cluster2.data.golfball, client)) {
-      cluster2.data.golfball.x += (client.transform.x + transform.x);
-      cluster2.data.golfball.y += (client.transform.y + transform.y);
-    }
-  });
-
-  return cluster1.data;
-}
-
-function slowDown (speed) {
-  return speed > 0 ? speed - 1 : speed + 1;
-}
-
-function isParticleInClient (golfball, client) {
+function isParticleInClient (ball, client) {
   const leftSide = client.transform.x;
   const rightSide = (client.transform.x + client.size.width);
   const topSide = client.transform.y;
   const bottomSide = (client.transform.y + client.size.height);
 
-  if (golfball.x < rightSide && golfball.x > leftSide && golfball.y > topSide && golfball.y < bottomSide) {
-    return true;
-  }
-
-  return false;
+  return ball.x < rightSide && ball.x > leftSide && ball.y > topSide && ball.y < bottomSide;
 }
 
-function checkForWall (particlePos, openings, transform) {
-  let isWall = true;
+function isWallOpenAtPosition (transform, openings, particlePos) {
+  return openings.some((opening) => (
+    particlePos >= (opening.start + transform) && particlePos <= (opening.end + transform)
+  ));
+}
 
-  openings.forEach((opening) => {
-    if (particlePos >= (opening.start + transform) && particlePos <= (opening.end + transform)) {
-      isWall = false;
-    }
-  });
+function isInsideHole (hole, ball) {
+  const distanceX = hole.x - ball.x;
+  const distanceY = hole.y - ball.y;
+  const distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+  const speed = Math.sqrt(Math.pow(ball.speedX, 2) + Math.pow(ball.speedY, 2));
 
-  return isWall;
+  return distance <= hole.radius && speed < SPEED_THRESHOLD;
 }
 
 server.listen(3000);

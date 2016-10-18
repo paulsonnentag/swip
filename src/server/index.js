@@ -14,6 +14,11 @@ function swip (io, config) {
   io.on('connection', (socket) => {
     const id = uid();
 
+    socket.on('disconnect', () => {
+      unsubscribe();
+      store.dispatch(actions.disconnect(id));
+    });
+
     socket.on(actions.TYPE.CONNECT, (data) => store.dispatch(actions.connect(id, data)));
     socket.on(actions.TYPE.SWIPE, (data) => store.dispatch(actions.swipe(id, data)));
     socket.on(actions.TYPE.LEAVE_CLUSTER, () => store.dispatch(actions.leaveCluster(id)));
@@ -21,6 +26,7 @@ function swip (io, config) {
       unsubscribe();
       store.dispatch(actions.disconnect(id));
     });
+    socket.on(actions.TYPE.RECONNECT, (data) => store.dispatch(actions.reconnect(id, data)));
     socket.on(actions.TYPE.CLIENT_ACTION, (data) => store.dispatch(actions.clientAction(id, data)));
 
     const unsubscribe = store.subscribe(() => {

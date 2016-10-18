@@ -10,7 +10,9 @@
     "particles": "node examples/particles/server/index.js",
     "particles:dev": "nodemon examples/particles/server/index.js",
     "golf": "node examples/golf/server/index.js",
-    "golf:dev": "nodemon examples/golf/server/index.js"
+    "golf:dev": "nodemon examples/golf/server/index.js",
+    "contact": "node examples/contact-share/server/index.js",
+    "contact:dev": "nodemon examples/contact-share/server/index.js"
   },
   "repository": {
     "type": "git",
@@ -37,12 +39,14 @@
     "babel-core": "^6.11.4",
     "babel-loader": "^6.2.4",
     "babel-preset-es2015": "^6.9.0",
+    "css-loader": "^0.25.0",
     "eslint": "^3.1.1",
     "eslint-config-airbnb-base": "^4.0.2",
     "eslint-plugin-import": "^1.11.1",
     "mocha": "^3.0.2",
     "should": "^10.0.0",
     "should-sinon": "0.0.5",
-    "sinon": "^1.17.5"
+    "sinon": "^1.17.5",
+    "style-loader": "^0.13.1"
   }
 }
