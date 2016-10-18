@@ -34,7 +34,7 @@ npm run build
 
 Enter the following command to run the particles demo:
 
-![blob_demo](https://www.youtube.com/watch?v=qXOwT0ieOgw)
+![https://www.youtube.com/watch?v=qXOwT0ieOgw](https://www.youtube.com/watch?v=qXOwT0ieOgw)
 
 ```bash
 npm run particles
