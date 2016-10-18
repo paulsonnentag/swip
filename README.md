@@ -6,6 +6,7 @@
 > **DISCLAIMER**
 > 
 > This is a very early version of Swip.js. If the app doesn't respond you might have to reload the browser or restart the server.
+> It works best if you create a separate wireless network to connect multiple devices with your swip.js application 
 
 <img src='assets/explanation.jpg' width="400">
 
