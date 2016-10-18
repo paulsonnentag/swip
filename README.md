@@ -30,7 +30,7 @@ npm run build
 
 ## Particles
 
-![alt tag] (./assets/example1.gif)
+![alt tag] (./assets/blob_demo.gif)
 
 Enter the following command to run the particles demo:
 
@@ -40,7 +40,7 @@ npm run particles
 
 ## Golf
 
-![alt tag] (./assets/example2.gif)
+![alt tag] (./assets/golf_demo.gif)
 
 Enter the following command to run the golf demo:
 
