@@ -96,14 +96,9 @@
   }
 
   function drawBackground (ctx, client) {
-    var img = new Image();
-    img.src = './assets/grass.svg';
-
     ctx.save();
-
-    ctx.fillStyle = ctx.createPattern(img, 'repeat');
+    ctx.fillStyle = '#80d735';
     ctx.fillRect(client.transform.x, client.transform.y, client.size.width, client.size.height);
-
     ctx.restore();
   }
 

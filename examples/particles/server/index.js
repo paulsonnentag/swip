@@ -129,13 +129,8 @@ function getNewParticleDist (cluster1, cluster2, transform) {
 }
 
 function getRandomColor () {
-  const letters = '0123456789AB'.split('');
-  let color = '#';
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.round(Math.random() * 12)];
-  }
-
-  return color;
+  const colors = ['#f16745', '#ffc65d', '#7bc8a4', '#4cc3d9', '#93648d'];
+  return colors[Math.floor(Math.random() * colors.length)];
 }
 
 server.listen(3000);
