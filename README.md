@@ -30,10 +30,10 @@
     - [x] Endless possibilities
 
 ## What we built with it
-### Particles
+### Blobparticles
 <a href="https://www.youtube.com/watch?v=qXOwT0ieOgw" target="_blank"><img src="./assets/blob_prev.jpg"/></a>
 
-### Golf
+### Minigolf
 <a href="https://www.youtube.com/watch?v=ZE0gxa-p8HY" target="_blank"><img src="./assets/golf_prev.jpg"/></a>
 
 ## Try it out yourself!
