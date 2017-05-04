@@ -15,7 +15,9 @@
 
 <img src='assets/explanation.jpg' width="400">
 
-# Installation
+## Features
+
+## Installation
 
 > You need node >= 6.x to run swip. To use swip you need to install its dependencies, the dependencies for the demos and build the client library. You can just run the commands below:
 
@@ -30,9 +32,9 @@ cd ../..
 npm run build
 ```
 
-# Examples
+## Examples
 
-## Particles
+### Particles
 
 <a href="https://www.youtube.com/watch?v=qXOwT0ieOgw" target="_blank"><img src="./assets/blob_prev.jpg"/></a>
 
@@ -42,7 +44,7 @@ Enter the following command to run the particles demo:
 npm run particles
 ```
 
-## Golf
+### Golf
 
 <a href="https://www.youtube.com/watch?v=ZE0gxa-p8HY" target="_blank"><img src="./assets/golf_prev.jpg"/></a>
 
