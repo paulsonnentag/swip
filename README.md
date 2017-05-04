@@ -76,4 +76,4 @@ npm run particles
 [<img src="https://cdn3.iconfinder.com/data/icons/picons-social/57/38-instagram-512.png" width="25"/>](https://www.instagram.com/grossertim/)
 [<img src="https://cdn0.iconfinder.com/data/icons/octicons/1024/mark-github-512.png" width="25"/>](https://github.com/timgrossmann)
 
-> Passionate learner and developer. Studying computer science at the Media University. Looking forward to work with ingenious teams on challenging projects.
+> Passionate learner and developer. Studying computer science at the Media University. Looking forward to work with ingenious teams on challenging projects. Creator of [**InstaPY**](https://github.com/timgrossmann/InstaPy)
