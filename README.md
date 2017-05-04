@@ -29,10 +29,18 @@
     - [x] Two different examples
     - [x] Endless possibilities
 
-## Installation
+## What we built with it
+### Particles
+<a href="https://www.youtube.com/watch?v=qXOwT0ieOgw" target="_blank"><img src="./assets/blob_prev.jpg"/></a>
+
+### Golf
+<a href="https://www.youtube.com/watch?v=ZE0gxa-p8HY" target="_blank"><img src="./assets/golf_prev.jpg"/></a>
+
+## Try it out yourself!
 
 > You need node >= 6.x to run swip. To use swip you need to install its dependencies, the dependencies for the demos and build the client library. You can just run the commands below:
 
+###### Setup
 ```bash
 npm install webpack -g
 npm install
@@ -44,24 +52,8 @@ cd ../..
 npm run build
 ```
 
-## Examples
-
-### Particles
-
-<a href="https://www.youtube.com/watch?v=qXOwT0ieOgw" target="_blank"><img src="./assets/blob_prev.jpg"/></a>
-
-Enter the following command to run the particles demo:
-
-```bash
-npm run particles
-```
-
-### Golf
-
-<a href="https://www.youtube.com/watch?v=ZE0gxa-p8HY" target="_blank"><img src="./assets/golf_prev.jpg"/></a>
-
-Enter the following command to run the golf demo:
-
+###### Run the demos
 ```bash
 npm run golf
+npm run particles
 ```
