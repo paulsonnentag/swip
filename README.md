@@ -16,6 +16,18 @@
 <img src='assets/explanation.jpg' width="400">
 
 ## Features
+- [x] Runs in the browser
+    - [x] Completely plattform independant
+    - [x] Works on every device with a browser
+- [x] Open Source
+    - [x] Free
+    - [x] Open 
+    - [x] Community-based
+    - [x] Collaborate!
+- [x] A library for you to use with your own project
+    - [x] If you have an idea about what to build, do it!
+    - [x] Two different examples
+    - [x] Endless possibilities
 
 ## Installation
 
