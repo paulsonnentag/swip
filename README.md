@@ -60,12 +60,20 @@ npm run particles
 
 ## Who we are
 [<img src="https://avatars1.githubusercontent.com/u/650540?v=3&s=400" width="200">](http://github.com/paulsonnentag)   
-**Paul Sonnentag**
+**Paul Sonnentag**   
+[<img src="http://www.iconsdb.com/icons/preview/black/twitter-xxl.png" width="25"/>](https://twitter.com/paulsonnentag)
+[<img src="http://ncwebdiva.com/wp-content/uploads/2013/07/icon_28803.png" width="25"/>](http://paulsonnentag.com)
+
 > Passionate developer, studying computer science. At home on the web. Building things with JavaScript, Elm and Clojure.   
 
-[<img src="http://www.iconsdb.com/icons/preview/black/twitter-xxl.png" width="50"/>](https://twitter.com/paulsonnentag)
 
 [<img src="https://avatars2.githubusercontent.com/u/16529337?v=3&u=6819d2f1d1626e1e23094977c3b1188b39863aed&s=400" width="200">](http://github.com/timgrossmann)   
-**Tim Großmann**
-> Passionate learner and developer. Studying computer science at the Media University. Looking forward to work with ingenious teams on challenging projects.
+**Tim Großmann**   
+[<img src="http://www.iconsdb.com/icons/preview/black/twitter-xxl.png" width="25"/>](https://twitter.com/timigrossmann)
+[<img src="https://cdn4.iconfinder.com/data/icons/picons-social/57/53-medium-3-512.png" width="25"/>](https://medium.com/@TimGrossmann)
+[<img src="https://cdn4.iconfinder.com/data/icons/devine_icons/Black/PNG/Appliaction%20and%20Programs/Mail%20-2.png" width="25"/>](mailto:contact.timgrossmann@gmail.com)
+[<img src="http://png-1.findicons.com/files/icons/2779/simple_icons/4096/facebook_4096_black.png" width="25"/>](https://www.facebook.com/profile.php?id=100000656212416)
+[<img src="https://cdn3.iconfinder.com/data/icons/picons-social/57/38-instagram-512.png" width="25"/>](https://www.instagram.com/grossertim/)
+[<img src="https://cdn0.iconfinder.com/data/icons/octicons/1024/mark-github-512.png" width="25"/>](https://github.com/timgrossmann)
 
+> Passionate learner and developer. Studying computer science at the Media University. Looking forward to work with ingenious teams on challenging projects.
