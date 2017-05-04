@@ -5,7 +5,7 @@
 
 <img src='assets/logo.png' width="350" align="right">
 
-# **Swip.JS**
+# **Swip**
 
 [![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/timgrossmann/InstaPy/blob/master/LICENSE)
 [![built with JavaScript](https://img.shields.io/badge/built%20with-JavaScript-yellow.svg)](https://www.javascript.com)
