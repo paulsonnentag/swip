@@ -61,8 +61,11 @@ npm run particles
 ## Who we are
 [<img src="https://avatars1.githubusercontent.com/u/650540?v=3&s=400" width="200">](http://github.com/paulsonnentag)   
 **Paul Sonnentag**
-> Passionate developer, studying computer science. At home on the web. Building things with JavaScript, Elm and Clojure.
+> Passionate developer, studying computer science. At home on the web. Building things with JavaScript, Elm and Clojure.   
 
+[<img src="http://www.iconsdb.com/icons/preview/black/twitter-xxl.png" width="50"/>](https://twitter.com/paulsonnentag)
 
-[<img src="https://avatars2.githubusercontent.com/u/16529337?v=3&u=6819d2f1d1626e1e23094977c3b1188b39863aed&s=400" width="200">](http://github.com/timgrossmann)
+[<img src="https://avatars2.githubusercontent.com/u/16529337?v=3&u=6819d2f1d1626e1e23094977c3b1188b39863aed&s=400" width="200">](http://github.com/timgrossmann)   
+**Tim Großmann**
+> Passionate learner and developer. Studying computer science at the Media University. Looking forward to work with ingenious teams on challenging projects.
 
