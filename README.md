@@ -57,3 +57,8 @@ npm run build
 npm run golf
 npm run particles
 ```
+
+## Who we are
+[<img src="https://avatars1.githubusercontent.com/u/650540?v=3&s=400" width="200" align="left">](http://github.com/paulsonnentag)
+[<img src="https://avatars2.githubusercontent.com/u/16529337?v=3&u=6819d2f1d1626e1e23094977c3b1188b39863aed&s=400" width="200" align="left">](http://github.com/timgrossmann)
+
