@@ -1,16 +1,19 @@
-<img src='assets/logo.png' width="350">
-
-
-
-
 > **DISCLAIMER**
 > 
 > This is a very early version of Swip.js. If the app doesn't respond you might have to reload the browser or restart the server.
 > It works best if you create a separate wireless network to connect multiple devices with your swip.js application 
 
+
+[![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/timgrossmann/InstaPy/blob/master/LICENSE)
+[![built with JavaScript](https://img.shields.io/badge/built%20with-JavaScript-yellow.svg)](https://www.javascript.com)
+<img src='assets/logo.png' width="350" align="right">
+
+# **Swip.JS**
+
+### What if all your mobile devices were a single screen?…
+> This probably isn’t the most common question to ask yourself. But, just for a second, actually think about it, think about all the possibilities when being able to combine any kind of mobile devices, independent of the operating system… Welcome to swip.js
+
 <img src='assets/explanation.jpg' width="400">
-
-
 
 # Installation
 
