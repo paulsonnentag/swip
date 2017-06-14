@@ -65,7 +65,7 @@ npm run particles
 **Paul Sonnentag**   
 [<img src="http://www.iconsdb.com/icons/preview/black/twitter-xxl.png" width="25"/>](https://twitter.com/paulsonnentag)
 [<img src="http://ncwebdiva.com/wp-content/uploads/2013/07/icon_28803.png" width="25"/>](http://paulsonnentag.com)
-
+[<img src="https://cdn4.iconfinder.com/data/icons/devine_icons/Black/PNG/Appliaction%20and%20Programs/Mail%20-2.png" width="25"/>](mailto:paul.sonnentag@gmail.com)
 > Passionate developer, studying computer science. At home on the web. Building things with JavaScript, Elm and Clojure.   
 
 
