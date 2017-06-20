@@ -10,7 +10,7 @@
 [![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/timgrossmann/InstaPy/blob/master/LICENSE)
 [![built with JavaScript](https://img.shields.io/badge/built%20with-JavaScript-yellow.svg)](https://www.javascript.com)
 
-### [Read the article about it here](https://medium.com/@TimGrossmann)
+### [Read the article about it here](https://medium.freecodecamp.com/what-if-all-your-mobile-devices-formed-a-single-screen-9c6ff01ed0c3)
 
 ## What if all your mobile devices were a single screen?…
 > This probably isn’t the most common question to ask yourself. But, just for a second, actually think about it, think about all the possibilities when being able to combine any kind of mobile devices, independent of the operating system… Welcome to swip.js
