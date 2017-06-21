@@ -19,7 +19,7 @@
 
 ## Features
 - [x] Runs in the browser
-    - [x] Completely plattform independant
+    - [x] Completely platform independent
     - [x] Works on every device with a browser
 - [x] Open Source
     - [x] Free
